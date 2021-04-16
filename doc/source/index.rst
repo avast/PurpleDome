@@ -1,0 +1,47 @@
+.. Purple Dome documentation master file, created by
+   sphinx-quickstart on Fri Dec  4 10:04:48 2020.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+.. https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html
+
+.. Autodoc part
+.. https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#module-sphinx.ext.autodoc
+
+Welcome to the Purple Dome documentation!
+=========================================
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
+   basics/background
+
+   basics/configuration
+
+   basics/windows_targets
+
+   usage/usage
+
+   usage/cli
+
+   extending/vulnerability_plugins.rst
+
+   extending/kali_plugins
+
+   extending/sensor_plugins
+
+   extending/vm_controller_plugins.rst
+
+   extending/extending
+
+   extending/documentation
+
+   basics/learned
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`

@@ -127,3 +127,25 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Vagrant
+.vagrant
+
+# IDE
+.idea
+
+# Systems, generated files
+systems/*/.vagrant
+systems/*/sandcat.go
+systems/*/*_eth1.txt
+systems/*/logstash/*
+systems/*/caldera/*
+systems/*/caldera
+systems/*/ip4.txt
+
+# Auto generated
+caldera_agent.sh
+
+# Nohup
+**/nohup.out
+
