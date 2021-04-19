@@ -1,0 +1,13 @@
+python-vagrant>=0.5.15
+fabric>=2.6.0
+requests>=2.25.1
+simplejson>=3.17.2
+tox>=3.22.0
+sphinx-argparse>=0.2.5
+sphinxcontrib-autoyaml>=0.6.1
+sphinx-pyreverse>=0.0.13
+coverage>=5.4
+PyYAML>=5.4.1
+straight.plugin>=1.5.0
+sphinxcontrib.asciinema>=0.3.1
+paramiko
