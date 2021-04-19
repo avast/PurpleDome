@@ -1,0 +1,16 @@
+This file contains a list of people who have made large contributions
+to Purple Dome.
+
+Main developers:
+    Thorsten Sick <thorsten.sick@avast.com>
+
+Code contribution:
+
+Code reviews:
+
+Documentation:
+
+Patches:
+
+
+

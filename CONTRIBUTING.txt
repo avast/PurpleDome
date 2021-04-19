@@ -1,0 +1,11 @@
+We are looking forward to your contribution. To do so:
+
+* Develop in an own branch for each feature
+* Test it using 'make test' which executes tox
+* If there are no bugs, create a PR to the master branch
+
+If you have bigger changes please also execute experiment_control.py and verify the basic experiment still works.
+
+Server side tests:
+At the moment we do not test on the server. For the proper tests we would need an isolated test environment (AWS, Azure, ...). As it will have to run attacks. We are not there yet.
+=> Please test your changes
