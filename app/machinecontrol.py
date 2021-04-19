@@ -442,8 +442,8 @@ class Machine():
         playground = self.vm_manager.get_playground()
 
         if self.get_os() == "linux":
-            cmd = f"""
-nohup {playground}/caldera_agent.sh start &
+            cmd = f"""chmod +x caldera_agent.sh;
+nohup bash {playground}/caldera_agent.sh start &
                       """
         elif self.get_os() == "windows":
             if playground:

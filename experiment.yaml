@@ -84,7 +84,7 @@ targets:
 
     ###
     # simple switch if targets is used in attack simulation. Default is true. If set to false the machine will not be started
-    active: yes
+    active: no
 
     vm_name: target2
     os: windows
@@ -129,7 +129,7 @@ targets:
 
     ###
     # simple switch if targets is used in attack simulation. Default is true. If set to false the machine will not be started
-    active: no
+    active: yes
 
     vm_name: target3
     os: linux

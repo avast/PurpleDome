@@ -198,11 +198,11 @@ Vagrant.configure("2") do |config|
 	  ls /vagrant
 	  cd /vagrant/target3
 	  chmod +x bootstrap.sh
-	  ./bootstrap.sh
+	  sudo ./bootstrap.sh
 
 	  # Install implant
-	  chmod +x hackme.sh
-	  ./hackme.sh
+	  #chmod +x hackme.sh
+	  #./hackme.sh
 
 	  SHELL
 	end
@@ -278,7 +278,7 @@ Vagrant.configure("2") do |config|
 	  ls /vagrant
 	  cd /vagrant/attacker1
 	  chmod +x bootstrap.sh
-	  ./bootstrap.sh
+	  sudo ./bootstrap.sh
 	  echo "Attacker ready"
 
 	  SHELL
