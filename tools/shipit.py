@@ -24,6 +24,7 @@ globs = ["TODO.md",
          "tests/*.py",
          "systems/Vagrantfile",
          "systems/*/*.sh",
+         "systems/*/*.bat",
          "systems/azure_attacker"
          "doc/source",
          "doc/source/conf.py",
@@ -54,7 +55,8 @@ globs = ["TODO.md",
          "plugins/avast_internal_plugins/*/*/idpx",
          "plugins/avast_internal_plugins/*/*/hosts",
          "plugins/README.md",
-         "pylint.rc"]
+         "pylint.rc",
+         "shipit_log.txt"]
 
 try:
     os.remove(filename)

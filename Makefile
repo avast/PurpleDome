@@ -11,6 +11,7 @@ test: tox.ini
 
 shipit: test
 	cd doc; make html; cd ..
+	git log --pretty="format: %aD %an:  %s" > shipit_log.txt
 	python3 tools/shipit.py
 
 # More detailed pylint tests.
