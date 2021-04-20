@@ -51,7 +51,7 @@ All kali attacks can have a special configuration. The configuration is tool spe
 Config file
 ===========
 
-.. autoyaml:: ../experiment.yaml
+.. autoyaml:: ../demo.yaml
 
 TBD
 ===
