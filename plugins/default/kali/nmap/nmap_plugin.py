@@ -10,7 +10,13 @@ from plugins.base.kali import KaliPlugin
 # TODO: Add IP exclusion --exclude ip,ip,ip to not accidentially scan non-targets
 # TODO: host discovery Ping scan: -sn
 # TODO: host discovery PE/PP/PM
-# TODO: host discovery PS/PA/PU/PY
+# TODO: host discovery PE ICMP echo
+# TODO: host discovery PP ICMP timestamp
+# TODO: host discovery PM ICMP netmask request
+# TODO: host discovery PS: SYN host discovery
+# TODO: host discovery PA: ACK host discovery
+# TODO: host discovery PU: UDP host discovery
+# TODO: host discovery PR: ARP ping
 # TODO: host discovery reverse DNS resolution
 # TODO OS identification
 # TODO service discovery
