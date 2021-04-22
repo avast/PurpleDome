@@ -531,6 +531,62 @@ class TestExperimentConfig(unittest.TestCase):
 
         self.assertEqual(ex.get_nap_time(), 0)
 
+    def test_kali_attacks_missing(self):
+        """ kali attacks entry fully missing from config """
+
+        ex = ExperimentConfig("tests/data/attacks_missing.yaml")
+
+        self.assertEqual(ex.get_kali_attacks("linux"), [])
+
+    def test_kali_attacks_empty(self):
+        """ zero entries in kali attacks list """
+
+        ex = ExperimentConfig("tests/data/attacks_perfect.yaml")
+
+        self.assertEqual(ex.get_kali_attacks("missing"), [])
+
+    def test_kali_attacks_one(self):
+        """ One entry in kali attacks list """
+
+        ex = ExperimentConfig("tests/data/attacks_perfect.yaml")
+
+        self.assertEqual(ex.get_kali_attacks("linux"), ["hydra"])
+
+    def test_kali_attacks_many(self):
+        """ Many entries in kali attacks list """
+
+        ex = ExperimentConfig("tests/data/attacks_perfect.yaml")
+
+        self.assertEqual(ex.get_kali_attacks("windows"), ["hydra", "medusa", "skylla"])
+
+    def test_caldera_attacks_missing(self):
+        """ caldera attacks entry fully missing from config """
+
+        ex = ExperimentConfig("tests/data/attacks_missing.yaml")
+
+        self.assertEqual(ex.get_caldera_attacks("linux"), [])
+
+    def test_caldera_attacks_empty(self):
+        """ zero entries in caldera attacks list """
+
+        ex = ExperimentConfig("tests/data/attacks_perfect.yaml")
+
+        self.assertEqual(ex.get_caldera_attacks("missing"), [])
+
+    def test_caldera_attacks_one(self):
+        """ One entry in caldera attacks list """
+
+        ex = ExperimentConfig("tests/data/attacks_perfect.yaml")
+
+        self.assertEqual(ex.get_caldera_attacks("linux"), ["bd527b63-9f9e-46e0-9816-b8434d2b8989"])
+
+    def test_caldera_attacks_many(self):
+        """ Many entries in caldera attacks list """
+
+        ex = ExperimentConfig("tests/data/attacks_perfect.yaml")
+
+        self.assertEqual(ex.get_caldera_attacks("windows"), ["bd527b63-9f9e-46e0-9816-b8434d2b8989", "foo", "bar"])
+
 
 if __name__ == '__main__':
     unittest.main()

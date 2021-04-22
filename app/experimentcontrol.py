@@ -99,7 +99,8 @@ class Experiment():
         print(f"{CommandlineColors.OKBLUE}Running Caldera attacks{CommandlineColors.ENDC}")
         for target_1 in self.targets:
             # Run caldera attacks
-            caldera_attacks = self.experiment_control.raw_config["caldera_attacks"][target_1.get_os()]
+            # caldera_attacks = self.experiment_control.raw_config["caldera_attacks"][target_1.get_os()]
+            caldera_attacks = self.experiment_control.get_caldera_attacks(target_1.get_os())
             if caldera_attacks:
                 for attack in caldera_attacks:
                     # TODO: Work with snapshots
@@ -115,7 +116,9 @@ class Experiment():
         # Run Kali attacks
         print(f"{CommandlineColors.OKBLUE}Running Kali attacks{CommandlineColors.ENDC}")
         for target_1 in self.targets:
-            for attack in self.experiment_control.raw_config["kali_attacks"][target_1.get_os()]:
+            kali_attacks = caldera_attacks = self.experiment_control.get_kali_attacks(target_1.get_os())
+            #for attack in self.experiment_control.raw_config["kali_attacks"][target_1.get_os()]:
+            for attack in kali_attacks:
                 # TODO: Work with snapshots
 
                 self.attacker_1.kali_attack(attack, target_1.getip(), self.experiment_control)

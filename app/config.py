@@ -204,6 +204,30 @@ class ExperimentConfig():
 
         return res
 
+    def get_kali_attacks(self, for_os):
+        """ Get the configured kali attacks to run for a specific OS
+
+        @param for_os: The os to query the registered attacks for
+        """
+
+        if "kali_attacks" not in self.raw_config:
+            return []
+        if for_os not in self.raw_config["kali_attacks"]:
+            return []
+        return self.raw_config["kali_attacks"][for_os]
+
+    def get_caldera_attacks(self, for_os):
+        """ Get the configured caldera attacks to run for a specific OS
+
+        @param for_os: The os to query the registered attacks for
+        """
+
+        if "caldera_attacks" not in self.raw_config:
+            return []
+        if for_os not in self.raw_config["caldera_attacks"]:
+            return []
+        return self.raw_config["caldera_attacks"][for_os]
+
     def get_nap_time(self):
         """ Returns the attackers nap time between attack steps """
 

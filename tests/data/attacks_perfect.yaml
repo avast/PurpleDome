@@ -1,0 +1,146 @@
+
+###
+# Caldera configuration
+caldera:
+  ###
+  # API key for caldera. See caldera configuration. Default is ADMIN123
+  apikey: ADMIN123
+
+###
+# Attacks configuration
+attackers:
+  ###
+  # Configuration for the first attacker. One should normally be enough
+  attacker:
+
+    ###
+    # Defining VM controller settings for this machine
+    vm_controller:
+      ###
+      # Type of the VM controller, Options are "vagrant"
+      type: vagrant
+      ###
+      # # path where the vagrantfile is in
+      vagrantfilepath: systems
+
+    ###
+    # Name of machine in Vagrantfile
+    vm_name: attacker
+
+    ###
+    # machinepath is a path where the machine specific files and logs are stored. Relative to the Vagrantfile path
+    # and will be mounted internally as /vagrant/<name>
+    # If machinepoath is not set PurpleDome will try "vm_name"
+    machinepath: attacker1
+
+    ###
+    # OS of the VM guest. Options are so far "windows", "linux"
+    os: linux
+
+    ###
+    # Do not destroy/create the machine: Set this to "yes".
+    use_existing_machine: yes
+
+###
+# List of targets
+targets:
+  ###
+  # Specific target
+  target1:
+    vm_controller:
+      type: vagrant
+      vagrantfilepath: systems
+
+    vm_name: target1
+    os: linux
+    ###
+    # Targets need a unique PAW name for caldera
+    paw: target1
+    ###
+    # Targets need to be in a group for caldera
+    group: red
+
+    machinepath: target1
+    # Do not destroy/create the machine: Set this to "yes".
+    use_existing_machine: yes
+
+  target2:
+    #root: systems/target1
+    vm_controller:
+      type: vagrant
+      vagrantfilepath: systems
+
+    vm_name: target2
+    os: windows
+    paw: target2w
+    group: red
+
+    machinepath: target2w
+
+    # Do not destroy/create the machine: Set this to "yes".
+    use_existing_machine: yes
+    ###
+    # Optional setting to activate force when halting the machine. Windows guests sometime get stuck
+    halt_needs_force: yes
+
+    ###
+    # If SSH without vagrant support is used (Windows !) we need a user name (uppercase)
+    ssh_user: PURPLEDOME
+
+    ###
+    # For non-vagrant ssh connections a ssh keyfile stored in the machinepath is required.
+    ssh_keyfile: id_rsa.3
+
+###
+# A list of caldera attacks to run against the targets.
+caldera_attacks:
+  ###
+  # Linux specific attacks. A list of caldera ability IDs
+  linux:
+    - "bd527b63-9f9e-46e0-9816-b8434d2b8989"
+  ###
+  # Windows specific attacks. A list of caldera ability IDs
+  windows:
+    - "bd527b63-9f9e-46e0-9816-b8434d2b8989"
+    - "foo"
+    - "bar"
+
+###
+# Kali tool based attacks. Will result in kali commandline tools to be called. Currently supported are: "hydra"
+kali_attacks:
+  ###
+  # Linux specific attacks, a list
+  linux:
+    - hydra
+  ###
+  # Windows specific attacks, a list
+  windows:
+    - hydra
+    - medusa
+    - skylla
+
+###
+# Configuration for the kali attack tools
+kali_conf:
+  ###
+  # Hydra configuration
+  hydra:
+    ###
+    # A list of protocols to brute force against. Supported: "ssh"
+    protocols:
+      - ssh
+      #- ftp
+      #- ftps
+    ###
+    # A file containing potential user names
+    userfile: users.txt
+    ###
+    # A file containing potential passwords
+    pwdfile: passwords.txt
+
+###
+# Settings for the results being harvested
+results:
+  ###
+  # The directory the loot will be in
+  loot_dir: loot
