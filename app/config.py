@@ -102,6 +102,11 @@ class MachineConfig():
 
         return self.raw_config.get("ssh_user", "vagrant")
 
+    def ssh_password(self):
+        """ Returns configured ssh password or None as default  """
+
+        return self.raw_config.get("ssh_password", None)
+
     def halt_needs_force(self):
         """ Returns if halting the machine needs force False as default  """
 

@@ -61,7 +61,7 @@ targets:
     # Targets need a unique PAW name for caldera
     paw: target1
     ###
-    # Targets need to be in a group for caldera
+    # Targets need to be in a group for caldera. The group is more relevant than the paw. Better put every target in a unique group
     group: red
 
     machinepath: target1
@@ -89,6 +89,8 @@ targets:
     vm_name: target2
     os: windows
     paw: target2w
+    ###
+    # Targets need to be in a group for caldera. The group is more relevant than the paw. Better put every target in a unique group
     group: red
 
     machinepath: target2w
@@ -102,6 +104,10 @@ targets:
     ###
     # If SSH without vagrant support is used (Windows !) we need a user name (uppercase)
     ssh_user: PURPLEDOME
+
+    ###
+    # If SSH without vagrant support is used (Windows !) we maybe need a password
+    ssh_password: PURPLEDOME
 
     ###
     # For non-vagrant ssh connections a ssh keyfile stored in the machinepath is required.
@@ -137,7 +143,7 @@ targets:
     # Targets need a unique PAW name for caldera
     paw: target3
     ###
-    # Targets need to be in a group for caldera
+    # Targets need to be in a group for caldera. The group is more relevant than the paw. Better put every target in a unique group
     group: red
 
     machinepath: target3

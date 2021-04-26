@@ -321,6 +321,32 @@ class TestMachineConfig(unittest.TestCase):
                             "use_existing_machine": False})
         self.assertEqual(mc.ssh_user(), "vagrant")
 
+    def test_ssh_password(self):
+        """ Testing ssh password config """
+        mc = MachineConfig({"root": "systems/attacker1",
+                            "os": "linux",
+                            "ssh_user": "Bob",
+                            "ssh_password": "Ross",
+                            "vm_controller": {
+                                "type": "vagrant",
+                                "vagrantfilepath": "systems",
+                            },
+                            "vm_name": "target1",
+                            "use_existing_machine": False})
+        self.assertEqual(mc.ssh_password(), "Ross")
+
+    def test_ssh_password_default(self):
+        """ Testing ssh password default config """
+        mc = MachineConfig({"root": "systems/attacker1",
+                            "os": "linux",
+                            "vm_controller": {
+                                "type": "vagrant",
+                                "vagrantfilepath": "systems",
+                            },
+                            "vm_name": "target1",
+                            "use_existing_machine": False})
+        self.assertIsNone(mc.ssh_password())
+
     def test_halt_needs_force_default(self):
         """ Testing 'halt needs force' default config """
         mc = MachineConfig({"root": "systems/attacker1",
