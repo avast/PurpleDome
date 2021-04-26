@@ -118,7 +118,7 @@ class Experiment():
             kali_attacks = self.experiment_control.get_kali_attacks(target_1.get_os())
             for attack in kali_attacks:
                 # TODO: Work with snapshots
-
+                print(f"Attacking machine with PAW: {target_1.get_paw()} with attack: {attack}")
                 self.attacker_1.kali_attack(attack, target_1.getip(), self.experiment_control)
 
                 time.sleep(self.experiment_control.get_nap_time())
