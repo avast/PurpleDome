@@ -85,6 +85,8 @@ class VagrantPlugin(MachineryPlugin):
 
         if self.config.os() == "windows":
             args = {"key_filename": os.path.join(self.sysconf["abs_machinepath_external"], self.config.ssh_keyfile())}
+            if self.config.ssh_password():
+                args["password"] = self.config.ssh_password()
             uhp = self.get_ip()
             print(uhp)
             print(args)

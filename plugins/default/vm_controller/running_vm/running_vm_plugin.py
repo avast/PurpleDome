@@ -72,10 +72,15 @@ class RunningVMPlugin(MachineryPlugin):
                     self.c = Connection(uhp, connect_timeout=timeout)
 
                 if self.config.os() == "windows":
+                    args = {}
                     # args = {"key_filename": self.config.ssh_keyfile() or self.v.keyfile(vm_name=self.config.vmname())}
+                    if self.config.ssh_keyfile():
+                        args["key_filename"] = self.config.ssh_keyfile()
+                    if self.config.ssh_password():
+                        args["password"] = self.config.ssh_password()
                     uhp = self.get_ip()
                     print(f"\n\n    !!!!!   Connecting to {uhp}  !!!!!!!!!! \n\n")
-                    self.c = Connection(uhp, connect_timeout=timeout, user=self.config.ssh_user())
+                    self.c = Connection(uhp, connect_timeout=timeout, user=self.config.ssh_user(), connection_kwargs=args)
             except (paramiko.ssh_exception.SSHException, socket.timeout):
                 print(f"Failed to connect, will retry {retries} times. Timeout: {timeout}")
                 retries -= 1
