@@ -75,3 +75,12 @@ To connect from linux call bash::
 * The parameters enforce the use of a specific key. You can also drop that into the ssh config
 
 Footnote: WinRM failed. I tried. The python code does not support ssh-style "disown". Vagrant files needed a special configuration-and sometimes failed connecting to the windows host properly. Base problem was that it does not properly support empty passwords (not on python, anyway) - and I used them for auto-login. Because some windows versions are a bit tricky with auto-login settings as they should be. Windows 10 is mutating here like hell.
+
+SCP from and to Windows
+-----------------------
+
+Just use the user's home folder as entry and do::
+
+    scp win10:my_logs.zip .
+
+Reduces the hassle with slashes.
