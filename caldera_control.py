@@ -9,6 +9,9 @@ from app.calderacontrol import CalderaControl
 
 # https://caldera.readthedocs.io/en/latest/The-REST-API.html
 
+# TODO: Check if attack is finished
+
+# TODO: Get results of a specific attack
 
 # Arpgparse handling
 def list_agents(calcontrol, arguments):  # pylint: disable=unused-argument
@@ -17,8 +20,7 @@ def list_agents(calcontrol, arguments):  # pylint: disable=unused-argument
     @param calcontrol: Connection to the caldera server
     @param arguments: Parser command line arguments
     """
-    # TODO: calcontrol.list_agents(arguments)
-    pass  # pylint: disable=unnecessary-pass
+    print(f"Running agents: {calcontrol.list_agents()}")
 
 
 def list_abilities(calcontrol, arguments):
@@ -79,7 +81,7 @@ def create_parser():
     parser_agents.set_defaults(func=list_agents)
 
     # For all parsers
-    main_parser.add_argument("--caldera_url", help="caldera url, including port", default="http://192.168.178.97:8888/")
+    main_parser.add_argument("--caldera_url", help="caldera url, including port", default="http://192.168.178.177:8888/")
     main_parser.add_argument("--apikey", help="caldera api key", default="ADMIN123")
 
     return main_parser
