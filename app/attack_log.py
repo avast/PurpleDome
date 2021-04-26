@@ -40,7 +40,7 @@ class AttackLog():
         """ Mark the start of a caldera attack
 
         @param source: source of the attack. Attack IP
-        @param paw: Caldera oaw of the targets being attacked
+        @param paw: Caldera paw of the targets being attacked
         @param group: Caldera group of the targets being attacked
         @param ability_id: Caldera ability id of the attack
         @param ttp: TTP of the attack (as stated by Caldera internal settings)
