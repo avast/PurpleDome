@@ -31,6 +31,11 @@ class Experiment():
         self.experiment_control = ExperimentConfig(configfile)
         self.attack_logger = AttackLog()
         self.__start_attacker()
+        caldera_url = "http://" + self.attacker_1.getip() + ":8888"
+        caldera_control = CalderaControl(caldera_url, config=self.experiment_control)
+        # Deleting all currently registered Caldera gents
+        print(caldera_control.kill_all_agents())
+        print(caldera_control.delete_all_agents())
 
         self.starttime = datetime.now().strftime("%Y_%m_%d___%H_%M_%S")
         self.lootdir = os.path.join(self.experiment_control.loot_dir(), self.starttime)
@@ -55,33 +60,11 @@ class Experiment():
                 pass
             target_1.install_caldera_service()
             target_1.up()
-            # TODO prime sensors here
             needs_reboot = target_1.prime_sensors()
             if needs_reboot:
                 target_1.reboot()
             print(f"{CommandlineColors.OKGREEN}Target is up: {tname}  {CommandlineColors.ENDC}")
-            target_1.start_caldera_client()
-            print(f"{CommandlineColors.OKGREEN}Initial start of caldera client: {tname}  {CommandlineColors.ENDC}")
             self.targets.append(target_1)
-
-        # TODO: Install vulnerabilities by plugin
-
-        print(f"{CommandlineColors.OKBLUE}Contacting caldera agents on all targets ....{CommandlineColors.ENDC}")
-        time.sleep(20)
-        # Wait until all targets are registered as Caldera targets
-        for target_1 in self.targets:
-            caldera_url = "http://" + self.attacker_1.getip() + ":8888"
-
-            caldera_control = CalderaControl(caldera_url, config=self.experiment_control)
-            running_agents = [i["paw"] for i in caldera_control.list_agents()]
-            while target_1.get_paw() not in running_agents:
-                print(f"Connecting to caldera {caldera_url}, running agents are: {running_agents}")
-                print(f"Missing agent: {target_1.get_paw()} ...")
-                target_1.start_caldera_client()
-                print(f"Restarted caldera agent: {target_1.get_paw()} ...")
-                time.sleep(120)    # Was 30, but maybe there are timing issues
-                running_agents = [i["paw"] for i in caldera_control.list_agents()]
-        print(f"{CommandlineColors.OKGREEN}Caldera agents reached{CommandlineColors.ENDC}")
 
         # Install vulnerabilities
         for a_target in self.targets:
@@ -95,6 +78,26 @@ class Experiment():
             a_target.install_sensors()
             a_target.start_sensors()
 
+        # First start of caldera implants
+        for target_1 in self.targets:
+            target_1.start_caldera_client()
+            print(f"{CommandlineColors.OKGREEN}Initial start of caldera client: {tname}  {CommandlineColors.ENDC}")
+        time.sleep(20)   # Wait for all the clients to contact the caldera server
+
+        print(f"{CommandlineColors.OKBLUE}Contacting caldera agents on all targets ....{CommandlineColors.ENDC}")
+        # Wait until all targets are registered as Caldera targets
+        for target_1 in self.targets:
+            running_agents = caldera_control.list_paws_of_running_agents()
+            print(f"Agents currently running: {running_agents}")
+            while target_1.get_paw() not in running_agents:
+                print(f"Connecting to caldera {caldera_url}, running agents are: {running_agents}")
+                print(f"Missing agent: {target_1.get_paw()} ...")
+                target_1.start_caldera_client()
+                print(f"Restarted caldera agent: {target_1.get_paw()} ...")
+                time.sleep(120)    # Was 30, but maybe there are timing issues
+                running_agents = caldera_control.list_paws_of_running_agents()
+        print(f"{CommandlineColors.OKGREEN}Caldera agents reached{CommandlineColors.ENDC}")
+
         # Attack them
         print(f"{CommandlineColors.OKBLUE}Running Caldera attacks{CommandlineColors.ENDC}")
         for target_1 in self.targets:
@@ -104,10 +107,10 @@ class Experiment():
                 for attack in caldera_attacks:
                     # TODO: Work with snapshots
                     # TODO: If we have several targets in the same group, it is nonsense to attack each one separately. Make this smarter
-                    print(f"Attacking machine with PAW: {target_1.get_paw()}")
+                    print(f"Attacking machine with PAW: {target_1.get_paw()} with {attack}")
                     caldera_control = CalderaControl("http://" + self.attacker_1.getip() + ":8888", config=self.experiment_control)
 
-                    caldera_control.attack(self.attack_logger, target_1.get_paw(), attack, target_1.get_group())
+                    caldera_control.attack(attack_logger=self.attack_logger, paw=target_1.get_paw(), ability_id=attack, group=target_1.get_group())
 
                     time.sleep(self.experiment_control.get_nap_time())
         print(f"{CommandlineColors.OKGREEN}Finished Caldera attacks{CommandlineColors.ENDC}")
@@ -136,13 +139,11 @@ class Experiment():
             print(f"Uninstalling vulnerabilities on {a_target.get_paw()}")
             a_target.stop_vulnerabilities()
 
-        # TODO: Zip result dir
-
         # Stop target machines
         for target_1 in self.targets:
             target_1.halt()
-
         self.__stop_attacker()
+
         self.attack_logger.write_json(os.path.join(self.lootdir, "attack.json"))
         self.zip_loot()
 

@@ -233,7 +233,7 @@ class TestMachineControl(unittest.TestCase):
         m.set_caldera_server("http://www.test.test")
         with patch.object(m.vm_manager, "get_playground", return_value="/vagrant/target3"):
             cmd = m.create_start_caldera_client_cmd()
-        self.assertEqual(cmd.strip(), "chmod +x caldera_agent.sh; nohup bash /vagrant/target3/caldera_agent.sh start &".strip())
+        self.assertEqual(cmd.strip(), "cd /vagrant/target3; chmod +x caldera_agent.sh; nohup bash ./caldera_agent.sh".strip())
 
     # Create caldera start command and verify it (windows)
     def test_get_windows_caldera_start_cmd(self):

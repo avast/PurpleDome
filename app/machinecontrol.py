@@ -442,8 +442,8 @@ class Machine():
         playground = self.vm_manager.get_playground()
 
         if self.get_os() == "linux":
-            cmd = f"""chmod +x caldera_agent.sh; nohup bash {playground}/caldera_agent.sh start &
-                      """
+            # cmd = f"""chmod +x caldera_agent.sh; nohup bash {playground}/caldera_agent.sh start &"""
+            cmd = f"""cd {playground}; chmod +x caldera_agent.sh; nohup bash ./caldera_agent.sh"""
         elif self.get_os() == "windows":
             if playground:
                 playground = playground + "\\"  # Workaround for Windows: Can not set target dir for fabric-put in Windows. Only default (none=user) dir available.
