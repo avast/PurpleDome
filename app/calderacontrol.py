@@ -132,6 +132,10 @@ class CalderaControl():
         agents = self.__contact_server__(payload)
         return agents
 
+    def list_paws_of_running_agents(self):
+        """ Returns a list of all paws of running agents """
+        return [i["paw"] for i in self.list_agents()]
+
     def list_adversaries(self):
         """ List registered adversaries """
         # curl -H 'KEY: ADMIN123' http://192.168.178.102:8888/api/rest -H 'Content-Type: application/json' -d '{"index":"adversaries"}'
@@ -272,13 +276,15 @@ class CalderaControl():
 
     #  ######### Add
 
-    def add_operation(self, name, advid, group="red", state="running"):
+    def add_operation(self, name, advid, group="red", state="running", obfuscator="plain-text", jitter='4/8'):
         """ Adds a new operation
 
         @param name: Name of the operation
         @param advid: Adversary id
         @param group: agent group to attack
         @param state: state to initially set
+        @param obfuscator: obfuscator to use for the attack
+        @param jitter: jitter to use for the attack
         """
 
         # Add operation: curl -X PUT -H "KEY:$KEY" http://127.0.0.1:8888/api/rest -d '{"index":"operations","name":"testoperation1"}'
@@ -287,9 +293,9 @@ class CalderaControl():
                    "name": name,
                    "state": state,
                    "autonomous": 1,
-                   'obfuscator': 'plain-text',
+                   'obfuscator': obfuscator,
                    'auto_close': '1',
-                   'jitter': '4/8',
+                   'jitter': jitter,
                    'source': 'Alice Filters',
                    'visibility': '50',
                    "group": group,
@@ -320,6 +326,7 @@ class CalderaControl():
                    "atomic_ordering": [{"id": ability}],
                    #
                    "objective": '495a9828-cab1-44dd-a0ca-66e58177d8cc'  # default objective
+                   # "objective": ''
                    }
         return self.__contact_server__(payload, method="put")
 
@@ -384,6 +391,43 @@ class CalderaControl():
                    "adversary_id": [{"adversary_id": adid}]}
         return self.__contact_server__(payload, method="delete")
 
+    def delete_agent(self, paw):
+        """ Delete a specific agent from the kali db. implant may still be running and reconnect
+
+        @param paw: The Id of the agent to delete
+        """
+        payload = {"index": "adversaries",
+                   "paw": paw}
+        return self.__contact_server__(payload, method="delete")
+
+    def kill_agent(self, paw):
+        """ Send a message to an agent to kill itself
+
+        @param paw: The Id of the agent to delete
+        """
+
+        payload = {"index": "agents",
+                   "paw": paw,
+                   "watchdog": 1,
+                   "sleep_min": 3,
+                   "sleep_max": 3}
+
+        return self.__contact_server__(payload, method="put")
+
+    def delete_all_agents(self):
+        """ Delete all agents from kali db """
+
+        agents = self.list_paws_of_running_agents()
+        for paw in agents:
+            self.delete_agent(paw)
+
+    def kill_all_agents(self):
+        """ Send a message to all agent to kill itself """
+
+        agents = self.list_paws_of_running_agents()
+        for paw in agents:
+            self.kill_agent(paw)
+
     #  ######### File access
 
     # TODO: Get uploaded files
@@ -392,10 +436,11 @@ class CalderaControl():
 
     #  Link, chain and stuff
 
-    def is_operation_finished(self, opid):
+    def is_operation_finished(self, opid, debug=True):
         """ Checks if an operation finished - finished is not necessary successful !
 
         @param opid: Operation id to check
+        @param debug: Additional debug output
         """
         # An operation can run several Abilities vs several targets (agents). Each one is a link in the chain (see opperation report).
         # Those links can have the states:
@@ -408,7 +453,8 @@ class CalderaControl():
         #
 
         operation = self.get_operation_by_id(opid)
-        # print(f"Operation data {operation}")
+        if debug:
+            print(f"Operation data {operation}")
         try:
             print(operation[0]["state"])
             if operation[0]["state"] == "finished":
@@ -471,6 +517,8 @@ class CalderaControl():
         adversary_name = "generated_adv__" + str(time.time())
         operation_name = "testoperation__" + str(time.time())
 
+        # TODO: Verify that any agent with the given paw/group exists and is connected
+
         self.add_adversary(adversary_name, ability_id)
         adid = self.get_adversary(adversary_name)["adversary_id"]
 
@@ -485,18 +533,22 @@ class CalderaControl():
         #  ##### Create / Run Operation
 
         print(f"New adversary generated. ID: {adid}, ability: {ability_id} group: {group}")
-        self.add_operation(operation_name, advid=adid, group=group)
+        res = self.add_operation(operation_name, advid=adid, group=group)
+        print(f"Add operation: {res}")
 
         opid = self.get_operation(operation_name)["id"]
         print("New operation created. OpID: " + str(opid))
 
-        self.execute_operation(opid)
-        retries = 20
+        res = self.execute_operation(opid)
+        print(f"Execute operation: {res}")
+        retries = 50
         print(f"{CommandlineColors.OKGREEN}Executed attack operation{CommandlineColors.ENDC}")
         while not self.is_operation_finished(opid) and retries > 0:
             print(".... waiting for Caldera to finish")
             time.sleep(10)
             retries -= 1
+            if retries <= 0:
+                print(f"{CommandlineColors.FAIL}Ran into retry timeout waiting for attack to finish{CommandlineColors.ENDC}")
 
         # TODO: Handle outout from several clients
 

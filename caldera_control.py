@@ -23,6 +23,23 @@ def list_agents(calcontrol, arguments):  # pylint: disable=unused-argument
     print(f"Running agents: {calcontrol.list_agents()}")
 
 
+def delete_agents(calcontrol, arguments):  # pylint: disable=unused-argument
+    """ Call list agents in caldera control
+
+    @param calcontrol: Connection to the caldera server
+    @param arguments: Parser command line arguments
+    """
+    print(calcontrol.list_paws_of_running_agents())
+
+    if arguments.paw:
+        print(calcontrol.kill_agent(paw=arguments.paw))
+        print(calcontrol.delete_agent(paw=arguments.paw))
+
+    else:
+        print(calcontrol.kill_all_agents())
+        print(calcontrol.delete_all_agents())
+
+
 def list_abilities(calcontrol, arguments):
     """ Call list abilities in caldera control
 
@@ -80,8 +97,12 @@ def create_parser():
     parser_agents = subparsers.add_parser("agents", help="agents")
     parser_agents.set_defaults(func=list_agents)
 
+    parser_delete_agents = subparsers.add_parser("delete_agents", help="agents")
+    parser_delete_agents.add_argument("--paw", default=None, help="PAW to delete. if not set it will delete all agents")
+    parser_delete_agents.set_defaults(func=delete_agents)
+
     # For all parsers
-    main_parser.add_argument("--caldera_url", help="caldera url, including port", default="http://192.168.178.177:8888/")
+    main_parser.add_argument("--caldera_url", help="caldera url, including port", default="http://192.168.178.118:8888/")
     main_parser.add_argument("--apikey", help="caldera api key", default="ADMIN123")
 
     return main_parser
