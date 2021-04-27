@@ -477,9 +477,10 @@ class Machine():
             src = os.path.join(self.abs_machinepath_external, "splunkd.go")  # sandcat.go local name
             self.vm_manager.put(src, dst)
 
-            cmd = self.__install_caldera_service_cmd().strip()
+            # cmd = self.__install_caldera_service_cmd().strip()
+            cmd = self.__wmi_cmd_for_caldera_implant()
             print(cmd)
-            self.vm_manager.remote_run(cmd, disown=False)
+            self.vm_manager.remote_run(cmd, disown=True)
 
         if self.get_os() == "linux":
             dst = self.vm_manager.get_playground()
@@ -497,6 +498,20 @@ class Machine():
         """ Returns the OS of the machine """
 
         return self.config.os()
+
+    def __wmi_cmd_for_caldera_implant(self):
+        """ Creates a windows specific command to start the caldera implant in background using wmi """
+
+        playground = self.vm_manager.get_playground()
+        if playground:  # Workaround for Windows: Can not set target dir for fabric-put in Windows. Only default (none=user) dir available.
+            playground = playground + "\\"
+        else:
+            playground = "%userprofile%\\"
+        url = "http://" + self.caldera_server + ":8888"
+
+        res = f'wmic process call create "{playground}splunkd.go -server {url} -group {self.config.caldera_group()} -paw {self.config.caldera_paw()}" '
+
+        return res
 
     def __install_caldera_service_cmd(self):
         playground = self.vm_manager.get_playground()
@@ -547,7 +562,7 @@ START {playground}{filename} -server {url} -group {self.config.caldera_group()} 
             filename = os.path.join(self.abs_machinepath_external, "caldera_agent.bat")
         with open(filename, "wt") as fh:
             fh.write(content)
-        print(f"{CommandlineColors.OKGREEN}Installed Caldera service {CommandlineColors.ENDC}")
+        print(f"{CommandlineColors.OKGREEN}Installed Caldera server {CommandlineColors.ENDC}")
 
     def set_caldera_server(self, server):
         """ Set the local caldera server config """

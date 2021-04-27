@@ -8,7 +8,9 @@ import vagrant
 from fabric import Connection
 import os
 from app.exceptions import ConfigurationError
+from app.exceptions import NetworkError
 from invoke.exceptions import UnexpectedExit
+import paramiko
 
 # Experiment with paramiko instead of fabric. Seems fabric has some issues with the "put" command to Windows. There seems no fix (just my workarounds). Maybe paramiko is better.
 
@@ -111,11 +113,21 @@ class VagrantPlugin(MachineryPlugin):
         print("Vagrant plugin remote run: " + cmd)
         print("Disown: " + str(disown))
         result = None
-        try:
-            result = self.c.run(cmd, disown=disown)
-            print(result)
-        except UnexpectedExit:
-            return "Unexpected Exit"
+        retry = 2
+        while retry > 0:
+            try:
+                result = self.c.run(cmd, disown=disown)
+                print(result)
+            except (paramiko.ssh_exception.NoValidConnectionsError, UnexpectedExit):
+                if retry <= 0:
+                    raise(NetworkError)
+                else:
+                    self.disconnect()
+                    self.connect()
+                    retry -= 1
+                    print("Got some SSH errors. Retrying")
+            else:
+                break
 
         if result and result.stderr:
             print("Debug: Stderr: " + str(result.stderr.strip()))
@@ -136,12 +148,23 @@ class VagrantPlugin(MachineryPlugin):
         print(f"{src} -> {dst}")
 
         res = ""
-        try:
-            res = self.c.put(src, dst)
-        except UnexpectedExit:
-            pass
-        except FileNotFoundError as e:
-            print(e)
+        retry = 2
+        while retry > 0:
+            try:
+                res = self.c.put(src, dst)
+            except (paramiko.ssh_exception.NoValidConnectionsError, UnexpectedExit):
+                if retry <= 0:
+                    raise (NetworkError)
+                else:
+                    self.disconnect()
+                    self.connect()
+                    retry -= 1
+                    print("Got some SSH errors. Retrying")
+            except FileNotFoundError as e:
+                print(e)
+                break
+            else:
+                break
 
         return res
 
@@ -153,11 +176,23 @@ class VagrantPlugin(MachineryPlugin):
         """
         self.connect()
 
-        res = ""
-        try:
-            res = self.c.get(src, dst)
-        except UnexpectedExit:
-            pass
+        retry = 2
+        while retry > 0:
+            try:
+                res = self.c.get(src, dst)
+            except (paramiko.ssh_exception.NoValidConnectionsError, UnexpectedExit):
+                if retry <= 0:
+                    raise (NetworkError)
+                else:
+                    self.disconnect()
+                    self.connect()
+                    retry -= 1
+                    print("Got some SSH errors. Retrying")
+            except FileNotFoundError as e:
+                print(e)
+                break
+            else:
+                break
 
         return res
 

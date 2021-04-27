@@ -436,7 +436,7 @@ class CalderaControl():
 
     #  Link, chain and stuff
 
-    def is_operation_finished(self, opid, debug=True):
+    def is_operation_finished(self, opid, debug=False):
         """ Checks if an operation finished - finished is not necessary successful !
 
         @param opid: Operation id to check
