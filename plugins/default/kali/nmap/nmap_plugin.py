@@ -9,7 +9,6 @@ from plugins.base.kali import KaliPlugin
 # TODO: Add config for subnet range for ping sweeps
 # TODO: Add IP exclusion --exclude ip,ip,ip to not accidentially scan non-targets
 # TODO: host discovery Ping scan: -sn
-# TODO: host discovery PE/PP/PM
 # TODO: host discovery PE ICMP echo
 # TODO: host discovery PP ICMP timestamp
 # TODO: host discovery PM ICMP netmask request
@@ -17,6 +16,10 @@ from plugins.base.kali import KaliPlugin
 # TODO: host discovery PA: ACK host discovery
 # TODO: host discovery PU: UDP host discovery
 # TODO: host discovery PR: ARP ping
+# TODO: host discovery -PO1: ICMP ping
+# TODO: host discovery -PO2: IGMP ping
+# TODO: --traceroute in addition to host discovery
+# TODO: -R <ip> reverse DNS. Needs a DNS in the big picture. No idea if valuable
 # TODO: host discovery reverse DNS resolution
 # TODO OS identification
 # TODO service discovery
