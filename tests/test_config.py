@@ -592,6 +592,22 @@ class TestExperimentConfig(unittest.TestCase):
 
         self.assertEqual(ex.get_caldera_attacks("linux"), [])
 
+    def test_kali_attacks_half(self):
+        """ kali attacks entry partially missing from config """
+
+        ex = ExperimentConfig("tests/data/attacks_half.yaml")
+
+        self.assertEqual(ex.get_kali_attacks("linux"), ["hydra"])
+        self.assertEqual(ex.get_kali_attacks("windows"), [])
+
+    def test_caldera_attacks_half(self):
+        """ caldera attacks entry partially missing from config """
+
+        ex = ExperimentConfig("tests/data/attacks_half.yaml")
+
+        self.assertEqual(ex.get_caldera_attacks("linux"), ["bd527b63-9f9e-46e0-9816-b8434d2b8989"])
+        self.assertEqual(ex.get_caldera_attacks("windows"), [])
+
     def test_caldera_attacks_empty(self):
         """ zero entries in caldera attacks list """
 
