@@ -93,7 +93,6 @@ class VagrantPlugin(MachineryPlugin):
             print(uhp)
             print(args)
             print(self.config.ssh_user())
-            # breakpoint()
             self.c = Connection(uhp, user=self.config.ssh_user(), connect_kwargs=args)
             print(self.c)
             return self.c
@@ -118,7 +117,7 @@ class VagrantPlugin(MachineryPlugin):
             try:
                 result = self.c.run(cmd, disown=disown)
                 print(result)
-            except (paramiko.ssh_exception.NoValidConnectionsError, UnexpectedExit):
+            except (paramiko.ssh_exception.NoValidConnectionsError, UnexpectedExit, paramiko.ssh_exception.SSHException):
                 if retry <= 0:
                     raise(NetworkError)
                 else:

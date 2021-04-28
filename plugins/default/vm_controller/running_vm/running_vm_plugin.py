@@ -79,8 +79,7 @@ class RunningVMPlugin(MachineryPlugin):
                     if self.config.ssh_password():
                         args["password"] = self.config.ssh_password()
                     uhp = self.get_ip()
-                    print(f"\n\n    !!!!!   Connecting to {uhp}  !!!!!!!!!! \n\n")
-                    self.c = Connection(uhp, connect_timeout=timeout, user=self.config.ssh_user(), connection_kwargs=args)
+                    self.c = Connection(uhp, connect_timeout=timeout, user=self.config.ssh_user(), connect_kwargs=args)
             except (paramiko.ssh_exception.SSHException, socket.timeout):
                 print(f"Failed to connect, will retry {retries} times. Timeout: {timeout}")
                 retries -= 1
@@ -108,11 +107,21 @@ class RunningVMPlugin(MachineryPlugin):
         print("Running VM plugin remote run: " + cmd)
         print("Disown: " + str(disown))
         result = None
-        try:
-            result = self.c.run(cmd, disown=disown)
-            print(result)
-        except UnexpectedExit:
-            return "Unexpected Exit"
+        retry = 2
+        while retry > 0:
+            try:
+                result = self.c.run(cmd, disown=disown)
+                print(result)
+            except (paramiko.ssh_exception.NoValidConnectionsError, UnexpectedExit, paramiko.ssh_exception.SSHException):
+                if retry <= 0:
+                    raise NetworkError
+                else:
+                    self.disconnect()
+                    self.connect()
+                    retry -= 1
+                    print("Got some SSH errors. Retrying")
+            else:
+                break
 
         if result and result.stderr:
             print("Debug: Stderr: " + str(result.stderr.strip()))
@@ -159,11 +168,23 @@ class RunningVMPlugin(MachineryPlugin):
         """
         self.connect()
 
-        res = ""
-        try:
-            res = self.c.get(src, dst)
-        except UnexpectedExit:
-            pass
+        retry = 2
+        while retry > 0:
+            try:
+                res = self.c.get(src, dst)
+            except (paramiko.ssh_exception.NoValidConnectionsError, UnexpectedExit):
+                if retry <= 0:
+                    raise NetworkError
+                else:
+                    self.disconnect()
+                    self.connect()
+                    retry -= 1
+                    print("Got some SSH errors. Retrying")
+            except FileNotFoundError as e:
+                print(e)
+                break
+            else:
+                break
 
         return res
 
