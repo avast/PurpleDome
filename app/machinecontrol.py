@@ -431,6 +431,8 @@ class Machine():
 
         print(f"{CommandlineColors.OKBLUE}Starting Caldera server {CommandlineColors.ENDC}")
 
+        # The pkill was added because the server sometimes gets stuck. And we can not re-create the attacking machines in all cases
+        self.vm_manager.__call_remote_run__(" pkill -f server.py;", disown=False)
         cmd = f"cd {self.caldera_basedir}; cd caldera ; nohup python3 server.py --insecure &"
         self.vm_manager.__call_remote_run__(cmd, disown=True)
         self.wait_for_caldera_server()

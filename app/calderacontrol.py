@@ -12,6 +12,7 @@ import simplejson
 from app.exceptions import CalderaError
 from app.interface_sfx import CommandlineColors
 from app.attack_log import AttackLog
+from pprint import pprint
 
 
 # TODO: Ability deserves an own class.
@@ -259,7 +260,7 @@ class CalderaControl():
 
         if paw not in orep["steps"]:
             print("Broken operation report:")
-            print(orep)
+            pprint(orep)
             print(f"Could not find {paw} in {orep['steps']}")
             raise CalderaError
         # print("oprep: " + str(orep))
@@ -267,7 +268,8 @@ class CalderaControl():
             if a_step["ability_id"] == ability_id:
                 try:
                     # TODO There is no output if the state is for example -4 (untrusted). Fix that. Why is the caldera implant untrusted ?
-                    print("oprep: " + str(orep))
+                    # print("Operation report: ")
+                    # pprint(orep)
                     return a_step["output"]
                 except KeyError as exception:
                     raise CalderaError from exception
@@ -456,7 +458,7 @@ class CalderaControl():
         if debug:
             print(f"Operation data {operation}")
         try:
-            print(operation[0]["state"])
+            # print(operation[0]["state"])
             if operation[0]["state"] == "finished":
                 return True
         except KeyError as exception:
@@ -534,17 +536,18 @@ class CalderaControl():
 
         print(f"New adversary generated. ID: {adid}, ability: {ability_id} group: {group}")
         res = self.add_operation(operation_name, advid=adid, group=group)
-        print(f"Add operation: {res}")
+        print(f"Add operation: ")
+        pprint(res)
 
         opid = self.get_operation(operation_name)["id"]
         print("New operation created. OpID: " + str(opid))
 
-        res = self.execute_operation(opid)
-        print(f"Execute operation: {res}")
-        retries = 50
+        self.execute_operation(opid)
+        print(f"Execute operation")
+        retries = 30
         print(f"{CommandlineColors.OKGREEN}Executed attack operation{CommandlineColors.ENDC}")
         while not self.is_operation_finished(opid) and retries > 0:
-            print(".... waiting for Caldera to finish")
+            print(f".... waiting for Caldera to finish {retries}")
             time.sleep(10)
             retries -= 1
             if retries <= 0:
@@ -552,22 +555,26 @@ class CalderaControl():
 
         # TODO: Handle outout from several clients
 
-        retries = 0
+        retries = 5
         output = None
-        while retries < 10:
+        while retries > 0:
             try:
-                output = self.view_operation_output(opid, paw, ability_id)
-            except CalderaError:
-                retries += 1
+                retries -= 1
                 time.sleep(10)
-            else:
-                break
+                output = self.view_operation_output(opid, paw, ability_id)
+                print(f".... getting Caldera output {retries}")
+                if output:
+                    break
+            except CalderaError:
+                pass
 
         if output is None:
             output = str(self.get_operation_by_id(opid))
             print(f"{CommandlineColors.FAIL}Failed getting operation data. We just have: {output} from get_operation_by_id{CommandlineColors.ENDC}")
         else:
-            print("Output: " + str(output))
+            outp = str(output)
+            print(f"{CommandlineColors.BACKGROUND_BLUE} Output: {outp} {CommandlineColors.ENDC}")
+            pprint(output)
 
         #  ######## Cleanup
         self.execute_operation(opid, "cleanup")

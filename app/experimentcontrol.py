@@ -14,6 +14,7 @@ from app.config import ExperimentConfig
 from app.interface_sfx import CommandlineColors
 from caldera_control import CalderaControl
 from machine_control import Machine
+from app.exceptions import ServerError
 
 
 # TODO: Multi threading at least when starting machines
@@ -112,7 +113,31 @@ class Experiment():
 
                     caldera_control.attack(attack_logger=self.attack_logger, paw=target_1.get_paw(), ability_id=attack, group=target_1.get_group())
 
+                    # Moved to fix section below. If fix works: can be removed
+                    # print(f"Pausing before next attack (config: nap_time): {self.experiment_control.get_nap_time()}")
+                    # time.sleep(self.experiment_control.get_nap_time())
+
+                    # Fix: Caldera sometimes gets stuck. This is why we better re-start the caldera server and wait till all the implants re-connected
+                    # Reason: In some scenarios we keep the infra up for hours or days. No re-creation like intended. This can cause Caldera to hick up
+                    print(f"{CommandlineColors.OKBLUE}Restarting caldera server and waiting for clients to re-connect{CommandlineColors.ENDC}")
+                    self.attacker_1.start_caldera_server()
+                    print(f"Pausing before next attack (config: nap_time): {self.experiment_control.get_nap_time()}")
                     time.sleep(self.experiment_control.get_nap_time())
+                    retries = 100
+                    for target_system in self.targets:
+                        running_agents = caldera_control.list_paws_of_running_agents()
+                        print(f"Agents currently connected to the server: {running_agents}")
+                        while target_system.get_paw() not in running_agents:
+                            time.sleep(1)
+                            running_agents = caldera_control.list_paws_of_running_agents()
+                            retries -= 1
+                            print(f"Waiting for clients to re-connect ({retries}, {running_agents}) ")
+                            if retries <= 0:
+                                raise ServerError
+                    print(f"{CommandlineColors.OKGREEN}Restarted caldera server clients re-connected{CommandlineColors.ENDC}")
+                    # End of fix
+
+
         print(f"{CommandlineColors.OKGREEN}Finished Caldera attacks{CommandlineColors.ENDC}")
 
         # Run Kali attacks
@@ -123,7 +148,7 @@ class Experiment():
                 # TODO: Work with snapshots
                 print(f"Attacking machine with PAW: {target_1.get_paw()} with attack: {attack}")
                 self.attacker_1.kali_attack(attack, target_1.getip(), self.experiment_control)
-
+                print(f"Pausing before next attack (config: nap_time): {self.experiment_control.get_nap_time()}")
                 time.sleep(self.experiment_control.get_nap_time())
 
         print(f"{CommandlineColors.OKGREEN}Finished Kali attacks{CommandlineColors.ENDC}")

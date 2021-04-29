@@ -4,6 +4,7 @@
 
 # Colors to be used when printing text to the terminal
 # print(f"{CommandlineColors.WARNING}Warning {CommandlineColors.ENDC}")
+# https://dev.to/ifenna__/adding-colors-to-bash-scripts-48g4
 
 
 class CommandlineColors:
@@ -15,6 +16,7 @@ class CommandlineColors:
     OKBLUE = '\033[94m'
     OKCYAN = '\033[96m'
     OKGREEN = '\033[92m'
+    BACKGROUND_BLUE ='\033[104m'
     WARNING = '\033[93m'
     ATTACK = '\033[93m'       # An attack is running
     MACHINE_CREATED = '\033[92m'
