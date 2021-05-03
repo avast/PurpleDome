@@ -30,6 +30,12 @@ from plugins.base.kali import KaliPlugin
 # TODO TCP SYN scan: -sS
 # TODO TCP connect scan: -sT
 # TODO port scan without prior ping (this is to avoid triggering firewall logic): -Pn
+# TODO: -O OS detection
+# TODO: -sV service version detection
+# TODO -sS syn scan, stealthy
+# TODO -sT tcp connect scan - needs no special permissions
+# TODO. -p- scan all ports
+# TODO: -p <range> scan port rance
 
 class NmapPlugin(KaliPlugin):
 
