@@ -137,7 +137,6 @@ class Experiment():
                     print(f"{CommandlineColors.OKGREEN}Restarted caldera server clients re-connected{CommandlineColors.ENDC}")
                     # End of fix
 
-
         print(f"{CommandlineColors.OKGREEN}Finished Caldera attacks{CommandlineColors.ENDC}")
 
         # Run Kali attacks
