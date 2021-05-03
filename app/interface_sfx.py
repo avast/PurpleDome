@@ -16,7 +16,9 @@ class CommandlineColors:
     OKBLUE = '\033[94m'
     OKCYAN = '\033[96m'
     OKGREEN = '\033[92m'
-    BACKGROUND_BLUE ='\033[104m'
+    BACKGROUND_BLUE = '\033[104m'
+    BACKGROUND_GREEN = '\033[42m'
+    BACKGROUND_RED = '\033[41m'
     WARNING = '\033[93m'
     ATTACK = '\033[93m'       # An attack is running
     MACHINE_CREATED = '\033[92m'
