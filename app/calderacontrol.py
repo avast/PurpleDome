@@ -536,16 +536,20 @@ class CalderaControl():
 
         print(f"New adversary generated. ID: {adid}, ability: {ability_id} group: {group}")
         res = self.add_operation(operation_name, advid=adid, group=group)
-        print(f"Add operation: ")
+        print("Add operation: ")
         pprint(res)
 
         opid = self.get_operation(operation_name)["id"]
         print("New operation created. OpID: " + str(opid))
 
         self.execute_operation(opid)
-        print(f"Execute operation")
+        print("Execute operation")
         retries = 30
-        print(f"{CommandlineColors.OKGREEN}Executed attack operation{CommandlineColors.ENDC}")
+        ability_name = self.get_ability(ability_id)[0]["name"]
+        ability_description = self.get_ability(ability_id)[0]["description"]
+        print(f"{CommandlineColors.OKBLUE}Executed attack operation{CommandlineColors.ENDC}")
+        print(f"{CommandlineColors.BACKGROUND_BLUE} PAW: {paw} Group: {group} Ability: {ability_id}  {CommandlineColors.ENDC}")
+        print(f"{CommandlineColors.BACKGROUND_BLUE} {ability_name}: {ability_description}  {CommandlineColors.ENDC}")
         while not self.is_operation_finished(opid) and retries > 0:
             print(f".... waiting for Caldera to finish {retries}")
             time.sleep(10)
@@ -573,7 +577,7 @@ class CalderaControl():
             print(f"{CommandlineColors.FAIL}Failed getting operation data. We just have: {output} from get_operation_by_id{CommandlineColors.ENDC}")
         else:
             outp = str(output)
-            print(f"{CommandlineColors.BACKGROUND_BLUE} Output: {outp} {CommandlineColors.ENDC}")
+            print(f"{CommandlineColors.BACKGROUND_GREEN} Output: {outp} {CommandlineColors.ENDC}")
             pprint(output)
 
         #  ######## Cleanup
