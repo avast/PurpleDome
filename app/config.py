@@ -206,6 +206,8 @@ class ExperimentConfig():
             res = self.raw_config["kali_conf"][attack]
         except KeyError as exception:
             raise ConfigurationError from exception
+        if res is None:
+            res = {}
 
         return res
 

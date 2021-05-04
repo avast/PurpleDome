@@ -12,6 +12,16 @@ from plugins.base.sensor import SensorPlugin
 from plugins.base.vulnerability_plugin import VulnerabilityPlugin
 # from app.interface_sfx import CommandlineColors
 
+sections = [{"name": "Vulnerabilities",
+             "subclass": VulnerabilityPlugin},
+            {"name": "Machinery",
+             "subclass": MachineryPlugin},
+            {"name": "Kali",
+             "subclass": KaliPlugin},
+            {"name": "Sensors",
+             "subclass": SensorPlugin},
+            ]
+
 
 class PluginManager():
     """ Manage plugins """
@@ -55,16 +65,6 @@ class PluginManager():
     def print_list(self):
         """ Print a pretty list of all available plugins """
 
-        sections = [{"name": "Vulnerabilities",
-                     "subclass": VulnerabilityPlugin},
-                    {"name": "Machinery",
-                     "subclass": MachineryPlugin},
-                    {"name": "Kali",
-                     "subclass": KaliPlugin},
-                    {"name": "Sensors",
-                     "subclass": SensorPlugin},
-                    ]
-
         for section in sections:
             print(f'\t\t{section["name"]}')
             plugins = self.get_plugins(section["subclass"])
@@ -72,3 +72,18 @@ class PluginManager():
                 print(f"Name: {plugin.get_name()}")
                 print(f"Description: {plugin.get_description()}")
                 print("\t")
+
+    def print_default_config(self, subclass_name, name):
+
+        subclass = None
+
+        for a in sections:
+            if a["name"] == subclass_name:
+                subclass = a["subclass"]
+        if subclass is None:
+            print("Use proper subclass. Available subclasses are: ")
+            "\n- ".join([a for a in sections["name"]])
+
+        plugins = self.get_plugins(subclass, [name])
+        for plugin in plugins:
+            print(plugin.get_raw_default_config())

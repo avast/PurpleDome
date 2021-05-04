@@ -6,8 +6,15 @@ from app.pluginmanager import PluginManager
 
 
 def list_plugins(arguments):
+    """ List plugins """
     p = PluginManager()
     p.print_list()
+
+
+def get_default_config(arguments):
+    """ print default config of a specific plugin """
+    p = PluginManager()
+    p.print_default_config(arguments.subclass_name, arguments.plugin_name)
 
 
 def create_parser():
@@ -17,9 +24,14 @@ def create_parser():
     subparsers = main_parser.add_subparsers(help="sub-commands")
 
     # Sub parser for machine creation
-    parser_create = subparsers.add_parser("list", help="list plugins")
-    parser_create.set_defaults(func=list_plugins)
-    # parser_create.add_argument("--configfile", default="experiment.yaml", help="Config file to create from")
+    parser_list = subparsers.add_parser("list", help="list plugins")
+    parser_list.set_defaults(func=list_plugins)
+    # parser_list.add_argument("--configfile", default="experiment.yaml", help="Config file to create from")
+
+    parser_default_config = subparsers.add_parser("raw_config", help="print raw default config of the given plugin")
+    parser_default_config.set_defaults(func=get_default_config)
+    parser_default_config.add_argument("subclass_name", help="name of the subclass")
+    parser_default_config.add_argument("plugin_name", help="name of the plugin")
 
     # TODO: Get default config
     return main_parser

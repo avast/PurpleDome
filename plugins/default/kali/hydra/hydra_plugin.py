@@ -21,16 +21,6 @@ class HydraPlugin(KaliPlugin):
 
         # print("Init hydra")
 
-    def process_config(self, config):
-        """ process config and use defaults if stuff is missing
-
-        @param config: The config dict
-        """
-        # TODO Create kali specific config class, send this to the plugins
-        self.conf["protocols"] = config.get("protocols", ["ssh"])
-        self.conf["userfile"] = config.get("userfile", "users.txt")
-        self.conf["pwdfile"] = config.get("pwdfile", "passwords.txt")
-
     def command(self, targets, config):
         """ Generate the command (having a separate step assists on debugging)
 

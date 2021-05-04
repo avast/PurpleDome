@@ -2,6 +2,7 @@
 """ Base class for all plugin types """
 
 import os
+import yaml
 # from shutil import copy
 
 
@@ -18,6 +19,9 @@ class BasePlugin():
         self.plugin_path = None
         self.machine_plugin = None
         self.sysconf = {}
+        self.conf = {}
+
+        self.default_config_name = "default_config.yaml"
 
     def setup(self):
         """ Prepare everything for the plugin """
@@ -43,6 +47,7 @@ class BasePlugin():
 
         self.sysconf["abs_machinepath_internal"] = config["abs_machinepath_internal"]
         self.sysconf["abs_machinepath_external"] = config["abs_machinepath_external"]
+        self.load_default_config()
 
     def copy_to_machine(self, filename):
         """ Copies a file shipped with the plugin to the machine share folder
@@ -101,3 +106,22 @@ class BasePlugin():
             return self.description
 
         raise NotImplementedError
+
+    def get_default_config_filename(self):
+        """ Generate the default filename of the default configuration file """
+
+        return os.path.join(os.path.dirname(self.plugin_path), self.default_config_name)
+
+    def get_raw_default_config(self):
+        """ Returns the default config as string. Usable as an example and for documentation """
+
+        with open(self.get_default_config_filename(), "rt") as fh:
+            return fh.read()
+
+    def load_default_config(self):
+        """ Reads and returns the default config as dict """
+
+        with open(self.get_default_config_filename()) as fh:
+            self.conf = yaml.safe_load(fh)
+        if self.conf is None:
+            self.conf = {}

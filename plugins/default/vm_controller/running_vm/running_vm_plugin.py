@@ -31,6 +31,7 @@ class RunningVMPlugin(MachineryPlugin):
         """ Machine specific processing of configuration """
 
         # TODO: Rename vagrantfilepath in the whole project
+        # TODO: Is this a copy&paste artefact ?
         self.vagrantfilepath = os.path.abspath(self.config.vagrantfilepath())
         self.vagrantfile = os.path.join(self.vagrantfilepath, "Vagrantfile")
         if not os.path.isfile(self.vagrantfile):

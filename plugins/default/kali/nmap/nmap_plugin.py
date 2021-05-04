@@ -51,14 +51,6 @@ class NmapPlugin(KaliPlugin):
         super().__init__()
         self.plugin_path = __file__
 
-    def process_config(self, config):
-        """ process config and use defaults if stuff is missing
-
-        @param config: The config dict
-        """
-        # TODO Create kali specific config class, send this to the plugins
-        # TODO: NMap specific config should be added. So far we only have the basic scan
-
     def command(self, targets, config):
         """ Generate the command (having a separate step assists on debugging)
 

@@ -1,0 +1,12 @@
+###
+# A list of protocols to brute force against. Supported: "ssh"
+protocols:
+  - ssh
+  - rdp
+  #- ftps
+###
+# A file containing potential user names
+userfile: users.txt
+###
+# A file containing potential passwords
+pwdfile: passwords.txt

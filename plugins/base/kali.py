@@ -23,6 +23,19 @@ class KaliPlugin(BasePlugin):
         self.sysconf = {}  # System configuration. common for all plugins
         self.attack_logger = None
 
+    def process_config(self, config):
+        """ process config and use defaults if stuff is missing
+
+        @param config: The config dict
+        """
+
+        # TODO: Move to python 3.9 syntax z = x | y
+
+        self.conf = {**self.conf, **config}
+
+        print("\n\n\n\n\n")
+        print(self.conf)
+
     def teardown(self):
         """ Cleanup afterwards """
         pass  # pylint: disable=unnecessary-pass
