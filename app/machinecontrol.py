@@ -4,13 +4,12 @@
 
 import os
 import time
-from glob import glob
 
 import requests
-import straight.plugin
 
 from app.config import MachineConfig, ExperimentConfig
 from app.exceptions import ServerError, ConfigurationError
+from app.pluginmanager import PluginManager
 from app.calderacontrol import CalderaControl
 from app.interface_sfx import CommandlineColors
 from plugins.base.kali import KaliPlugin
@@ -36,6 +35,8 @@ class Machine():
             self.config = config
         else:
             self.config = MachineConfig(config)
+
+        self.plugin_manager = PluginManager()
 
         # TODO: Read config from plugin
         if self.config.vmcontroller() == "vagrant":
@@ -155,59 +156,31 @@ class Machine():
         @returns: The output of the cmdline attacking tool
         """
 
-        def get_handlers(plugin) -> [KaliPlugin]:
-            return plugin.produce()
+        for plugin in self.plugin_manager.get_plugins(KaliPlugin, [attack]):
+            name = plugin.get_name()
 
-        base = "plugins/**/*.py"
-
-        plugin_dirs = set()
-        for a_glob in glob(base, recursive=True):
-            plugin_dirs.add(os.path.dirname(a_glob))
-
-        for a_directory in plugin_dirs:
-            plugins = straight.plugin.load(a_directory, subclasses=KaliPlugin)
-
-            handlers = get_handlers(plugins)
-
-            for plugin in handlers:
-                name = plugin.get_name()
-                if name == attack:
-                    print(f"{CommandlineColors.OKBLUE}Running Kali plugin {name}{CommandlineColors.ENDC}")
-                    syscon = {"abs_machinepath_internal": self.abs_machinepath_internal,
-                              "abs_machinepath_external": self.abs_machinepath_external}
-                    plugin.set_sysconf(syscon)
-                    plugin.set_machine_plugin(self.vm_manager)
-                    plugin.__set_logger__(self.attack_logger)
-                    plugin.__execute__([target], config.kali_conf(name))
+            print(f"{CommandlineColors.OKBLUE}Running Kali plugin {name}{CommandlineColors.ENDC}")
+            syscon = {"abs_machinepath_internal": self.abs_machinepath_internal,
+                      "abs_machinepath_external": self.abs_machinepath_external}
+            plugin.set_sysconf(syscon)
+            plugin.set_machine_plugin(self.vm_manager)
+            plugin.__set_logger__(self.attack_logger)
+            plugin.__execute__([target], config.kali_conf(name))
 
     def load_machine_plugin(self):
         """ Loads the matching machine plugin """
 
-        def get_handlers(a_plugin) -> [MachineryPlugin]:
-            return a_plugin.produce()
+        for plugin in self.plugin_manager.get_plugins(MachineryPlugin, [self.config.vmcontroller()]):
 
-        base = "plugins/**/*.py"
+            name = plugin.get_name()
+            print(f"{CommandlineColors.OKBLUE}Installing sensor: {name}{CommandlineColors.ENDC}")
 
-        plugin_dirs = set()
-        for a_glob in glob(base, recursive=True):
-            plugin_dirs.add(os.path.dirname(a_glob))
-
-        for a_dir in plugin_dirs:
-            plugins = straight.plugin.load(a_dir, subclasses=MachineryPlugin)
-
-            handlers = get_handlers(plugins)
-
-            for plugin in handlers:
-                name = plugin.get_name()
-                if name == self.config.vmcontroller():
-                    print(f"{CommandlineColors.OKBLUE}Installing sensor: {name}{CommandlineColors.ENDC}")
-
-                    syscon = {"abs_machinepath_internal": self.abs_machinepath_internal,
-                              "abs_machinepath_external": self.abs_machinepath_external}
-                    plugin.set_sysconf(syscon)
-                    plugin.__call_process_config__(self.config)
-                    self.vm_manager = plugin
-                    break
+            syscon = {"abs_machinepath_internal": self.abs_machinepath_internal,
+                      "abs_machinepath_external": self.abs_machinepath_external}
+            plugin.set_sysconf(syscon)
+            plugin.__call_process_config__(self.config)
+            self.vm_manager = plugin
+            break
 
     def prime_sensors(self):
         """ Prime sensors from plugins (hard core installs that could require a reboot)
@@ -216,35 +189,22 @@ class Machine():
 
         """
 
-        def get_handlers(a_plugin) -> [SensorPlugin]:
-            return a_plugin.produce()
-
-        base = "plugins/**/*.py"
         reboot = False
 
-        plugin_dirs = set()
-        for a_glob in glob(base, recursive=True):
-            plugin_dirs.add(os.path.dirname(a_glob))
-
-        for a_dir in plugin_dirs:
-            plugins = straight.plugin.load(a_dir, subclasses=SensorPlugin)
-
-            handlers = get_handlers(plugins)
-
-            for plugin in handlers:
-                name = plugin.get_name()
-                if name in self.config.sensors():
-                    print(f"{CommandlineColors.OKBLUE}Priming sensor: {name}{CommandlineColors.ENDC}")
-                    syscon = {"abs_machinepath_internal": self.abs_machinepath_internal,
-                              "abs_machinepath_external": self.abs_machinepath_external,
-                              "sensor_specific": self.config.raw_config.get(name, {})
-                              }
-                    plugin.set_sysconf(syscon)
-                    plugin.set_machine_plugin(self.vm_manager)
-                    plugin.setup()
-                    reboot |= plugin.prime()
-                    self.sensors.append(plugin)
-                    print(f"{CommandlineColors.OKGREEN}Primed sensor: {name}{CommandlineColors.ENDC}")
+        for plugin in self.plugin_manager.get_plugins(SensorPlugin, self.config.sensors()):
+            name = plugin.get_name()
+            # if name in self.config.sensors():
+            print(f"{CommandlineColors.OKBLUE}Priming sensor: {name}{CommandlineColors.ENDC}")
+            syscon = {"abs_machinepath_internal": self.abs_machinepath_internal,
+                      "abs_machinepath_external": self.abs_machinepath_external,
+                      "sensor_specific": self.config.raw_config.get(name, {})
+                      }
+            plugin.set_sysconf(syscon)
+            plugin.set_machine_plugin(self.vm_manager)
+            plugin.setup()
+            reboot |= plugin.prime()
+            self.sensors.append(plugin)
+            print(f"{CommandlineColors.OKGREEN}Primed sensor: {name}{CommandlineColors.ENDC}")
         return reboot
 
     def install_sensors(self):
@@ -266,7 +226,6 @@ class Machine():
             plugin.setup()
             plugin.install()
             print(f"{CommandlineColors.OKGREEN}Installed sensor: {name}{CommandlineColors.ENDC}")
-            # self.sensors.append(plugin)
 
     def get_sensors(self) -> [SensorPlugin]:
         """ Returns a list of running sensors """
@@ -323,32 +282,17 @@ class Machine():
 
         """
 
-        def get_handlers(a_plugin) -> [SensorPlugin]:
-            return a_plugin.produce()
-
-        base = "plugins/**/*.py"
-
-        plugin_dirs = set()
-        for a_glob in glob(base, recursive=True):
-            plugin_dirs.add(os.path.dirname(a_glob))
-
-        for a_dir in plugin_dirs:
-            plugins = straight.plugin.load(a_dir, subclasses=VulnerabilityPlugin)
-
-            handlers = get_handlers(plugins)
-
-            for plugin in handlers:
-                name = plugin.get_name()
-                print(f"Configured vulnerabilities: {self.config.vulnerabilities()}")
-                if name in self.config.vulnerabilities():
-                    print(f"{CommandlineColors.OKBLUE}Installing vulnerability: {name}{CommandlineColors.ENDC}")
-                    syscon = {"abs_machinepath_internal": self.abs_machinepath_internal,
-                              "abs_machinepath_external": self.abs_machinepath_external}
-                    plugin.set_sysconf(syscon)
-                    plugin.set_machine_plugin(self.vm_manager)
-                    plugin.setup()
-                    plugin.install(self.vm_manager)
-                    self.vulnerabilities.append(plugin)
+        for plugin in self.plugin_manager.get_plugins(VulnerabilityPlugin, self.config.vulnerabilities()):
+            name = plugin.get_name()
+            print(f"Configured vulnerabilities: {self.config.vulnerabilities()}")
+            print(f"{CommandlineColors.OKBLUE}Installing vulnerability: {name}{CommandlineColors.ENDC}")
+            syscon = {"abs_machinepath_internal": self.abs_machinepath_internal,
+                      "abs_machinepath_external": self.abs_machinepath_external}
+            plugin.set_sysconf(syscon)
+            plugin.set_machine_plugin(self.vm_manager)
+            plugin.setup()
+            plugin.install(self.vm_manager)
+            self.vulnerabilities.append(plugin)
 
     def get_vulnerabilities(self) -> [SensorPlugin]:
         """ Returns a list of installed vulnerabilities """

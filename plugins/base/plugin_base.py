@@ -10,6 +10,7 @@ class BasePlugin():
 
     required_files = None   # a list of files shipped with the plugin to be installed
     name = None  # The name of the plugin
+    alternative_names = []  # The is an optional list of alternative names
     description = None  # The description of this plugin
 
     def __init__(self):
@@ -75,6 +76,22 @@ class BasePlugin():
         """ Returns the name of the plugin, please set in boilerplate """
         if self.name:
             return self.name
+
+        raise NotImplementedError
+
+    def get_names(self) -> []:
+        """ Adds the name of the plugin to the alternative names and returns the list """
+
+        res = set()
+
+        if self.name:
+            res.add(self.name)
+
+        for i in self.alternative_names:
+            res.add(i)
+
+        if len(res):
+            return list(res)
 
         raise NotImplementedError
 
