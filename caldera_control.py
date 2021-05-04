@@ -93,7 +93,6 @@ def create_parser():
     parser_abilities.add_argument("--all", default=False, action="store_true",
                                   help="List all abilities")
 
-    # TODO: Add sub parser to list agents
     parser_agents = subparsers.add_parser("agents", help="agents")
     parser_agents.set_defaults(func=list_agents)
 

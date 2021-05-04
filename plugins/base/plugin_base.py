@@ -5,6 +5,7 @@ import os
 import yaml
 # from shutil import copy
 
+# TODO: Proper planning and re-building of plugin system. Especially the default config handling should be streamlined. All the plugin types should have a very similar programming interface.
 
 class BasePlugin():
     """ Base class for plugins """

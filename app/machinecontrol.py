@@ -409,8 +409,6 @@ class Machine():
         print(f"{CommandlineColors.OKBLUE}Starting Caldera client {name} {CommandlineColors.ENDC}")
 
         if self.get_os() == "windows":
-            # TODO: Do not mount but use ssh to copy
-
             url = "http://" + self.caldera_server + ":8888"
             caldera_control = CalderaControl(url, apikey=self.calderakey)
             caldera_control.fetch_client(platform="windows",

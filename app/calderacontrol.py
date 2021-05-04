@@ -267,9 +267,6 @@ class CalderaControl():
         for a_step in orep["steps"][paw]["steps"]:
             if a_step["ability_id"] == ability_id:
                 try:
-                    # TODO There is no output if the state is for example -4 (untrusted). Fix that. Why is the caldera implant untrusted ?
-                    # print("Operation report: ")
-                    # pprint(orep)
                     return a_step["output"]
                 except KeyError as exception:
                     raise CalderaError from exception
@@ -372,8 +369,6 @@ class CalderaControl():
 
     #  ######### Delete
 
-    # TODO: Delete agent
-
     # curl -X DELETE http://localhost:8888/api/rest -d '{"index":"operations","id":"$operation_id"}'
     def delete_operation(self, opid):
         """ Delete operation by id
@@ -434,8 +429,6 @@ class CalderaControl():
 
     # TODO: Get uploaded files
 
-    #
-
     #  Link, chain and stuff
 
     def is_operation_finished(self, opid, debug=False):
@@ -467,15 +460,6 @@ class CalderaControl():
             raise CalderaError from exception
 
         return False
-        # try:
-        #    for alink in operation[0]["chain"]:
-        #        if alink["status"] != 0:
-        #            return False
-        #        if alink["status"] == 0:
-        #           return True
-        # except Exception as exception:
-        #    raise CalderaError from exception
-        # return True
 
     def is_operation_finished_multi(self, opid):
         """ Checks if an operation finished - finished is not necessary successful ! On several targets.
@@ -518,8 +502,6 @@ class CalderaControl():
 
         adversary_name = "generated_adv__" + str(time.time())
         operation_name = "testoperation__" + str(time.time())
-
-        # TODO: Verify that any agent with the given paw/group exists and is connected
 
         self.add_adversary(adversary_name, ability_id)
         adid = self.get_adversary(adversary_name)["adversary_id"]

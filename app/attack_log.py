@@ -5,14 +5,6 @@
 import json
 import datetime
 
-# TODO: Collect caldera attacks: Source, target, type of attack. Start/Stop. Results. Parameters
-
-# TODO: Collect kali attacks: Source, target, type of attack. Start/Stop. Results. Parameters. Settings
-
-# TODO: Export data
-
-# TODO: Add TTP and similar metadata
-
 
 def __get_timestamp__():
     return datetime.datetime.now().strftime("%H:%M:%S.%f")
