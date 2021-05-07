@@ -7,6 +7,7 @@ import yaml
 
 # TODO: Proper planning and re-building of plugin system. Especially the default config handling should be streamlined. All the plugin types should have a very similar programming interface.
 
+
 class BasePlugin():
     """ Base class for plugins """
 
@@ -49,6 +50,19 @@ class BasePlugin():
         self.sysconf["abs_machinepath_internal"] = config["abs_machinepath_internal"]
         self.sysconf["abs_machinepath_external"] = config["abs_machinepath_external"]
         self.load_default_config()
+
+    def process_config(self, config):
+        """ process config and use defaults if stuff is missing
+
+        @param config: The config dict
+        """
+
+        # TODO: Move to python 3.9 syntax z = x | y
+
+        self.conf = {**self.conf, **config}
+
+        print("\n\n\n\n\n BASE plugin")
+        print(self.conf)
 
     def copy_to_machine(self, filename):
         """ Copies a file shipped with the plugin to the machine share folder
@@ -116,13 +130,19 @@ class BasePlugin():
     def get_raw_default_config(self):
         """ Returns the default config as string. Usable as an example and for documentation """
 
-        with open(self.get_default_config_filename(), "rt") as fh:
-            return fh.read()
+        if os.path.isfile(self.get_default_config_filename()):
+            with open(self.get_default_config_filename(), "rt") as fh:
+                return fh.read()
+        else:
+            return f"# The plugin {self.get_name()} does not support configuration"
 
     def load_default_config(self):
         """ Reads and returns the default config as dict """
 
-        with open(self.get_default_config_filename()) as fh:
-            self.conf = yaml.safe_load(fh)
-        if self.conf is None:
+        if not os.path.isfile(self.get_default_config_filename()):
             self.conf = {}
+        else:
+            with open(self.get_default_config_filename()) as fh:
+                self.conf = yaml.safe_load(fh)
+            if self.conf is None:
+                self.conf = {}

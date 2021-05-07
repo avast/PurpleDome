@@ -26,33 +26,24 @@ class WeakPasswordVulnerabilityVulnerability(VulnerabilityPlugin):
             # mkpasswd -m sha-512    # To calc the passwd
             # This is in the debian package "whois"
 
-            # user with password "test"
-            cmd = "useradd -m -p '$6$bc4k4Tq2.1GW$0ysyuxyfyds2JkfVEf9xHy39MhpS.hhnAo4sBLprNfIHqcpaa9GJseRJJsrq0cSOWwYlOPrdHQNHp10E1ekO81' -s /bin/bash test"
-            print(cmd)
-            self.run_cmd(cmd)
+            for user in self.conf["linux"]:
+                cmd = f"sudo useradd -m -p '{user['password']}' -s /bin/bash {user['name']}"
+                print(cmd)
+                self.run_cmd(cmd)
 
-            # user with password "passw0rd"
-            cmd = "useradd -m -p '$6$q5PAnDI5K0uv$hMGMJQleeS9F2yLOiHXs2PxZHEmV.ook8jyWILzDGDxSTJmTTZSe.QgLVrnuwiyAl5PFJVARkMsSnPICSndJR1' -s /bin/bash password"
-            print(cmd)
-            self.run_cmd(cmd)
         elif self.machine_plugin.config.os() == "windows":
-            # net user username password /add
-            cmd = "net user test test /add"
-            print(cmd)
-            self.run_cmd(cmd)
 
-            cmd = "net user password passw0rd /add"
-            print(cmd)
-            self.run_cmd(cmd)
+            for user in self.conf["windows"]:
+                # net user username password /add
+                cmd = f"net user {user['name']} {user['password']} /add"
+                print(cmd)
+                self.run_cmd(cmd)
 
-            # Adding the new users to RDP (just in case we want to test RDP)
-            cmd = """NET LOCALGROUP "Remote Desktop Users" password /ADD"""
-            print(cmd)
-            self.run_cmd(cmd)
-
-            cmd = """NET LOCALGROUP "Remote Desktop Users" test /ADD"""
-            print(cmd)
-            self.run_cmd(cmd)
+            for user in self.conf["windows"]:
+                # Adding the new users to RDP (just in case we want to test RDP)
+                cmd = f"""NET LOCALGROUP "Remote Desktop Users" {user['name']} /ADD"""
+                print(cmd)
+                self.run_cmd(cmd)
 
         else:
             raise NotImplementedError
@@ -60,34 +51,25 @@ class WeakPasswordVulnerabilityVulnerability(VulnerabilityPlugin):
     def stop(self):
 
         if self.machine_plugin.config.os() == "linux":
-            # Remove user
-            cmd = "sudo userdel -r test"
-            print(cmd)
-            self.run_cmd(cmd)
+            for user in self.conf["linux"]:
+                # Remove user
+                cmd = f"sudo userdel -r {user['name']}"
+                print(cmd)
+                self.run_cmd(cmd)
 
-            # Remove user
-            cmd = "sudo userdel -r password"
-            print(cmd)
-            self.run_cmd(cmd)
         elif self.machine_plugin.config.os() == "windows":
-            # net user username /delete
-
-            cmd = "net user test /delete"
-            print(cmd)
-            self.run_cmd(cmd)
-
-            cmd = "net user password /delete"
-            print(cmd)
-            self.run_cmd(cmd)
+            for user in self.conf["windows"]:
+                # net user username /delete
+                cmd = f"net user {user['name']} /delete"
+                print(cmd)
+                self.run_cmd(cmd)
 
             # Remove the new users to RDP (just in case we want to test RDP)
-            cmd = """NET LOCALGROUP "Remote Desktop Users" password /DELETE"""
-            print(cmd)
-            self.run_cmd(cmd)
-
-            cmd = """NET LOCALGROUP "Remote Desktop Users" test /DELETE"""
-            print(cmd)
-            self.run_cmd(cmd)
+            for user in self.conf["windows"]:
+                # net user username /delete
+                cmd = f""""NET LOCALGROUP "Remote Desktop Users" {user['name']} /DELETE"""
+                print(cmd)
+                self.run_cmd(cmd)
 
         else:
             raise NotImplementedError

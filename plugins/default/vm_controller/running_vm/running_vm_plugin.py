@@ -2,10 +2,9 @@
 
 # A plugin to control already running vms
 
-import os
 from plugins.base.machinery import MachineryPlugin, MachineStates
 from fabric import Connection
-from app.exceptions import ConfigurationError, NetworkError
+from app.exceptions import NetworkError
 from invoke.exceptions import UnexpectedExit
 import paramiko
 import time
@@ -26,16 +25,6 @@ class RunningVMPlugin(MachineryPlugin):
         self.c = None
         self.vagrantfilepath = None
         self.vagrantfile = None
-
-    def process_config(self, config):
-        """ Machine specific processing of configuration """
-
-        # TODO: Rename vagrantfilepath in the whole project
-        # TODO: Is this a copy&paste artefact ?
-        self.vagrantfilepath = os.path.abspath(self.config.vagrantfilepath())
-        self.vagrantfile = os.path.join(self.vagrantfilepath, "Vagrantfile")
-        if not os.path.isfile(self.vagrantfile):
-            raise ConfigurationError(f"Vagrantfile not existing: {self.vagrantfile}")
 
     def create(self, reboot=True):
         """ Create a machine

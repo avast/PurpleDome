@@ -173,7 +173,7 @@ class Machine():
         for plugin in self.plugin_manager.get_plugins(MachineryPlugin, [self.config.vmcontroller()]):
 
             name = plugin.get_name()
-            print(f"{CommandlineColors.OKBLUE}Installing sensor: {name}{CommandlineColors.ENDC}")
+            print(f"{CommandlineColors.OKBLUE}Installing machinery: {name}{CommandlineColors.ENDC}")
 
             syscon = {"abs_machinepath_internal": self.abs_machinepath_internal,
                       "abs_machinepath_external": self.abs_machinepath_external}
@@ -197,10 +197,10 @@ class Machine():
             print(f"{CommandlineColors.OKBLUE}Priming sensor: {name}{CommandlineColors.ENDC}")
             syscon = {"abs_machinepath_internal": self.abs_machinepath_internal,
                       "abs_machinepath_external": self.abs_machinepath_external,
-                      "sensor_specific": self.config.raw_config.get(name, {})
                       }
             plugin.set_sysconf(syscon)
             plugin.set_machine_plugin(self.vm_manager)
+            plugin.process_config(self.config.raw_config.get(name, {}))    # plugin specific configuration
             plugin.setup()
             reboot |= plugin.prime()
             self.sensors.append(plugin)
@@ -220,9 +220,10 @@ class Machine():
             print(f"{CommandlineColors.OKBLUE}Installing sensor: {name}{CommandlineColors.ENDC}")
             syscon = {"abs_machinepath_internal": self.abs_machinepath_internal,
                       "abs_machinepath_external": self.abs_machinepath_external,
-                      "sensor_specific": self.config.raw_config.get(name, {})}
+                      }
             plugin.set_sysconf(syscon)
             plugin.set_machine_plugin(self.vm_manager)
+            plugin.process_config(self.config.raw_config.get(name, {}))  # plugin specific configuration
             plugin.setup()
             plugin.install()
             print(f"{CommandlineColors.OKGREEN}Installed sensor: {name}{CommandlineColors.ENDC}")
@@ -289,12 +290,13 @@ class Machine():
             syscon = {"abs_machinepath_internal": self.abs_machinepath_internal,
                       "abs_machinepath_external": self.abs_machinepath_external}
             plugin.set_sysconf(syscon)
+            plugin.process_config({})  # process plugin specific config
             plugin.set_machine_plugin(self.vm_manager)
             plugin.setup()
             plugin.install(self.vm_manager)
             self.vulnerabilities.append(plugin)
 
-    def get_vulnerabilities(self) -> [SensorPlugin]:
+    def get_vulnerabilities(self) -> [VulnerabilityPlugin]:
         """ Returns a list of installed vulnerabilities """
         return self.vulnerabilities
 

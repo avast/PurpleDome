@@ -36,6 +36,16 @@ from plugins.base.kali import KaliPlugin
 # TODO -sT tcp connect scan - needs no special permissions
 # TODO. -p- scan all ports
 # TODO: -p <range> scan port rance
+# TODO: -sS -A (aggressive scanning, will also connect to services, run script and detect vulnerabilities like anonymous FTP accounts)
+# TODO: --reason: Additional info. I do not think the web traffic will change. So I do not think this is important
+# TODO: -F fast scan (fewer ports than default scan)
+# TODO: -oX -oG output as XML or grepable. If we want to process the results that could be handy
+# TODO: -sN NULL scan, no bits are set
+# TODO: -sF FIN scan: FIN bit is set
+# TODO: -sX Xmas scan: FIN, PSH and URG flag set
+# TODO firewall evasion : -sS and -f for fragmented. old tech. But good for basic NDS tests
+# TODO decoy scan: -D RND:5 to generate 5 decoys
+# TODO spoof mac: --spoof-mac with 0, Apple, Dell, Cisco or fake MAC the first parameters in this list will generate random mac
 
 class NmapPlugin(KaliPlugin):
 

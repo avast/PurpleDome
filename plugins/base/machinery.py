@@ -38,13 +38,6 @@ class MachineryPlugin(BasePlugin):
         self.connection = None  # Connection
         self.config = None
 
-    def process_config(self, config: MachineConfig):
-        """ Machine specific processing of configuration
-
-        @param config: configuration to do additional processing on
-        """
-        raise NotImplementedError
-
     def create(self, reboot=True):
         """ Create a machine
 
@@ -132,7 +125,7 @@ class MachineryPlugin(BasePlugin):
 
         # print("===========> Processing config")
         self.config = config
-        self.process_config(config)
+        self.process_config(config.raw_config)
 
     def __call_remote_run__(self, cmd, disown=False):
         """ Simplifies connect and run

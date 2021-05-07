@@ -33,6 +33,7 @@ class VagrantPlugin(MachineryPlugin):
 
     def process_config(self, config):
         """ Machine specific processing of configuration """
+        super().process_config(config)
 
         self.vagrantfilepath = os.path.abspath(self.config.vagrantfilepath())
         self.vagrantfile = os.path.join(self.vagrantfilepath, "Vagrantfile")

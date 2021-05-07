@@ -28,7 +28,6 @@ class SensorPlugin(BasePlugin):
         """
 
         super().set_sysconf(config)
-        self.sysconf["sensor_specific"] = config["sensor_specific"]
 
     def prime(self):
         """ prime sets hard core configs in the target. You can use it to call everything that permanently alters the OS by settings.
