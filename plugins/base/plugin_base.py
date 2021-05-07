@@ -72,13 +72,9 @@ class BasePlugin():
 
         self.machine_plugin.put(filename, self.machine_plugin.get_playground())
 
-        # plugin_folder = os.path.dirname(os.path.realpath(self.plugin_path))
-        # src = os.path.join(plugin_folder, filename)
-
-        # if os.path.commonprefix((os.path.realpath(src), plugin_folder)) != plugin_folder:
-        #    raise PluginError
-
-        # copy(src, self.sysconf["abs_machinepath_external"])
+    def get_from_machine(self, src, dst):
+        """ Get a file from the machine """
+        self.machine_plugin.get(src, dst)  # nosec
 
     def run_cmd(self, command, warn=True, disown=False):
         """ Execute a command on the vm using the connection

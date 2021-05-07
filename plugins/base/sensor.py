@@ -19,7 +19,6 @@ class SensorPlugin(BasePlugin):
     def __init__(self):
         super().__init__()  # pylint:disable=useless-super-delegation
         self.debugit = False
-        # self.machine = None
 
     def set_sysconf(self, config):
         """ Set system config
@@ -36,20 +35,9 @@ class SensorPlugin(BasePlugin):
 
         return False
 
-    def install_command(self):
-        """ Generate the install command. Put everything you need that does not require a reboot in here. If you want to hard core alter the OS of the target, use the prime method """
-        raise NotImplementedError
-
     def install(self):
         """ Install the sensor. Executed on the target. Take the sensor from the share and (maybe) copy it to its destination. Do some setup
         """
-
-        cmd = self.install_command()
-        if cmd:
-            self.machine_plugin.__call_remote_run__(cmd)
-
-    def start_command(self):
-        """ Generate the start command """
 
         raise NotImplementedError
 
@@ -59,23 +47,12 @@ class SensorPlugin(BasePlugin):
         @param disown: Send async into background
         """
 
-        if disown is None:
-            disown = not self.debugit
-        cmd = self.start_command()
-        if cmd:
-            # self.run_cmd(cmd, disown=not self.debugit)
-            self.machine_plugin.__call_remote_run__(cmd, disown=disown)
-
-    def stop_command(self):
-        """ Generate the stop command """
         raise NotImplementedError
 
     def stop(self):
         """ Stop the sensor """
-        cmd = self.stop_command()
-        if cmd:
-            # self.run_cmd(cmd)
-            self.machine_plugin.__call_remote_run__(cmd)
+
+        raise NotImplementedError
 
     def __call_collect__(self, machine_path):
         """ Generate the data collect command
@@ -86,12 +63,6 @@ class SensorPlugin(BasePlugin):
         path = os.path.join(machine_path, "sensors", self.name)
         os.makedirs(path)
         self.collect(path)
-
-    def collect_command(self, path):
-        """ Generate the data collect command
-
-        @param path: Path to put the data into
-        """
 
     def collect(self, path):
         """ Collect data from sensor. Copy it from sensor collection dir on target OS to the share
