@@ -61,15 +61,15 @@ class NmapPlugin(KaliPlugin):
         super().__init__()
         self.plugin_path = __file__
 
-    def command(self, targets, config):
-        """ Generate the command (having a separate step assists on debugging)
+    def run(self, targets):
+        """ Run the command
 
         @param targets: A list of targets, ip addresses will do
-        @param config:  dict with command specific configuration
         """
 
+        res = ""
+
         # Set defaults if not present in config
-        self.process_config(config)
         playground = self.machine_plugin.get_playground()
 
         # Generate command
@@ -77,19 +77,6 @@ class NmapPlugin(KaliPlugin):
         # cmd += "sudo apt -y install nmap;"
         for t in targets:
             cmd += f"nmap {t};"
-
-        return cmd
-
-    def run(self, targets, config):
-        """ Run the command
-
-        @param targets: A list of targets, ip addresses will do
-        @param config:  dict with command specific configuration
-        """
-
-        res = ""
-
-        cmd = self.command(targets, config)
 
         res += self.run_cmd(cmd) or ""
 

@@ -1,0 +1,19 @@
+###
+# Configuration for Linux
+linux:
+  ###
+  # a list of usernames and password. On linux passwords are created with mkpasswd -m sha-512
+  - name: test
+    password: $6$bc4k4Tq2.1GW$0ysyuxyfyds2JkfVEf9xHy39MhpS.hhnAo4sBLprNfIHqcpaa9GJseRJJsrq0cSOWwYlOPrdHQNHp10E1ekO81
+  - name: password
+    password: $6$q5PAnDI5K0uv$hMGMJQleeS9F2yLOiHXs2PxZHEmV.ook8jyWILzDGDxSTJmTTZSe.QgLVrnuwiyAl5PFJVARkMsSnPICSndJR1
+
+###
+# Configuration for Windows
+windows:
+  ###
+  # a list of usernames and password.
+  - name: test
+    password: test
+  - name: password
+    password: passw0rd

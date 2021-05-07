@@ -27,24 +27,22 @@ class KaliPlugin(BasePlugin):
         """ Cleanup afterwards """
         pass  # pylint: disable=unnecessary-pass
 
-    def run(self, targets, config):
+    def run(self, targets):
         """ Run the command
 
         @param targets: A list of targets, ip addresses will do
-        @param config:  dict with command specific configuration
         """
         raise NotImplementedError
 
-    def __execute__(self, targets, config):
+    def __execute__(self, targets):
         """ Execute the plugin. This is called by the code
 
         @param targets: A list of targets, ip addresses will do
-        @param config:  dict with command specific configuration
         """
 
-        self.attack_logger.start_kali_attack(self.machine_plugin.config.vmname(), targets, self.name, ttp=self.get_ttp())
         self.setup()
-        res = self.run(targets, config)
+        self.attack_logger.start_kali_attack(self.machine_plugin.config.vmname(), targets, self.name, ttp=self.get_ttp())
+        res = self.run(targets)
         self.teardown()
         self.attack_logger.stop_kali_attack(self.machine_plugin.config.vmname(), targets, self.name, ttp=self.get_ttp())
         return res

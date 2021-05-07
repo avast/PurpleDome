@@ -163,9 +163,10 @@ class Machine():
             syscon = {"abs_machinepath_internal": self.abs_machinepath_internal,
                       "abs_machinepath_external": self.abs_machinepath_external}
             plugin.set_sysconf(syscon)
+            plugin.process_config(config.kali_conf(name))
             plugin.set_machine_plugin(self.vm_manager)
             plugin.__set_logger__(self.attack_logger)
-            plugin.__execute__([target], config.kali_conf(name))
+            plugin.__execute__([target])
 
     def load_machine_plugin(self):
         """ Loads the matching machine plugin """

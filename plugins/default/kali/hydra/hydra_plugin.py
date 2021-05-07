@@ -19,17 +19,13 @@ class HydraPlugin(KaliPlugin):
         super().__init__()
         self.plugin_path = __file__
 
-        # print("Init hydra")
-
-    def command(self, targets, config):
-        """ Generate the command (having a separate step assists on debugging)
+    def run(self, targets):
+        """ Run the command
 
         @param targets: A list of targets, ip addresses will do
-        @param config:  dict with command specific configuration
         """
 
         # Set defaults if not present in config
-        self.process_config(config)
         playground = self.machine_plugin.get_playground()
 
         # Generate command
@@ -39,20 +35,6 @@ class HydraPlugin(KaliPlugin):
             for p in self.conf['protocols']:
                 cmd += f"hydra -L {self.conf['userfile']}  -P {self.conf['pwdfile']} {p}://{t};"
 
-        return cmd
-
-    def run(self, targets, config):
-        """ Run the command
-
-        @param targets: A list of targets, ip addresses will do
-        @param config:  dict with command specific configuration
-        """
-
-        # print("running hydra as plugin")
-        cmd = self.command(targets, config)
-        # res += str(self.run_cmd(cmd).stdout.strip())
         res = self.run_cmd(cmd) or ""
-
-        # print("hydra done")
 
         return res
