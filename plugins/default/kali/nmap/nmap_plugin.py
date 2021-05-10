@@ -46,6 +46,9 @@ from plugins.base.kali import KaliPlugin
 # TODO firewall evasion : -sS and -f for fragmented. old tech. But good for basic NDS tests
 # TODO decoy scan: -D RND:5 to generate 5 decoys
 # TODO spoof mac: --spoof-mac with 0, Apple, Dell, Cisco or fake MAC the first parameters in this list will generate random mac
+# TODO: Use timing settings: -T0-T5 (paranoid, sneaky, polite, default, aggressive, insane). --min-parallelism 100 (for crashes) and use --scan-delay 10s or similar
+# By that: crash sensors (most aggressive) or be under the detection threshold
+
 
 class NmapPlugin(KaliPlugin):
 

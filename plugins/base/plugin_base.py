@@ -135,10 +135,14 @@ class BasePlugin():
     def load_default_config(self):
         """ Reads and returns the default config as dict """
 
-        if not os.path.isfile(self.get_default_config_filename()):
+        filename = self.get_default_config_filename()
+
+        if not os.path.isfile(filename):
+            print(f"Did not find default config {filename}")
             self.conf = {}
         else:
-            with open(self.get_default_config_filename()) as fh:
+            with open(filename) as fh:
+                print(f"Loading default config {filename}")
                 self.conf = yaml.safe_load(fh)
             if self.conf is None:
                 self.conf = {}

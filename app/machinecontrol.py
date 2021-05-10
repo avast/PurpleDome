@@ -201,7 +201,8 @@ class Machine():
                       }
             plugin.set_sysconf(syscon)
             plugin.set_machine_plugin(self.vm_manager)
-            plugin.process_config(self.config.raw_config.get(name, {}))    # plugin specific configuration
+            # TODO: Process experiment config to get sensor configuration
+            plugin.process_config({})    # plugin specific configuration
             plugin.setup()
             reboot |= plugin.prime()
             self.sensors.append(plugin)

@@ -64,6 +64,7 @@ class MachineryPlugin(BasePlugin):
     def remote_run(self, cmd, disown=False):
         """ Connects to the machine and runs a command there
 
+
         @param cmd: command to run int he machine's shell
         @param disown: Send the connection into background
         """

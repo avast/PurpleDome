@@ -248,3 +248,13 @@ class ExperimentConfig():
             return self.raw_config["attacks"]["nap_time"]
         except KeyError:
             return 0
+
+    def get_sensor_config(self, name):
+        """ Return the config for a specific sensor
+
+        @param name: name of the sensor
+        """
+        if "sensors" not in self.raw_config:
+            return {}
+        if name not in self.raw_config["sensors"]:
+            return self.raw_config["sensors"][name]

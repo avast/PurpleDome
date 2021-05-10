@@ -8,14 +8,15 @@ import vagrant
 from fabric import Connection
 import os
 from app.exceptions import ConfigurationError
-from app.exceptions import NetworkError
-from invoke.exceptions import UnexpectedExit
-import paramiko
+# from app.exceptions import NetworkError
+# from invoke.exceptions import UnexpectedExit
+# import paramiko
+from plugins.base.ssh_features import SSHFeatures
 
 # Experiment with paramiko instead of fabric. Seems fabric has some issues with the "put" command to Windows. There seems no fix (just my workarounds). Maybe paramiko is better.
 
 
-class VagrantPlugin(MachineryPlugin):
+class VagrantPlugin(SSHFeatures, MachineryPlugin):
 
     # Boilerplate
     name = "vagrant"
@@ -30,6 +31,7 @@ class VagrantPlugin(MachineryPlugin):
         self.c = None
         self.vagrantfilepath = None
         self.vagrantfile = None
+        self.sysconf = {}
 
     def process_config(self, config):
         """ Machine specific processing of configuration """
@@ -76,131 +78,33 @@ class VagrantPlugin(MachineryPlugin):
     def connect(self):
         """ Connect to a machine. If there is already a connection we keep it """
 
-        if self.c:
-            return self.c
-
+        # For linux we are using Vagrant style
         if self.config.os() == "linux":
+            if self.c:
+                return self.c
+
             uhp = self.v.user_hostname_port(vm_name=self.config.vmname())
             print(f"Connecting to {uhp}")
             self.c = Connection(uhp, connect_kwargs={"key_filename": self.v.keyfile(vm_name=self.config.vmname())})
-            print(self.c)
             return self.c
 
-        if self.config.os() == "windows":
-            args = {"key_filename": os.path.join(self.sysconf["abs_machinepath_external"], self.config.ssh_keyfile())}
-            if self.config.ssh_password():
-                args["password"] = self.config.ssh_password()
-            uhp = self.get_ip()
-            print(uhp)
-            print(args)
-            print(self.config.ssh_user())
-            self.c = Connection(uhp, user=self.config.ssh_user(), connect_kwargs=args)
-            print(self.c)
-            return self.c
+        else:
+            return super().connect()
 
-    def remote_run(self, cmd, disown=False):
-        """ Connects to the machine and runs a command there
+        # if self.config.os() == "linux":
+        #     super
 
-        @param disown: Send the connection into background
-        """
-
-        if cmd is None:
-            return ""
-
-        self.connect()
-        cmd = cmd.strip()
-
-        print("Vagrant plugin remote run: " + cmd)
-        print("Disown: " + str(disown))
-        result = None
-        retry = 2
-        while retry > 0:
-            try:
-                result = self.c.run(cmd, disown=disown)
-                print(result)
-            except (paramiko.ssh_exception.NoValidConnectionsError, UnexpectedExit, paramiko.ssh_exception.SSHException):
-                if retry <= 0:
-                    raise(NetworkError)
-                else:
-                    self.disconnect()
-                    self.connect()
-                    retry -= 1
-                    print("Got some SSH errors. Retrying")
-            else:
-                break
-
-        if result and result.stderr:
-            print("Debug: Stderr: " + str(result.stderr.strip()))
-
-        if result:
-            return result.stdout.strip()
-
-        return ""
-
-    def put(self, src, dst):
-        """ Send a file to a machine
-
-        @param src: source dir
-        @param dst: destination
-        """
-        self.connect()
-
-        print(f"{src} -> {dst}")
-
-        res = ""
-        retry = 2
-        while retry > 0:
-            try:
-                res = self.c.put(src, dst)
-            except (paramiko.ssh_exception.NoValidConnectionsError, UnexpectedExit):
-                if retry <= 0:
-                    raise (NetworkError)
-                else:
-                    self.disconnect()
-                    self.connect()
-                    retry -= 1
-                    print("Got some SSH errors. Retrying")
-            except FileNotFoundError as e:
-                print(e)
-                break
-            else:
-                break
-
-        return res
-
-    def get(self, src, dst):
-        """ Get a file to a machine
-
-        @param src: source dir
-        @param dst: destination
-        """
-        self.connect()
-
-        retry = 2
-        while retry > 0:
-            try:
-                res = self.c.get(src, dst)
-            except (paramiko.ssh_exception.NoValidConnectionsError, UnexpectedExit):
-                if retry <= 0:
-                    raise (NetworkError)
-                else:
-                    self.disconnect()
-                    self.connect()
-                    retry -= 1
-                    print("Got some SSH errors. Retrying")
-            except FileNotFoundError as e:
-                print(e)
-                break
-            else:
-                break
-
-        return res
-
-    def disconnect(self):
-        """ Disconnect from a machine """
-        if self.c:
-            self.c.close()
-        self.c = None
+        # if self.config.os() == "windows":
+        #     args = {"key_filename": os.path.join(self.sysconf["abs_machinepath_external"], self.config.ssh_keyfile())}
+        #     if self.config.ssh_password():
+        #         args["password"] = self.config.ssh_password()
+        #     uhp = self.get_ip()
+        #     print(uhp)
+        #     print(args)
+        #     print(self.config.ssh_user())
+        #     self.c = Connection(uhp, user=self.config.ssh_user(), connect_kwargs=args)
+        #     print(self.c)
+        #     return self.c
 
     def get_state(self):
         """ Get detailed state of a machine """
