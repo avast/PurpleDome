@@ -44,17 +44,23 @@ from plugins.base.kali import KaliPlugin
 # TODO: -sF FIN scan: FIN bit is set
 # TODO: -sX Xmas scan: FIN, PSH and URG flag set
 # TODO firewall evasion : -sS and -f for fragmented. old tech. But good for basic NDS tests
-# TODO decoy scan: -D RND:5 to generate 5 decoys
+
+# TODO: -sC will execute default LUA scripts. Can be very noisy
+# TODO: --script "ftp-*" -p 21      will execute ftp scripts. Can also be very noisy
+
 # TODO spoof mac: --spoof-mac with 0, Apple, Dell, Cisco or fake MAC the first parameters in this list will generate random mac
-# TODO: Use timing settings: -T0-T5 (paranoid, sneaky, polite, default, aggressive, insane). --min-parallelism 100 (for crashes) and use --scan-delay 10s or similar
+
+
+# TODO: Verify it worked: Use timing settings: -T0-T5 (paranoid, sneaky, polite, default, aggressive, insane). --min-parallelism 100 (for crashes) and use --scan-delay 10s or similar
 # By that: crash sensors (most aggressive) or be under the detection threshold
 
+# TODO Verify decoy scan: -D RND:5 to generate 5 decoys
 
 class NmapPlugin(KaliPlugin):
 
     # Boilerplate
     name = "nmap"
-    description = "NMap scan the target"
+    description = "Nmap scan the target"
     ttp = "T1595"
     references = ["https://attack.mitre.org/techniques/T1595/"]
 
@@ -72,12 +78,8 @@ class NmapPlugin(KaliPlugin):
 
         res = ""
 
-        # Set defaults if not present in config
-        playground = self.machine_plugin.get_playground()
+        cmd = f"cd {self.get_playground()};"
 
-        # Generate command
-        cmd = f"cd {playground};"
-        # cmd += "sudo apt -y install nmap;"
         for t in targets:
             cmd += f"nmap {t};"
 
