@@ -22,15 +22,28 @@ class BasePlugin():
         self.machine_plugin = None
         self.sysconf = {}
         self.conf = {}
+        self.attack_logger = None
 
         self.default_config_name = "default_config.yaml"
+
+    def get_playground(self):
+        """ Returns the machine specific playground
+
+         Which is the folder on the machine where we run our tasks in
+         """
+
+        return self.machine_plugin.get_playground()
+
+    def set_logger(self, attack_logger):
+        """ Set the attack logger for this machine """
+        self.attack_logger = attack_logger
 
     def setup(self):
         """ Prepare everything for the plugin """
 
         for a_file in self.required_files:
             src = os.path.join(os.path.dirname(self.plugin_path), a_file)
-            print(src)
+            self.vprint(src, 3)
             self.copy_to_machine(src)
 
     def set_machine_plugin(self, machine_plugin):
@@ -61,9 +74,6 @@ class BasePlugin():
 
         self.conf = {**self.conf, **config}
 
-        print("\n\n\n\n\n BASE plugin")
-        print(self.conf)
-
     def copy_to_machine(self, filename):
         """ Copies a file shipped with the plugin to the machine share folder
 
@@ -83,7 +93,7 @@ class BasePlugin():
          @param disown: Run in background
          """
 
-        print(f"      Plugin running command {command}")
+        self.vprint(f"      Plugin running command {command}", 3)
 
         res = self.machine_plugin.__call_remote_run__(command, disown=disown)
         return res
@@ -138,11 +148,32 @@ class BasePlugin():
         filename = self.get_default_config_filename()
 
         if not os.path.isfile(filename):
-            print(f"Did not find default config {filename}")
+            self.vprint(f"Did not find default config {filename}", 3)
             self.conf = {}
         else:
             with open(filename) as fh:
-                print(f"Loading default config {filename}")
+                self.vprint(f"Loading default config {filename}", 3)
                 self.conf = yaml.safe_load(fh)
             if self.conf is None:
                 self.conf = {}
+
+    def get_config_section_name(self):
+        """ Returns the name for the config sub-section to use for this plugin.
+
+        Defaults to the name of the plugin. This method should be overwritten if it gets more complicated """
+
+        return self.get_name()
+
+    def vprint(self, text, verbosity):
+        """ verbosity based stdout printing
+
+        0: Errors only
+        1: Main colored information
+        2: Detailed progress information
+        3: Debug logs, data dumps, everything
+
+        @param text: The text to print
+        @param verbosity: the verbosity level the text has.
+        """
+
+        self.attack_logger.vprint(text, verbosity)

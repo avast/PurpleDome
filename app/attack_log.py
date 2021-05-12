@@ -25,8 +25,13 @@ def __mitre_fix_ttp__(ttp):
 class AttackLog():
     """ A specific logger class to log the progress of the attack steps """
 
-    def __init__(self):
+    def __init__(self, verbosity=0):
+        """
+
+        @param verbosity: verbosity setting from 0 to 3 for stdout printing
+        """
         self.log = []
+        self.verbosity = verbosity
 
     def start_caldera_attack(self, source, paw, group, ability_id, ttp=None, name=None, description=None):  # pylint: disable=too-many-arguments
         """ Mark the start of a caldera attack
@@ -141,3 +146,18 @@ class AttackLog():
         """ Return logged data in dict format """
 
         return self.log
+
+    def vprint(self, text, verbosity):
+        """ verbosity based stdout printing
+
+        0: Errors only
+        1: Main colored information
+        2: Detailed progress information
+        3: Debug logs, data dumps, everything
+
+        @param text: The text to print
+        @param verbosity: the verbosity level the text has.
+        """
+
+        if verbosity <= self.verbosity:
+            print(text)

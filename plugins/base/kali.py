@@ -21,7 +21,6 @@ class KaliPlugin(BasePlugin):
         super().__init__()
         self.conf = {}     # Plugin specific configuration
         self.sysconf = {}  # System configuration. common for all plugins
-        self.attack_logger = None
 
     def teardown(self):
         """ Cleanup afterwards """
@@ -46,19 +45,6 @@ class KaliPlugin(BasePlugin):
         self.teardown()
         self.attack_logger.stop_kali_attack(self.machine_plugin.config.vmname(), targets, self.name, ttp=self.get_ttp())
         return res
-
-    def command(self, targets, config):
-        """ Generate command
-
-        @param targets: A list of targets, ip addresses will do
-        @param config: dict with command specific configuration
-        """
-
-        raise NotImplementedError
-
-    def __set_logger__(self, attack_logger):
-        """ Set the attack logger for this machine """
-        self.attack_logger = attack_logger
 
     def get_ttp(self):
         """ Returns the ttp of the plugin, please set in boilerplate """

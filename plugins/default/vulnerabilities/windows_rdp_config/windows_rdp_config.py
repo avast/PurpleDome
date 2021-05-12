@@ -24,22 +24,18 @@ class RDPVulnerability(VulnerabilityPlugin):
 
         # allow password access via rdp
         cmd = r"""reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f"""
-        print(cmd)
         self.run_cmd(cmd)
 
         # Open Firewall
         cmd = """netsh advfirewall firewall set rule group="remote desktop" new enable=Yes"""
-        print(cmd)
         self.run_cmd(cmd)
 
     def stop(self):
 
         # Re-configure sshd to stable state
         cmd = r"""reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 1 /f"""
-        print(cmd)
         self.run_cmd(cmd)
 
         # Reset firewall
         cmd = """netsh advfirewall firewall set rule group="remote desktop" new enable=No"""
-        print(cmd)
         self.run_cmd(cmd)

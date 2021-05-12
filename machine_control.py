@@ -7,6 +7,7 @@ import yaml
 
 from app.calderacontrol import CalderaControl
 from app.machinecontrol import Machine
+from app.attack_log import AttackLog
 
 
 def create_machines(arguments):
@@ -19,7 +20,8 @@ def create_machines(arguments):
     with open(arguments.configfile) as fh:
         config = yaml.safe_load(fh)
 
-    target_ = Machine(config["targets"]["target1"])
+    attack_logger = AttackLog(arguments.verbose)
+    target_ = Machine(config["targets"]["target1"], attack_logger)
     attacker_1 = Machine(config["attackers"]["attacker"])
 
     print("Got them")
@@ -54,7 +56,8 @@ def download_caldera_client(arguments):
     @param arguments: The arguments from argparse
     """
 
-    caldera_control = CalderaControl(args.ip, None)
+    attack_logger = AttackLog(arguments.verbose)
+    caldera_control = CalderaControl(args.ip, attack_logger, None)
     caldera_control.fetch_client(platform=arguments.platform,
                                  file=arguments.file,
                                  target_dir=arguments.target_dir,
@@ -65,6 +68,7 @@ def create_parser():
     """ Creates the parser for the command line arguments"""
 
     main_parser = argparse.ArgumentParser("Controls a Caldera server to attack other systems")
+    main_parser.add_argument('--verbose', '-v', action='count', default=0)
     subparsers = main_parser.add_subparsers(help="sub-commands")
 
     # Sub parser for machine creation

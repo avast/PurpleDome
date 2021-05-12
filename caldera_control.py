@@ -5,6 +5,7 @@
 import argparse
 
 from app.calderacontrol import CalderaControl
+from app.attack_log import AttackLog
 
 
 # https://caldera.readthedocs.io/en/latest/The-REST-API.html
@@ -74,6 +75,8 @@ def create_parser():
     """ Creates the parser for the command line arguments"""
 
     main_parser = argparse.ArgumentParser("Controls a Caldera server to attack other systems")
+    main_parser.add_argument('--verbose', '-v', action='count', default=0)
+
     subparsers = main_parser.add_subparsers(help="sub-commands")
 
     # Sub parser for attacks
@@ -113,7 +116,8 @@ if __name__ == "__main__":
 
     print(args.caldera_url)
 
-    caldera_control = CalderaControl(args.caldera_url, config=None, apikey=args.apikey)
+    attack_logger = AttackLog(args.verbose)
+    caldera_control = CalderaControl(args.caldera_url, attack_logger, config=None, apikey=args.apikey)
     print("Caldera Control ready")
 
     str(args.func(caldera_control, args))

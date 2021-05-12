@@ -23,15 +23,16 @@ from pprint import pprint
 class CalderaControl():
     """ Remote control Caldera through REST api """
 
-    def __init__(self, server, config=None, apikey=None):
+    def __init__(self, server, attack_logger, config=None, apikey=None):
         """
 
-
         @param server: Caldera server url/ip
+        @param attack_logger: The attack logger to use
         @param config: The configuration
         """
         # print(server)
         self.url = server if server.endswith("/") else server + "/"
+        self.attack_logger = attack_logger
 
         self.config = config
 
@@ -516,28 +517,28 @@ class CalderaControl():
 
         #  ##### Create / Run Operation
 
-        print(f"New adversary generated. ID: {adid}, ability: {ability_id} group: {group}")
+        self.attack_logger.vprint(f"New adversary generated. ID: {adid}, ability: {ability_id} group: {group}", 2)
         res = self.add_operation(operation_name, advid=adid, group=group)
-        print("Add operation: ")
-        pprint(res)
+        # print("Add operation: ")
+        # pprint(res)
 
         opid = self.get_operation(operation_name)["id"]
-        print("New operation created. OpID: " + str(opid))
+        self.attack_logger.vprint("New operation created. OpID: " + str(opid), 3)
 
         self.execute_operation(opid)
-        print("Execute operation")
+        self.attack_logger.vprint("Execute operation",3 )
         retries = 30
         ability_name = self.get_ability(ability_id)[0]["name"]
         ability_description = self.get_ability(ability_id)[0]["description"]
-        print(f"{CommandlineColors.OKBLUE}Executed attack operation{CommandlineColors.ENDC}")
-        print(f"{CommandlineColors.BACKGROUND_BLUE} PAW: {paw} Group: {group} Ability: {ability_id}  {CommandlineColors.ENDC}")
-        print(f"{CommandlineColors.BACKGROUND_BLUE} {ability_name}: {ability_description}  {CommandlineColors.ENDC}")
+        self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Executed attack operation{CommandlineColors.ENDC}",1)
+        self.attack_logger.vprint(f"{CommandlineColors.BACKGROUND_BLUE} PAW: {paw} Group: {group} Ability: {ability_id}  {CommandlineColors.ENDC}", 1)
+        self.attack_logger.vprint(f"{CommandlineColors.BACKGROUND_BLUE} {ability_name}: {ability_description}  {CommandlineColors.ENDC}", 1)
         while not self.is_operation_finished(opid) and retries > 0:
-            print(f".... waiting for Caldera to finish {retries}")
+            self.attack_logger.vprint(f".... waiting for Caldera to finish {retries}", 2)
             time.sleep(10)
             retries -= 1
             if retries <= 0:
-                print(f"{CommandlineColors.FAIL}Ran into retry timeout waiting for attack to finish{CommandlineColors.ENDC}")
+                self.attack_logger.vprint(f"{CommandlineColors.FAIL}Ran into retry timeout waiting for attack to finish{CommandlineColors.ENDC}", 1)
 
         # TODO: Handle outout from several clients
 
@@ -548,7 +549,7 @@ class CalderaControl():
                 retries -= 1
                 time.sleep(10)
                 output = self.view_operation_output(opid, paw, ability_id)
-                print(f".... getting Caldera output {retries}")
+                self.attack_logger.vprint(f".... getting Caldera output {retries}", 2)
                 if output:
                     break
             except CalderaError:
@@ -556,10 +557,10 @@ class CalderaControl():
 
         if output is None:
             output = str(self.get_operation_by_id(opid))
-            print(f"{CommandlineColors.FAIL}Failed getting operation data. We just have: {output} from get_operation_by_id{CommandlineColors.ENDC}")
+            self.attack_logger.vprint(f"{CommandlineColors.FAIL}Failed getting operation data. We just have: {output} from get_operation_by_id{CommandlineColors.ENDC}", 0)
         else:
             outp = str(output)
-            print(f"{CommandlineColors.BACKGROUND_GREEN} Output: {outp} {CommandlineColors.ENDC}")
+            self.attack_logger.vprint(f"{CommandlineColors.BACKGROUND_GREEN} Output: {outp} {CommandlineColors.ENDC}", 2)
             pprint(output)
 
         #  ######## Cleanup

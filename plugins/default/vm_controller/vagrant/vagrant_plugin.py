@@ -84,7 +84,7 @@ class VagrantPlugin(SSHFeatures, MachineryPlugin):
                 return self.c
 
             uhp = self.v.user_hostname_port(vm_name=self.config.vmname())
-            print(f"Connecting to {uhp}")
+            self.vprint(f"Connecting to {uhp}", 3)
             self.c = Connection(uhp, connect_kwargs={"key_filename": self.v.keyfile(vm_name=self.config.vmname())})
             return self.c
 

@@ -23,22 +23,18 @@ class SshdVulnerability(VulnerabilityPlugin):
 
         # allow password access via ssh
         cmd = "sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config"
-        print(cmd)
         self.run_cmd(cmd)
 
         # Restart ssh
         cmd = "sudo service ssh restart"
-        print(cmd)
         self.run_cmd(cmd)
 
     def stop(self):
 
         # Re-configure sshd to stable state
         cmd = "sudo sed -i 's/PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config"
-        print(cmd)
         self.run_cmd(cmd)
 
         # Restart ssh
         cmd = "sudo service ssh restart"
-        print(cmd)
         self.run_cmd(cmd)

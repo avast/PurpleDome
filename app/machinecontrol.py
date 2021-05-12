@@ -21,22 +21,24 @@ from plugins.base.vulnerability_plugin import VulnerabilityPlugin
 class Machine():
     """ A virtual machine. Attacker or target. Abstracting stuff away. """
 
-    def __init__(self, config, calderakey="ADMIN123"):
+    def __init__(self, config, attack_logger, calderakey="ADMIN123",):
         """
 
         @param config: The machine configuration as dict
+        @param attack_logger: The attack logger to use
         @param calderakey: Key to the caldera controller
         """
 
         self.vm_manager = None
         self.attack_logger = None
+        self.set_attack_logger(attack_logger)
 
         if isinstance(config, MachineConfig):
             self.config = config
         else:
             self.config = MachineConfig(config)
 
-        self.plugin_manager = PluginManager()
+        self.plugin_manager = PluginManager(self.attack_logger)
 
         # TODO: Read config from plugin
         if self.config.vmcontroller() == "vagrant":
@@ -111,7 +113,7 @@ class Machine():
         while not res:
             time.sleep(5)
             res = self.vm_manager.__call_connect__()
-            print("Re-connecting....")
+            self.attack_logger.vprint("Re-connecting....", 3)
 
     def up(self):  # pylint: disable=invalid-name
         """ Starts a VM. Creates it if not already created """
@@ -159,13 +161,13 @@ class Machine():
         for plugin in self.plugin_manager.get_plugins(KaliPlugin, [attack]):
             name = plugin.get_name()
 
-            print(f"{CommandlineColors.OKBLUE}Running Kali plugin {name}{CommandlineColors.ENDC}")
+            self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Running Kali plugin {name}{CommandlineColors.ENDC}", 2)
             syscon = {"abs_machinepath_internal": self.abs_machinepath_internal,
                       "abs_machinepath_external": self.abs_machinepath_external}
             plugin.set_sysconf(syscon)
-            plugin.process_config(config.kali_conf(name))
+            plugin.process_config(config.kali_conf(plugin.get_config_section_name()))
             plugin.set_machine_plugin(self.vm_manager)
-            plugin.__set_logger__(self.attack_logger)
+            # plugin.__set_logger__(self.attack_logger)
             plugin.__execute__([target])
 
     def load_machine_plugin(self):
@@ -174,13 +176,15 @@ class Machine():
         for plugin in self.plugin_manager.get_plugins(MachineryPlugin, [self.config.vmcontroller()]):
 
             name = plugin.get_name()
-            print(f"{CommandlineColors.OKBLUE}Installing machinery: {name}{CommandlineColors.ENDC}")
+            self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Installing machinery: {name}{CommandlineColors.ENDC}", 1)
 
             syscon = {"abs_machinepath_internal": self.abs_machinepath_internal,
                       "abs_machinepath_external": self.abs_machinepath_external}
             plugin.set_sysconf(syscon)
             plugin.__call_process_config__(self.config)
             self.vm_manager = plugin
+            self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Installed machinery: {name}{CommandlineColors.ENDC}",
+                                      1)
             break
 
     def prime_sensors(self):
@@ -195,7 +199,7 @@ class Machine():
         for plugin in self.plugin_manager.get_plugins(SensorPlugin, self.config.sensors()):
             name = plugin.get_name()
             # if name in self.config.sensors():
-            print(f"{CommandlineColors.OKBLUE}Priming sensor: {name}{CommandlineColors.ENDC}")
+            self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Priming sensor: {name}{CommandlineColors.ENDC}", 2)
             syscon = {"abs_machinepath_internal": self.abs_machinepath_internal,
                       "abs_machinepath_external": self.abs_machinepath_external,
                       }
@@ -206,7 +210,7 @@ class Machine():
             plugin.setup()
             reboot |= plugin.prime()
             self.sensors.append(plugin)
-            print(f"{CommandlineColors.OKGREEN}Primed sensor: {name}{CommandlineColors.ENDC}")
+            self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Primed sensor: {name}{CommandlineColors.ENDC}", 2)
         return reboot
 
     def install_sensors(self):
@@ -219,7 +223,7 @@ class Machine():
         for plugin in self.get_sensors():
             name = plugin.get_name()
 
-            print(f"{CommandlineColors.OKBLUE}Installing sensor: {name}{CommandlineColors.ENDC}")
+            self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Installing sensor: {name}{CommandlineColors.ENDC}", 2)
             syscon = {"abs_machinepath_internal": self.abs_machinepath_internal,
                       "abs_machinepath_external": self.abs_machinepath_external,
                       }
@@ -228,7 +232,7 @@ class Machine():
             plugin.process_config(self.config.raw_config.get(name, {}))  # plugin specific configuration
             plugin.setup()
             plugin.install()
-            print(f"{CommandlineColors.OKGREEN}Installed sensor: {name}{CommandlineColors.ENDC}")
+            self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Installed sensor: {name}{CommandlineColors.ENDC}", 2)
 
     def get_sensors(self) -> [SensorPlugin]:
         """ Returns a list of running sensors """
@@ -241,10 +245,10 @@ class Machine():
 
         """
         for plugin in self.get_sensors():
-            print(f"{CommandlineColors.OKBLUE}Starting sensor: {plugin.get_name()}{CommandlineColors.ENDC}")
+            self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Starting sensor: {plugin.get_name()}{CommandlineColors.ENDC}", 2)
             plugin.set_machine_plugin(self.vm_manager)
             plugin.start()
-            print(f"{CommandlineColors.OKGREEN}Started sensor: {plugin.get_name()}{CommandlineColors.ENDC}")
+            self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Started sensor: {plugin.get_name()}{CommandlineColors.ENDC}", 2)
 
     def stop_sensors(self):
         """ Stop sensors
@@ -254,10 +258,10 @@ class Machine():
         """
 
         for plugin in self.get_sensors():
-            print(f"{CommandlineColors.OKBLUE}Stopping sensor: {plugin.get_name()}{CommandlineColors.ENDC}")
+            self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Stopping sensor: {plugin.get_name()}{CommandlineColors.ENDC}", 2)
             plugin.set_machine_plugin(self.vm_manager)
             plugin.stop()
-            print(f"{CommandlineColors.OKGREEN}Stopped sensor: {plugin.get_name()}{CommandlineColors.ENDC}")
+            self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Stopped sensor: {plugin.get_name()}{CommandlineColors.ENDC}", 2)
 
     def collect_sensors(self, lootdir):
         """ Collect data from sensors
@@ -271,10 +275,10 @@ class Machine():
         os.mkdir(machine_specific_path)
 
         for plugin in self.get_sensors():
-            print(f"{CommandlineColors.OKBLUE}Collecting sensor: {plugin.get_name()}{CommandlineColors.ENDC}")
+            self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Collecting sensor: {plugin.get_name()}{CommandlineColors.ENDC}",2 )
             plugin.set_machine_plugin(self.vm_manager)
             plugin.__call_collect__(machine_specific_path)
-            print(f"{CommandlineColors.OKGREEN}Collected sensor: {plugin.get_name()}{CommandlineColors.ENDC}")
+            self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Collected sensor: {plugin.get_name()}{CommandlineColors.ENDC}",2 )
 
     ############
 
@@ -287,8 +291,8 @@ class Machine():
 
         for plugin in self.plugin_manager.get_plugins(VulnerabilityPlugin, self.config.vulnerabilities()):
             name = plugin.get_name()
-            print(f"Configured vulnerabilities: {self.config.vulnerabilities()}")
-            print(f"{CommandlineColors.OKBLUE}Installing vulnerability: {name}{CommandlineColors.ENDC}")
+            self.attack_logger.vprint(f"Configured vulnerabilities: {self.config.vulnerabilities()}",3 )
+            self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Installing vulnerability: {name}{CommandlineColors.ENDC}", 2)
             syscon = {"abs_machinepath_internal": self.abs_machinepath_internal,
                       "abs_machinepath_external": self.abs_machinepath_external}
             plugin.set_sysconf(syscon)
@@ -309,7 +313,7 @@ class Machine():
 
         """
         for plugin in self.get_vulnerabilities():
-            print(f"{CommandlineColors.OKBLUE}Activating vulnerability: {plugin.get_name()}{CommandlineColors.ENDC}")
+            self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Activating vulnerability: {plugin.get_name()}{CommandlineColors.ENDC}",2 )
             plugin.set_machine_plugin(self.vm_manager)
             plugin.start()
 
@@ -320,7 +324,7 @@ class Machine():
 
         """
         for plugin in self.get_vulnerabilities():
-            print(f"{CommandlineColors.OKBLUE}Uninstalling vulnerability: {plugin.get_name()}{CommandlineColors.ENDC}")
+            self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Uninstalling vulnerability: {plugin.get_name()}{CommandlineColors.ENDC}", 2)
             plugin.set_machine_plugin(self.vm_manager)
             plugin.stop()
 
@@ -342,7 +346,7 @@ class Machine():
         @param version: Caldera version to use. Check Caldera git for potential branches to use
         """
         # https://github.com/mitre/caldera.git
-        print(f"{CommandlineColors.OKBLUE}Installing Caldera server {CommandlineColors.ENDC}")
+        self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Installing Caldera server {CommandlineColors.ENDC}", 1)
 
         if cleanup:
             cleanupcmd = "rm -rf caldera;"
@@ -350,7 +354,7 @@ class Machine():
             cleanupcmd = ""
 
         cmd = f"cd {self.caldera_basedir}; {cleanupcmd}  git clone https://github.com/mitre/caldera.git --recursive --branch {version}; cd caldera; pip3 install -r requirements.txt"
-        print(f"{CommandlineColors.OKGREEN}Caldera server installed {CommandlineColors.ENDC}")
+        self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Caldera server installed {CommandlineColors.ENDC}", 1)
         res = self.vm_manager.__call_remote_run__(cmd)
         return "Result installing caldera server " + str(res)
 
@@ -362,14 +366,14 @@ class Machine():
         for i in range(timeout):
             time.sleep(10)
             caldera_url = "http://" + self.getip() + ":8888"
-            caldera_control = CalderaControl(caldera_url, apikey=self.calderakey)
-            print(f"{i}  Trying to connect to {caldera_url} Caldera API")
+            caldera_control = CalderaControl(caldera_url, self.attack_logger, apikey=self.calderakey)
+            self.attack_logger.vprint(f"{i}  Trying to connect to {caldera_url} Caldera API", 3)
             try:
                 caldera_control.list_adversaries()
             except requests.exceptions.ConnectionError:
                 pass
             else:
-                print("Caldera: All systems nominal")
+                self.attack_logger.vprint("Caldera: All systems nominal", 3)
                 return True
         raise ServerError
 
@@ -377,14 +381,14 @@ class Machine():
         """ Start the caldera server on the VM. Required for an attacker VM """
         # https://github.com/mitre/caldera.git
 
-        print(f"{CommandlineColors.OKBLUE}Starting Caldera server {CommandlineColors.ENDC}")
+        self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Starting Caldera server {CommandlineColors.ENDC}", 1)
 
         # The pkill was added because the server sometimes gets stuck. And we can not re-create the attacking machines in all cases
         self.vm_manager.__call_remote_run__(" pkill -f server.py;", disown=False)
         cmd = f"cd {self.caldera_basedir}; cd caldera ; nohup python3 server.py --insecure &"
         self.vm_manager.__call_remote_run__(cmd, disown=True)
         self.wait_for_caldera_server()
-        print(f"{CommandlineColors.OKGREEN}Caldera server started. Confirmed it is running.  {CommandlineColors.ENDC}")
+        self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Caldera server started. Confirmed it is running.  {CommandlineColors.ENDC}", 1)
 
     def create_start_caldera_client_cmd(self):
         """ Creates a command to start the caldera client """
@@ -410,11 +414,11 @@ class Machine():
         """ Install caldera client. Required on targets """
 
         name = self.vm_manager.get_vm_name()
-        print(f"{CommandlineColors.OKBLUE}Starting Caldera client {name} {CommandlineColors.ENDC}")
+        self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Starting Caldera client {name} {CommandlineColors.ENDC}", 1)
 
         if self.get_os() == "windows":
             url = "http://" + self.caldera_server + ":8888"
-            caldera_control = CalderaControl(url, apikey=self.calderakey)
+            caldera_control = CalderaControl(url, self.attack_logger, apikey=self.calderakey)
             caldera_control.fetch_client(platform="windows",
                                          file="sandcat.go",
                                          target_dir=self.abs_machinepath_external,
@@ -440,7 +444,7 @@ class Machine():
             print(cmd)
             self.vm_manager.remote_run(cmd, disown=True)
 
-        print(f"{CommandlineColors.OKGREEN}Caldera client started {CommandlineColors.ENDC}")
+        self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Caldera client started {CommandlineColors.ENDC}", 1)
 
     def get_os(self):
         """ Returns the OS of the machine """
@@ -484,7 +488,7 @@ nohup ./sandcat.go -server $server -group {self.config.caldera_group()} -v -paw 
             else:
                 playground = ""
             url = "http://" + self.caldera_server + ":8888"
-            caldera_control = CalderaControl(url, apikey=self.calderakey)
+            caldera_control = CalderaControl(url, self.attack_logger, apikey=self.calderakey)
             filename = caldera_control.fetch_client(platform="windows",
                                                     file="sandcat.go",
                                                     target_dir=self.abs_machinepath_external,
@@ -502,7 +506,7 @@ START {playground}{filename} -server {url} -group {self.config.caldera_group()} 
 
         content = self.__install_caldera_service_cmd()
 
-        print(f"{CommandlineColors.OKBLUE}Installing Caldera service {CommandlineColors.ENDC}")
+        self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Installing Caldera service {CommandlineColors.ENDC}", 1)
 
         if self.get_os() == "linux":
             filename = os.path.join(self.abs_machinepath_external, "caldera_agent.sh")
@@ -510,7 +514,7 @@ START {playground}{filename} -server {url} -group {self.config.caldera_group()} 
             filename = os.path.join(self.abs_machinepath_external, "caldera_agent.bat")
         with open(filename, "wt") as fh:
             fh.write(content)
-        print(f"{CommandlineColors.OKGREEN}Installed Caldera server {CommandlineColors.ENDC}")
+        self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Installed Caldera service {CommandlineColors.ENDC}", 1)
 
     def set_caldera_server(self, server):
         """ Set the local caldera server config """

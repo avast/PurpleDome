@@ -22,21 +22,22 @@ from app.exceptions import ServerError
 class Experiment():
     """ Class handling experiments """
 
-    def __init__(self, configfile):
+    def __init__(self, configfile, verbosity=0):
         """
 
-        @param configfile: Path to the configfile to load """
-
+        @param configfile: Path to the configfile to load
+        @param verbosity: verbosity level between 0 and 3
+        """
         self.attacker_1 = None
 
         self.experiment_control = ExperimentConfig(configfile)
-        self.attack_logger = AttackLog()
+        self.attack_logger = AttackLog(verbosity)
         self.__start_attacker()
         caldera_url = "http://" + self.attacker_1.getip() + ":8888"
-        caldera_control = CalderaControl(caldera_url, config=self.experiment_control)
+        caldera_control = CalderaControl(caldera_url, attack_logger=self.attack_logger, config=self.experiment_control)
         # Deleting all currently registered Caldera gents
-        print(caldera_control.kill_all_agents())
-        print(caldera_control.delete_all_agents())
+        self.attack_logger.vprint(caldera_control.kill_all_agents(), 3)
+        self.attack_logger.vprint(caldera_control.delete_all_agents(), 3)
 
         self.starttime = datetime.now().strftime("%Y_%m_%d___%H_%M_%S")
         self.lootdir = os.path.join(self.experiment_control.loot_dir(), self.starttime)
@@ -50,8 +51,8 @@ class Experiment():
 
             tname = target_conf.vmname()
 
-            print(f"{CommandlineColors.OKBLUE}preparing target {tname} ....{CommandlineColors.ENDC}")
-            target_1 = Machine(target_conf)
+            self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}preparing target {tname} ....{CommandlineColors.ENDC}", 1)
+            target_1 = Machine(target_conf, attack_logger=self.attack_logger)
             target_1.set_caldera_server(self.attacker_1.getip())
             try:
                 if not target_conf.use_existing_machine():
@@ -64,43 +65,43 @@ class Experiment():
             needs_reboot = target_1.prime_sensors()
             if needs_reboot:
                 target_1.reboot()
-            print(f"{CommandlineColors.OKGREEN}Target is up: {tname}  {CommandlineColors.ENDC}")
+            self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Target is up: {tname}  {CommandlineColors.ENDC}",1)
             self.targets.append(target_1)
 
         # Install vulnerabilities
         for a_target in self.targets:
-            print(f"Installing vulnerabilities on {a_target.get_paw()}")
+            self.attack_logger.vprint(f"Installing vulnerabilities on {a_target.get_paw()}",2)
             a_target.install_vulnerabilities()
             a_target.start_vulnerabilities()
 
         # Install sensor plugins
         for a_target in self.targets:
-            print(f"Installing sensors on {a_target.get_paw()}")
+            self.attack_logger.vprint(f"Installing sensors on {a_target.get_paw()}",2)
             a_target.install_sensors()
             a_target.start_sensors()
 
         # First start of caldera implants
         for target_1 in self.targets:
             target_1.start_caldera_client()
-            print(f"{CommandlineColors.OKGREEN}Initial start of caldera client: {tname}  {CommandlineColors.ENDC}")
+            self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Initial start of caldera client: {tname}  {CommandlineColors.ENDC}", 1)
         time.sleep(20)   # Wait for all the clients to contact the caldera server
 
-        print(f"{CommandlineColors.OKBLUE}Contacting caldera agents on all targets ....{CommandlineColors.ENDC}")
+        self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Contacting caldera agents on all targets ....{CommandlineColors.ENDC}", 1)
         # Wait until all targets are registered as Caldera targets
         for target_1 in self.targets:
             running_agents = caldera_control.list_paws_of_running_agents()
-            print(f"Agents currently running: {running_agents}")
+            self.attack_logger.vprint(f"Agents currently running: {running_agents}", 2)
             while target_1.get_paw() not in running_agents:
-                print(f"Connecting to caldera {caldera_url}, running agents are: {running_agents}")
-                print(f"Missing agent: {target_1.get_paw()} ...")
+                self.attack_logger.vprint(f"Connecting to caldera {caldera_url}, running agents are: {running_agents}", 3)
+                self.attack_logger.vprint(f"Missing agent: {target_1.get_paw()} ...", 3)
                 target_1.start_caldera_client()
-                print(f"Restarted caldera agent: {target_1.get_paw()} ...")
+                self.attack_logger.vprint(f"Restarted caldera agent: {target_1.get_paw()} ...", )
                 time.sleep(120)    # Was 30, but maybe there are timing issues
                 running_agents = caldera_control.list_paws_of_running_agents()
-        print(f"{CommandlineColors.OKGREEN}Caldera agents reached{CommandlineColors.ENDC}")
+        self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Caldera agents reached{CommandlineColors.ENDC}", 1)
 
         # Attack them
-        print(f"{CommandlineColors.OKBLUE}Running Caldera attacks{CommandlineColors.ENDC}")
+        self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Running Caldera attacks{CommandlineColors.ENDC}",1 )
         for target_1 in self.targets:
             # Run caldera attacks
             caldera_attacks = self.experiment_control.get_caldera_attacks(target_1.get_os())
@@ -108,8 +109,8 @@ class Experiment():
                 for attack in caldera_attacks:
                     # TODO: Work with snapshots
                     # TODO: If we have several targets in the same group, it is nonsense to attack each one separately. Make this smarter
-                    print(f"Attacking machine with PAW: {target_1.get_paw()} with {attack}")
-                    caldera_control = CalderaControl("http://" + self.attacker_1.getip() + ":8888", config=self.experiment_control)
+                    self.attack_logger.vprint(f"Attacking machine with PAW: {target_1.get_paw()} with {attack}", 2)
+                    caldera_control = CalderaControl("http://" + self.attacker_1.getip() + ":8888", self.attack_logger, config=self.experiment_control)
 
                     caldera_control.attack(attack_logger=self.attack_logger, paw=target_1.get_paw(), ability_id=attack, group=target_1.get_group())
 
@@ -119,38 +120,38 @@ class Experiment():
 
                     # Fix: Caldera sometimes gets stuck. This is why we better re-start the caldera server and wait till all the implants re-connected
                     # Reason: In some scenarios we keep the infra up for hours or days. No re-creation like intended. This can cause Caldera to hick up
-                    print(f"{CommandlineColors.OKBLUE}Restarting caldera server and waiting for clients to re-connect{CommandlineColors.ENDC}")
+                    self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Restarting caldera server and waiting for clients to re-connect{CommandlineColors.ENDC}", 1)
                     self.attacker_1.start_caldera_server()
-                    print(f"Pausing before next attack (config: nap_time): {self.experiment_control.get_nap_time()}")
+                    self.attack_logger.vprint(f"Pausing before next attack (config: nap_time): {self.experiment_control.get_nap_time()}", 2)
                     time.sleep(self.experiment_control.get_nap_time())
                     retries = 100
                     for target_system in self.targets:
                         running_agents = caldera_control.list_paws_of_running_agents()
-                        print(f"Agents currently connected to the server: {running_agents}")
+                        self.attack_logger.vprint(f"Agents currently connected to the server: {running_agents}", 2)
                         while target_system.get_paw() not in running_agents:
                             time.sleep(1)
                             running_agents = caldera_control.list_paws_of_running_agents()
                             retries -= 1
-                            print(f"Waiting for clients to re-connect ({retries}, {running_agents}) ")
+                            self.attack_logger.vprint(f"Waiting for clients to re-connect ({retries}, {running_agents}) ", 3)
                             if retries <= 0:
                                 raise ServerError
-                    print(f"{CommandlineColors.OKGREEN}Restarted caldera server clients re-connected{CommandlineColors.ENDC}")
+                    self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Restarted caldera server clients re-connected{CommandlineColors.ENDC}", 1)
                     # End of fix
 
-        print(f"{CommandlineColors.OKGREEN}Finished Caldera attacks{CommandlineColors.ENDC}")
+        self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Finished Caldera attacks{CommandlineColors.ENDC}", 1)
 
         # Run Kali attacks
-        print(f"{CommandlineColors.OKBLUE}Running Kali attacks{CommandlineColors.ENDC}")
+        self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Running Kali attacks{CommandlineColors.ENDC}", 1)
         for target_1 in self.targets:
             kali_attacks = self.experiment_control.get_kali_attacks(target_1.get_os())
             for attack in kali_attacks:
                 # TODO: Work with snapshots
-                print(f"Attacking machine with PAW: {target_1.get_paw()} with attack: {attack}")
+                self.attack_logger.vprint(f"Attacking machine with PAW: {target_1.get_paw()} with attack: {attack}", 1)
                 self.attacker_1.kali_attack(attack, target_1.getip(), self.experiment_control)
-                print(f"Pausing before next attack (config: nap_time): {self.experiment_control.get_nap_time()}")
+                self.attack_logger.vprint(f"Pausing before next attack (config: nap_time): {self.experiment_control.get_nap_time()}", 3)
                 time.sleep(self.experiment_control.get_nap_time())
 
-        print(f"{CommandlineColors.OKGREEN}Finished Kali attacks{CommandlineColors.ENDC}")
+        self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Finished Kali attacks{CommandlineColors.ENDC}", 1)
 
         # Stop sensor plugins
         # Collect data
@@ -160,8 +161,10 @@ class Experiment():
 
         # Uninstall vulnerabilities
         for a_target in self.targets:
-            print(f"Uninstalling vulnerabilities on {a_target.get_paw()}")
+            self.attack_logger.vprint(f"{CommandlineColors.OKBLUE} Uninstalling vulnerabilities on {a_target.get_paw()} {CommandlineColors.ENDC}", 1)
             a_target.stop_vulnerabilities()
+            self.attack_logger.vprint(f"{CommandlineColors.OKGREEN} Done uninstalling vulnerabilities on {a_target.get_paw()} {CommandlineColors.ENDC}",
+                1)
 
         # Stop target machines
         for target_1 in self.targets:
@@ -181,14 +184,14 @@ class Experiment():
 
                  ]
 
-        print(f"Creating zip file {filename}")
+        self.attack_logger.vprint(f"Creating zip file {filename}", 1)
 
         with zipfile.ZipFile(filename, "w") as zfh:
             for a_glob in globs:
                 a_glob = self.lootdir + a_glob
                 for a_file in glob.iglob(a_glob, recursive=True):
                     if a_file != filename:
-                        print(a_file)
+                        self.attack_logger.vprint(a_file, 2)
                         zfh.write(a_file)
 
     @staticmethod
@@ -226,13 +229,13 @@ class Experiment():
         except FileExistsError:
             pass
         for a_file in self.__get_results_files(root):
-            print("Copy {} {}".format(a_file, os.path.abspath(self.experiment_control.loot_dir())))
+            self.attack_logger.vprint("Copy {} {}".format(a_file, os.path.abspath(self.experiment_control.loot_dir())), 3)
 
     def __start_attacker(self):
         """ Start the attacking VM """
 
         # Preparing attacker
-        self.attacker_1 = Machine(self.experiment_control.attacker(0).raw_config)
+        self.attacker_1 = Machine(self.experiment_control.attacker(0).raw_config, attack_logger=self.attack_logger)
 
         if not self.experiment_control.attacker(0).use_existing_machine():
             try:
@@ -248,7 +251,7 @@ class Experiment():
             self.attacker_1.install_caldera_server(cleanup=False)
 
         self.attacker_1.start_caldera_server()
-        self.attacker_1.set_attack_logger(self.attack_logger)
+        # self.attacker_1.set_attack_logger(self.attack_logger)
 
     def __stop_attacker(self):
         """ Stop the attacking VM """

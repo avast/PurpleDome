@@ -3,17 +3,22 @@
 
 import argparse
 from app.pluginmanager import PluginManager
+from app.attack_log import AttackLog
 
 
 def list_plugins(arguments):
     """ List plugins """
-    p = PluginManager()
+
+    attack_logger = AttackLog(arguments.verbose)
+    p = PluginManager(attack_logger)
     p.print_list()
 
 
 def get_default_config(arguments):
     """ print default config of a specific plugin """
-    p = PluginManager()
+
+    attack_logger = AttackLog(arguments.verbose)
+    p = PluginManager(attack_logger)
     p.print_default_config(arguments.subclass_name, arguments.plugin_name)
 
 
@@ -21,6 +26,7 @@ def create_parser():
     """ Creates the parser for the command line arguments"""
 
     main_parser = argparse.ArgumentParser("Manage plugins")
+    main_parser.add_argument('--verbose', '-v', action='count', default=0)
     subparsers = main_parser.add_subparsers(help="sub-commands")
 
     # Sub parser for machine creation

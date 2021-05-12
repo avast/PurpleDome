@@ -29,7 +29,7 @@ class SSHFeatures(BasePlugin):
             try:
                 if self.config.os() == "linux":
                     uhp = self.get_ip()
-                    print(f"Connecting to {uhp}")
+                    self.vprint(f"Connecting to {uhp}", 3)
                     self.c = Connection(uhp, connect_timeout=timeout)
 
                 if self.config.os() == "windows":
@@ -39,20 +39,20 @@ class SSHFeatures(BasePlugin):
                         args["key_filename"] = self.config.ssh_keyfile()
                     if self.config.ssh_password():
                         args["password"] = self.config.ssh_password()
-                    print(args)
+                    self.vprint(args, 3)
                     uhp = self.get_ip()
-                    print(uhp)
+                    self.vprint(uhp, 3)
                     self.c = Connection(uhp, connect_timeout=timeout, user=self.config.ssh_user(), connect_kwargs=args)
             except (paramiko.ssh_exception.SSHException, socket.timeout):
-                print(f"Failed to connect, will retry {retries} times. Timeout: {timeout}")
+                self.vprint(f"Failed to connect, will retry {retries} times. Timeout: {timeout}", 0)
                 retries -= 1
                 timeout += 10
                 time.sleep(retry_sleep)
             else:
-                print(f"Connection: {self.c}")
+                self.vprint(f"Connection: {self.c}", 3)
                 return self.c
 
-        print("SSH network error")
+        self.vprint("SSH network error", 0)
         raise NetworkError
 
     def remote_run(self, cmd, disown=False):
@@ -67,8 +67,8 @@ class SSHFeatures(BasePlugin):
         self.connect()
         cmd = cmd.strip()
 
-        print("Running SSH remote run: " + cmd)
-        print("Disown: " + str(disown))
+        self.vprint("Running SSH remote run: " + cmd, 3)
+        self.vprint("Disown: " + str(disown), 3)
         result = None
         retry = 2
         while retry > 0:
@@ -83,12 +83,12 @@ class SSHFeatures(BasePlugin):
                     self.disconnect()
                     self.connect()
                     retry -= 1
-                    print("Got some SSH errors. Retrying")
+                    self.vprint("Got some SSH errors. Retrying", 2)
             else:
                 break
 
         if result and result.stderr:
-            print("Debug: Stderr: " + str(result.stderr.strip()))
+            self.vprint("Debug: Stderr: " + str(result.stderr.strip()), 0)
 
         if result:
             return result.stdout.strip()
@@ -103,7 +103,7 @@ class SSHFeatures(BasePlugin):
         """
         self.connect()
 
-        print(f"PUT {src} -> {dst}")
+        self.vprint(f"PUT {src} -> {dst}", 3)
 
         res = ""
         retries = 10
@@ -113,18 +113,18 @@ class SSHFeatures(BasePlugin):
             try:
                 res = self.c.put(src, dst)
             except (paramiko.ssh_exception.SSHException, socket.timeout, UnexpectedExit):
-                print(f"PUT Failed to connect, will retry {retries} times. Timeout: {timeout}")
+                self.vprint(f"PUT Failed to connect, will retry {retries} times. Timeout: {timeout}", 3)
                 retries -= 1
                 timeout += 10
                 time.sleep(retry_sleep)
                 self.disconnect()
                 self.connect()
             except FileNotFoundError as e:
-                print(f"File not found: {e}")
+                self.vprint(f"File not found: {e}", 0)
                 break
             else:
                 return res
-        print("SSH network error on PUT command")
+        self.vprint("SSH network error on PUT command", 0)
         raise NetworkError
 
     def get(self, src, dst):
@@ -146,9 +146,9 @@ class SSHFeatures(BasePlugin):
                     self.disconnect()
                     self.connect()
                     retry -= 1
-                    print("Got some SSH errors. Retrying")
+                    self.vprint("Got some SSH errors. Retrying", 2)
             except FileNotFoundError as e:
-                print(e)
+                self.vprint(e, 0)
                 break
             else:
                 break

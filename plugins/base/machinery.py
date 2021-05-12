@@ -117,9 +117,9 @@ class MachineryPlugin(BasePlugin):
     # This is the interface from the main code to the plugin system. Do not touch
     def __call_halt__(self):
         """ Wrapper around halt """
-        print(f"{CommandlineColors.OKBLUE}Stopping machine: {self.config.vmname()} {CommandlineColors.ENDC}")
+        self.vprint(f"{CommandlineColors.OKBLUE}Stopping machine: {self.config.vmname()} {CommandlineColors.ENDC}", 1)
         self.halt()
-        print(f"{CommandlineColors.OKGREEN}Machine stopped: {self.config.vmname()}{CommandlineColors.ENDC}")
+        self.vprint(f"{CommandlineColors.OKGREEN}Machine stopped: {self.config.vmname()}{CommandlineColors.ENDC}", 1)
 
     def __call_process_config__(self, config: MachineConfig):
         """ Wrapper around process_config  """

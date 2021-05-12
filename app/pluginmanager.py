@@ -26,8 +26,13 @@ sections = [{"name": "Vulnerabilities",
 class PluginManager():
     """ Manage plugins """
 
-    def __init__(self):
+    def __init__(self, attack_logger):
+        """
+
+        @param attack_logger: The attack logger to use
+        """
         self.base = "plugins/**/*.py"
+        self.attack_logger = attack_logger
 
     def get_plugins(self, subclass, name_filter=None) -> [BasePlugin]:
         """ Returns a list plugins matching specified criteria
@@ -53,6 +58,7 @@ class PluginManager():
             handlers = get_handlers(plugins)
 
             for plugin in handlers:
+                plugin.set_logger(self.attack_logger)
                 if name_filter is None:
                     res.append(plugin)
                 else:

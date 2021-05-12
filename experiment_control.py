@@ -20,7 +20,7 @@ def run(args):
 
     @param args: arguments from the argparse parser
     """
-    Experiment(args.configfile)
+    Experiment(args.configfile, args.verbose)
 
 
 def create_parser():
@@ -29,6 +29,7 @@ def create_parser():
     subparsers = parser.add_subparsers(help="sub-commands")
 
     parser.set_defaults(func=explain)
+    parser.add_argument('--verbose', '-v', action='count', default=0)
 
     # Sub parser for machine creation
     parser_run = subparsers.add_parser("run", help="run experiments")
