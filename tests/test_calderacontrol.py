@@ -3,6 +3,7 @@ from unittest.mock import patch
 from app.calderacontrol import CalderaControl
 from simplejson.errors import JSONDecodeError
 from app.exceptions import CalderaError
+from app.attack_log import AttackLog
 
 # https://docs.python.org/3/library/unittest.html
 
@@ -10,7 +11,8 @@ from app.exceptions import CalderaError
 class TestExample(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.cc = CalderaControl("https://localhost", apikey="123")
+        self.attack_logger = AttackLog(0)
+        self.cc = CalderaControl("https://localhost", attack_logger=self.attack_logger, apikey="123")
 
     def tearDown(self) -> None:
         pass

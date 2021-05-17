@@ -12,7 +12,7 @@ import simplejson
 from app.exceptions import CalderaError
 from app.interface_sfx import CommandlineColors
 from app.attack_log import AttackLog
-from pprint import pprint
+from pprint import pprint, pformat
 
 
 # TODO: Ability deserves an own class.
@@ -519,18 +519,17 @@ class CalderaControl():
 
         self.attack_logger.vprint(f"New adversary generated. ID: {adid}, ability: {ability_id} group: {group}", 2)
         res = self.add_operation(operation_name, advid=adid, group=group)
-        # print("Add operation: ")
-        # pprint(res)
+        self.attack_logger.vprint(pformat(res), 3)
 
         opid = self.get_operation(operation_name)["id"]
         self.attack_logger.vprint("New operation created. OpID: " + str(opid), 3)
 
         self.execute_operation(opid)
-        self.attack_logger.vprint("Execute operation",3 )
+        self.attack_logger.vprint("Execute operation", 3)
         retries = 30
         ability_name = self.get_ability(ability_id)[0]["name"]
         ability_description = self.get_ability(ability_id)[0]["description"]
-        self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Executed attack operation{CommandlineColors.ENDC}",1)
+        self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Executed attack operation{CommandlineColors.ENDC}", 1)
         self.attack_logger.vprint(f"{CommandlineColors.BACKGROUND_BLUE} PAW: {paw} Group: {group} Ability: {ability_id}  {CommandlineColors.ENDC}", 1)
         self.attack_logger.vprint(f"{CommandlineColors.BACKGROUND_BLUE} {ability_name}: {ability_description}  {CommandlineColors.ENDC}", 1)
         while not self.is_operation_finished(opid) and retries > 0:

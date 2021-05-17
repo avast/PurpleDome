@@ -4,7 +4,6 @@
 
 from plugins.base.sensor import SensorPlugin
 import os
-import time
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 
@@ -15,7 +14,7 @@ class LinuxFilebeatPlugin(SensorPlugin):
 
     required_files = ["filebeat.conf",
                       "filebeat.yml",
-                     ]
+                      ]
 
     def __init__(self):
         super().__init__()
@@ -58,7 +57,7 @@ class LinuxFilebeatPlugin(SensorPlugin):
 
         self.vprint("Installing Linux filebeat sensor", 3)
 
-        self.run_cmd(f"sudo wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -")
+        self.run_cmd("sudo wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -")
         self.run_cmd('sudo echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-7.x.list')
         self.run_cmd("sudo apt update")
         self.run_cmd("sudo apt -y install default-jre")

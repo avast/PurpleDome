@@ -275,10 +275,10 @@ class Machine():
         os.mkdir(machine_specific_path)
 
         for plugin in self.get_sensors():
-            self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Collecting sensor: {plugin.get_name()}{CommandlineColors.ENDC}",2 )
+            self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Collecting sensor: {plugin.get_name()}{CommandlineColors.ENDC}", 2)
             plugin.set_machine_plugin(self.vm_manager)
             plugin.__call_collect__(machine_specific_path)
-            self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Collected sensor: {plugin.get_name()}{CommandlineColors.ENDC}",2 )
+            self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Collected sensor: {plugin.get_name()}{CommandlineColors.ENDC}", 2)
 
     ############
 
@@ -291,7 +291,7 @@ class Machine():
 
         for plugin in self.plugin_manager.get_plugins(VulnerabilityPlugin, self.config.vulnerabilities()):
             name = plugin.get_name()
-            self.attack_logger.vprint(f"Configured vulnerabilities: {self.config.vulnerabilities()}",3 )
+            self.attack_logger.vprint(f"Configured vulnerabilities: {self.config.vulnerabilities()}", 3)
             self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Installing vulnerability: {name}{CommandlineColors.ENDC}", 2)
             syscon = {"abs_machinepath_internal": self.abs_machinepath_internal,
                       "abs_machinepath_external": self.abs_machinepath_external}
@@ -313,7 +313,7 @@ class Machine():
 
         """
         for plugin in self.get_vulnerabilities():
-            self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Activating vulnerability: {plugin.get_name()}{CommandlineColors.ENDC}",2 )
+            self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Activating vulnerability: {plugin.get_name()}{CommandlineColors.ENDC}", 2)
             plugin.set_machine_plugin(self.vm_manager)
             plugin.start()
 

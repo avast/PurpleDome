@@ -65,18 +65,18 @@ class Experiment():
             needs_reboot = target_1.prime_sensors()
             if needs_reboot:
                 target_1.reboot()
-            self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Target is up: {tname}  {CommandlineColors.ENDC}",1)
+            self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Target is up: {tname}  {CommandlineColors.ENDC}", 1)
             self.targets.append(target_1)
 
         # Install vulnerabilities
         for a_target in self.targets:
-            self.attack_logger.vprint(f"Installing vulnerabilities on {a_target.get_paw()}",2)
+            self.attack_logger.vprint(f"Installing vulnerabilities on {a_target.get_paw()}", 2)
             a_target.install_vulnerabilities()
             a_target.start_vulnerabilities()
 
         # Install sensor plugins
         for a_target in self.targets:
-            self.attack_logger.vprint(f"Installing sensors on {a_target.get_paw()}",2)
+            self.attack_logger.vprint(f"Installing sensors on {a_target.get_paw()}", 2)
             a_target.install_sensors()
             a_target.start_sensors()
 
@@ -101,7 +101,7 @@ class Experiment():
         self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Caldera agents reached{CommandlineColors.ENDC}", 1)
 
         # Attack them
-        self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Running Caldera attacks{CommandlineColors.ENDC}",1 )
+        self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Running Caldera attacks{CommandlineColors.ENDC}", 1)
         for target_1 in self.targets:
             # Run caldera attacks
             caldera_attacks = self.experiment_control.get_caldera_attacks(target_1.get_os())
@@ -163,8 +163,7 @@ class Experiment():
         for a_target in self.targets:
             self.attack_logger.vprint(f"{CommandlineColors.OKBLUE} Uninstalling vulnerabilities on {a_target.get_paw()} {CommandlineColors.ENDC}", 1)
             a_target.stop_vulnerabilities()
-            self.attack_logger.vprint(f"{CommandlineColors.OKGREEN} Done uninstalling vulnerabilities on {a_target.get_paw()} {CommandlineColors.ENDC}",
-                1)
+            self.attack_logger.vprint(f"{CommandlineColors.OKGREEN} Done uninstalling vulnerabilities on {a_target.get_paw()} {CommandlineColors.ENDC}", 1)
 
         # Stop target machines
         for target_1 in self.targets:
