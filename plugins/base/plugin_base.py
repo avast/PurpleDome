@@ -38,8 +38,15 @@ class BasePlugin():
         """ Set the attack logger for this machine """
         self.attack_logger = attack_logger
 
+    def process_templates(self):
+        """ A method you can optionally implement to transfer your jinja2 templates into the files yo want to send to the target. See 'required_files' """
+
+        return
+
     def setup(self):
         """ Prepare everything for the plugin """
+
+        self.process_templates()
 
         for a_file in self.required_files:
             src = os.path.join(os.path.dirname(self.plugin_path), a_file)
@@ -128,10 +135,15 @@ class BasePlugin():
 
         raise NotImplementedError
 
+    def get_plugin_path(self):
+        """ Returns the path the plugin file(s) are stored in """
+
+        return os.path.join(os.path.dirname(self.plugin_path))
+
     def get_default_config_filename(self):
         """ Generate the default filename of the default configuration file """
 
-        return os.path.join(os.path.dirname(self.plugin_path), self.default_config_name)
+        return os.path.join(self.get_plugin_path(), self.default_config_name)
 
     def get_raw_default_config(self):
         """ Returns the default config as string. Usable as an example and for documentation """
