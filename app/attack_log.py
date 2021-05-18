@@ -33,7 +33,7 @@ class AttackLog():
         self.log = []
         self.verbosity = verbosity
 
-    def start_caldera_attack(self, source, paw, group, ability_id, ttp=None, name=None, description=None):  # pylint: disable=too-many-arguments
+    def start_caldera_attack(self, source, paw, group, ability_id, ttp=None, name=None, description=None, obfuscator="default", jitter="default"):  # pylint: disable=too-many-arguments
         """ Mark the start of a caldera attack
 
         @param source: source of the attack. Attack IP
@@ -43,6 +43,8 @@ class AttackLog():
         @param ttp: TTP of the attack (as stated by Caldera internal settings)
         @param name: Name of the attack. Data source is Caldera internal settings
         @param description: Descirption of the attack. Caldera is the source
+        @param obfuscator: C&C obfuscator being used
+        @param jitter: Jitter being used
         """
 
         data = {"timestamp": __get_timestamp__(),
@@ -55,7 +57,9 @@ class AttackLog():
                 "ability_id": ability_id,
                 "hunting_tag": __mitre_fix_ttp__(ttp),
                 "name": name or "",
-                "description": description or ""
+                "description": description or "",
+                "obfuscator": obfuscator,
+                "jitter": jitter
                 }
 
         self.log.append(data)
@@ -64,7 +68,7 @@ class AttackLog():
     # TODO: Add config
     # TODO: Add results
 
-    def stop_caldera_attack(self, source, paw, group, ability_id, ttp=None, name=None, description=None):  # pylint: disable=too-many-arguments
+    def stop_caldera_attack(self, source, paw, group, ability_id, ttp=None, name=None, description=None, obfuscator="default", jitter="default"):  # pylint: disable=too-many-arguments
         """ Mark the end of a caldera attack
 
         @param source: source of the attack. Attack IP
@@ -74,6 +78,8 @@ class AttackLog():
         @param ttp: TTP of the attack (as stated by Caldera internal settings)
         @param name: Name of the attack. Data source is Caldera internal settings
         @param description: Descirption of the attack. Caldera is the source
+        @param obfuscator: C&C obfuscator being used
+        @param jitter: Jitter being used
         """
 
         data = {"timestamp": __get_timestamp__(),
@@ -86,7 +92,9 @@ class AttackLog():
                 "ability_id": ability_id,
                 "hunting_tag": __mitre_fix_ttp__(ttp),
                 "name": name or "",
-                "description": description or ""
+                "description": description or "",
+                "obfuscator": obfuscator,
+                "jitter": jitter
                 }
         self.log.append(data)
 

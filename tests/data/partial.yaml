@@ -30,7 +30,7 @@ attackers:
     ###
     # machinepath is a path where the machine specific files and logs are stored. Relative to the Vagrantfile path
     # and will be mounted internally as /vagrant/<name>
-    # If machinepath is not set PurpleDome will try "vm_name"
+    # If machinepoath is not set AttackX will try "vm_name"
     machinepath: attacker1
 
     ###
@@ -51,30 +51,18 @@ targets:
       type: vagrant
       vagrantfilepath: systems
 
-    ###
-    # simple switch if targets is used in attack simulation. Default is true. If set to false the machine will not be started
-    active: no
-
     vm_name: target1
     os: linux
     ###
     # Targets need a unique PAW name for caldera
     paw: target1
     ###
-    # Targets need to be in a group for caldera. The group is more relevant than the paw. Better put every target in a unique group
+    # Targets need to be in a group for caldera
     group: red
 
     machinepath: target1
     # Do not destroy/create the machine: Set this to "yes".
     use_existing_machine: yes
-
-    ###
-    # The folder all the implants will be installed into
-    playground: /home/vagrant
-
-    # Sensors to run on this machine
-    sensors:
-      # - linux_idp
 
   target2:
     #root: systems/target1
@@ -82,15 +70,9 @@ targets:
       type: vagrant
       vagrantfilepath: systems
 
-    ###
-    # simple switch if targets is used in attack simulation. Default is true. If set to false the machine will not be started
-    active: no
-
     vm_name: target2
     os: windows
     paw: target2w
-    ###
-    # Targets need to be in a group for caldera. The group is more relevant than the paw. Better put every target in a unique group
     group: red
 
     machinepath: target2w
@@ -103,78 +85,11 @@ targets:
 
     ###
     # If SSH without vagrant support is used (Windows !) we need a user name (uppercase)
-    ssh_user: PURPLEDOME
-
-    ###
-    # If SSH without vagrant support is used (Windows !) we maybe need a password
-    ssh_password: PURPLEDOME
+    ssh_user: ATTACKX
 
     ###
     # For non-vagrant ssh connections a ssh keyfile stored in the machinepath is required.
     ssh_keyfile: id_rsa.3
-
-    ###
-    # The folder all the implants will be installed into
-    # Windows can only use default playground at the moment !
-    # playground: C:\\Users\\PurpleDome
-
-    # Sensors to run on this machine
-    sensors:
-      - windows_idp
-
-    vulnerabilities:
-      - weak_user_passwords
-      - rdp_config_vul
-
-
-  # Ubuntu 20.10 (Groovy)
-  target3:
-    vm_controller:
-      type: vagrant
-      vagrantfilepath: systems
-
-    ###
-    # simple switch if targets is used in attack simulation. Default is true. If set to false the machine will not be started
-    active: yes
-
-    vm_name: target3
-    os: linux
-    ###
-    # Targets need a unique PAW name for caldera
-    paw: target3
-    ###
-    # Targets need to be in a group for caldera. The group is more relevant than the paw. Better put every target in a unique group
-    group: red
-
-    machinepath: target3
-    # Do not destroy/create the machine: Set this to "yes".
-    use_existing_machine: no
-
-    ###
-    # The folder all the implants will be installed into
-    playground: /home/vagrant
-
-    # Sensors to run on this machine
-    sensors:
-      - linux_idp
-
-    vulnerabilities:
-      - sshd_config_vul
-      - weak_user_passwords
-
-###
-# General sensor config config
-sensors:
-  ###
-  # Windows IDP plugin configuration
-  windows_idp:
-    ###
-    # Name of the dll to use. Must match AV version
-    dll_name: aswidptestdll.dll
-
-    ###
-    # Folder where the IDP tool is located
-    idp_tool_folder: C:\\capture
 
 ###
 # General attack config
@@ -183,17 +98,10 @@ attacks:
   # configure the seconds the system idles between the attacks. Makes it slower. But attack and defense logs will be simpler to match
   nap_time: 5
 
-###
-# Configuration for caldera
-caldera_conf:
-  ###
-  # The obfuscator to use between the implant and the server. Not all obfuscators are supported by all implants. Existing obfuscators:
-  # plain-text, base64, base64jumble, caesar, base64noPadding, steganography
-  obfuscator: plain-text
 
-  ###
-  # Jitter settings for the implant. it is min/max seconds. The first number has to be smaller. Default is 4/8
-  jitter: 4/8
+## Broken caldera conf
+caldera_conf:
+  foo: bar
 
 ###
 # A list of caldera attacks to run against the targets.
@@ -214,12 +122,10 @@ kali_attacks:
   # Linux specific attacks, a list
   linux:
     - hydra
-    - nmap
   ###
   # Windows specific attacks, a list
   windows:
     - hydra
-    - nmap
 
 ###
 # Configuration for the kali attack tools
@@ -231,7 +137,7 @@ kali_conf:
     # A list of protocols to brute force against. Supported: "ssh"
     protocols:
       - ssh
-      - rdp
+      #- ftp
       #- ftps
     ###
     # A file containing potential user names
@@ -239,8 +145,6 @@ kali_conf:
     ###
     # A file containing potential passwords
     pwdfile: passwords.txt
-  nmap:
-
 
 ###
 # Settings for the results being harvested

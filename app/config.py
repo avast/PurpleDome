@@ -211,6 +211,24 @@ class ExperimentConfig():
 
         return res
 
+    def get_caldera_obfuscator(self):
+        """ Get the caldera configuration. In this case: The obfuscator. Will default to plain-text """
+
+        try:
+            res = self.raw_config["caldera_conf"]["obfuscator"]
+        except KeyError:
+            return "plain-text"
+        return res
+
+    def get_caldera_jitter(self):
+        """ Get the caldera configuration. In this case: Jitter. Will default to 4/8 """
+
+        try:
+            res = self.raw_config["caldera_conf"]["jitter"]
+        except KeyError:
+            return "4/8"
+        return res
+
     def get_kali_attacks(self, for_os):
         """ Get the configured kali attacks to run for a specific OS
 

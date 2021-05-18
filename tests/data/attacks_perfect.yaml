@@ -92,6 +92,18 @@ targets:
     ssh_keyfile: id_rsa.3
 
 ###
+# Configuration for caldera
+caldera_conf:
+  ###
+  # The obfuscator to use between the implant and the server. Not all obfuscators are supported by all implants. Existing obfuscators:
+  # plain-text, base64, base64jumble, caesar, base64noPadding, steganography
+  obfuscator: foo-bar
+
+  ###
+  # Jitter settings for the implant. it is min/max seconds. The first number has to be smaller. Default is 4/8
+  jitter: 08/15
+
+###
 # A list of caldera attacks to run against the targets.
 caldera_attacks:
   ###

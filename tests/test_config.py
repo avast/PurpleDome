@@ -543,6 +543,42 @@ class TestExperimentConfig(unittest.TestCase):
         data = ex.kali_conf("hydra")
         self.assertEqual(data["userfile"], "users.txt")
 
+    def test_missing_caldera_config_obfuscator(self):
+        """ A config file with no caldera config at all """
+
+        ex = ExperimentConfig("tests/data/basic.yaml")
+        self.assertEqual(ex.get_caldera_obfuscator(), "plain-text")
+
+    def test_broken_caldera_config_obfuscator(self):
+        """ A config file with broken caldera config at all """
+
+        ex = ExperimentConfig("tests/data/partial.yaml")
+        self.assertEqual(ex.get_caldera_obfuscator(), "plain-text")
+
+    def test_good_caldera_config_obfuscator(self):
+        """ A config file with broken caldera config at all """
+
+        ex = ExperimentConfig("tests/data/attacks_perfect.yaml")
+        self.assertEqual(ex.get_caldera_obfuscator(), "foo-bar")
+
+    def test_missing_caldera_config_jitter(self):
+        """ A config file with no caldera config at all """
+
+        ex = ExperimentConfig("tests/data/basic.yaml")
+        self.assertEqual(ex.get_caldera_jitter(), "4/8")
+
+    def test_broken_caldera_config_jitter(self):
+        """ A config file with broken caldera config at all """
+
+        ex = ExperimentConfig("tests/data/partial.yaml")
+        self.assertEqual(ex.get_caldera_jitter(), "4/8")
+
+    def test_good_caldera_config_jitter(self):
+        """ A config file with broken caldera config at all """
+
+        ex = ExperimentConfig("tests/data/attacks_perfect.yaml")
+        self.assertEqual(ex.get_caldera_jitter(), "08/15")
+
     def test_nap_time(self):
         """ nap time is set """
 

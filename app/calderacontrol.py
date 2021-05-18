@@ -501,6 +501,16 @@ class CalderaControl():
         @param ability_id: Ability to run against the target
         """
 
+        # Tested obfuscators (with sandcat):
+        # plain-text: worked
+        # base64:  (invalid input on sandcat)
+        # base64jumble: ?
+        # caesar: failed
+        # base64noPadding: worked
+        # steganopgraphy: ?
+        obfuscator = self.config.get_caldera_obfuscator()
+        jitter = self.config.get_caldera_jitter()
+
         adversary_name = "generated_adv__" + str(time.time())
         operation_name = "testoperation__" + str(time.time())
 
@@ -513,12 +523,20 @@ class CalderaControl():
                                                ability_id=ability_id,
                                                ttp=self.get_ability(ability_id)[0]["technique_id"],
                                                name=self.get_ability(ability_id)[0]["name"],
-                                               description=self.get_ability(ability_id)[0]["description"])
+                                               description=self.get_ability(ability_id)[0]["description"],
+                                               obfuscator=obfuscator,
+                                               jitter=jitter
+                                               )
 
         #  ##### Create / Run Operation
 
         self.attack_logger.vprint(f"New adversary generated. ID: {adid}, ability: {ability_id} group: {group}", 2)
-        res = self.add_operation(operation_name, advid=adid, group=group)
+        res = self.add_operation(operation_name,
+                                 advid=adid,
+                                 group=group,
+                                 obfuscator=obfuscator,
+                                 jitter=jitter
+                                 )
         self.attack_logger.vprint(pformat(res), 3)
 
         opid = self.get_operation(operation_name)["id"]
@@ -573,7 +591,9 @@ class CalderaControl():
                                               ability_id=ability_id,
                                               ttp=self.get_ability(ability_id)[0]["technique_id"],
                                               name=self.get_ability(ability_id)[0]["name"],
-                                              description=self.get_ability(ability_id)[0]["description"]
+                                              description=self.get_ability(ability_id)[0]["description"],
+                                              obfuscator=obfuscator,
+                                              jitter=jitter
                                               )
 
     def pretty_print_ability(self, abi):
