@@ -198,6 +198,20 @@ class CalderaControl():
                 res.append(ability)
         return res
 
+    def does_ability_support_platform(self, abid: str, platform: str) -> bool:
+        """ Checks if an ability supports a specific os
+
+        @param abid: ability id.
+        @param platform: os string to match for
+        """
+
+        # caldera knows the os-es "windows", "linux" and "darwin"
+
+        for ability in self.get_ability(abid):
+            if ability["platform"] == platform:
+                return True
+        return False
+
     def get_operation_by_id(self, op_id):
         """ Get operation by id
 
@@ -492,13 +506,16 @@ class CalderaControl():
 
     #  ######## All inclusive methods
 
-    def attack(self, attack_logger: AttackLog = None, paw="kickme", ability_id="bd527b63-9f9e-46e0-9816-b8434d2b8989", group="red"):
+    def attack(self, attack_logger: AttackLog = None, paw="kickme", ability_id="bd527b63-9f9e-46e0-9816-b8434d2b8989", group="red", target_platform=None):
         """ Attacks a system and returns results
 
         @param attack_logger: An attack logger class to log attacks with
         @param paw: Paw to attack
         @param group: Group to attack. Paw must be in the group
         @param ability_id: Ability to run against the target
+        @param target_platform: Platform of the target machine. Optional. Used for quick-outs
+
+        @:return : True if the attack was executed. False if it was not. For example the target os is not supported by this attack
         """
 
         # Tested obfuscators (with sandcat):
@@ -513,6 +530,14 @@ class CalderaControl():
 
         adversary_name = "generated_adv__" + str(time.time())
         operation_name = "testoperation__" + str(time.time())
+
+        if target_platform:
+            # Check if an ability does support the platform of the target:
+            if not self.does_ability_support_platform(ability_id, target_platform):
+                self.attack_logger.vprint(
+                    f"{CommandlineColors.FAIL}Platform {target_platform} not supported by {ability_id}{CommandlineColors.ENDC}",
+                    1)
+                return False
 
         self.add_adversary(adversary_name, ability_id)
         adid = self.get_adversary(adversary_name)["adversary_id"]
@@ -595,6 +620,7 @@ class CalderaControl():
                                               obfuscator=obfuscator,
                                               jitter=jitter
                                               )
+        return True
 
     def pretty_print_ability(self, abi):
         """ Pretty pritns an ability
@@ -603,7 +629,7 @@ class CalderaControl():
         """
 
         print("""
-        ID: {technique_id}
+        TTP: {technique_id}
         Technique name: {technique_name}
         Tactic: {tactic}
         Name: {name}

@@ -58,7 +58,9 @@ globs = ["TODO.md",
          "plugins/avast_internal_plugins/*/*/hosts",
          "plugins/README.md",
          "pylint.rc",
-         "shipit_log.txt"]
+         "shipit_log.txt",
+         "all_caldera_attacks_unique.txt",
+         "caldera_subset.txt"]
 
 try:
     os.remove(filename)

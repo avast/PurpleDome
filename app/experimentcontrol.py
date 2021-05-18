@@ -22,11 +22,12 @@ from app.exceptions import ServerError
 class Experiment():
     """ Class handling experiments """
 
-    def __init__(self, configfile, verbosity=0):
+    def __init__(self, configfile, verbosity=0, caldera_attacks: list = None):
         """
 
         @param configfile: Path to the configfile to load
         @param verbosity: verbosity level between 0 and 3
+        @param caldera_attacks: an optional argument to override caldera attacks in the config file and run just this one caldera attack. A list of caldera ID
         """
         self.attacker_1 = None
 
@@ -103,8 +104,9 @@ class Experiment():
         # Attack them
         self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Running Caldera attacks{CommandlineColors.ENDC}", 1)
         for target_1 in self.targets:
-            # Run caldera attacks
-            caldera_attacks = self.experiment_config.get_caldera_attacks(target_1.get_os())
+            if caldera_attacks is None:
+                # Run caldera attacks
+                caldera_attacks = self.experiment_config.get_caldera_attacks(target_1.get_os())
             if caldera_attacks:
                 for attack in caldera_attacks:
                     # TODO: Work with snapshots
@@ -112,11 +114,12 @@ class Experiment():
                     self.attack_logger.vprint(f"Attacking machine with PAW: {target_1.get_paw()} with {attack}", 2)
                     caldera_control = CalderaControl("http://" + self.attacker_1.getip() + ":8888", self.attack_logger, config=self.experiment_config)
 
-                    caldera_control.attack(attack_logger=self.attack_logger,
-                                           paw=target_1.get_paw(),
-                                           ability_id=attack,
-                                           group=target_1.get_group(),
-                                           )
+                    it_worked = caldera_control.attack(attack_logger=self.attack_logger,
+                                                       paw=target_1.get_paw(),
+                                                       ability_id=attack,
+                                                       group=target_1.get_group(),
+                                                       target_platform=target_1.get_os()
+                                                       )
 
                     # Moved to fix section below. If fix works: can be removed
                     # print(f"Pausing before next attack (config: nap_time): {self.experiment_config.get_nap_time()}")
@@ -124,23 +127,24 @@ class Experiment():
 
                     # Fix: Caldera sometimes gets stuck. This is why we better re-start the caldera server and wait till all the implants re-connected
                     # Reason: In some scenarios we keep the infra up for hours or days. No re-creation like intended. This can cause Caldera to hick up
-                    self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Restarting caldera server and waiting for clients to re-connect{CommandlineColors.ENDC}", 1)
-                    self.attacker_1.start_caldera_server()
-                    self.attack_logger.vprint(f"Pausing before next attack (config: nap_time): {self.experiment_config.get_nap_time()}", 2)
-                    time.sleep(self.experiment_config.get_nap_time())
-                    retries = 100
-                    for target_system in self.targets:
-                        running_agents = caldera_control.list_paws_of_running_agents()
-                        self.attack_logger.vprint(f"Agents currently connected to the server: {running_agents}", 2)
-                        while target_system.get_paw() not in running_agents:
-                            time.sleep(1)
+                    if it_worked:
+                        self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Restarting caldera server and waiting for clients to re-connect{CommandlineColors.ENDC}", 1)
+                        self.attacker_1.start_caldera_server()
+                        self.attack_logger.vprint(f"Pausing before next attack (config: nap_time): {self.experiment_config.get_nap_time()}", 2)
+                        time.sleep(self.experiment_config.get_nap_time())
+                        retries = 100
+                        for target_system in self.targets:
                             running_agents = caldera_control.list_paws_of_running_agents()
-                            retries -= 1
-                            self.attack_logger.vprint(f"Waiting for clients to re-connect ({retries}, {running_agents}) ", 3)
-                            if retries <= 0:
-                                raise ServerError
-                    self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Restarted caldera server clients re-connected{CommandlineColors.ENDC}", 1)
-                    # End of fix
+                            self.attack_logger.vprint(f"Agents currently connected to the server: {running_agents}", 2)
+                            while target_system.get_paw() not in running_agents:
+                                time.sleep(1)
+                                running_agents = caldera_control.list_paws_of_running_agents()
+                                retries -= 1
+                                self.attack_logger.vprint(f"Waiting for clients to re-connect ({retries}, {running_agents}) ", 3)
+                                if retries <= 0:
+                                    raise ServerError
+                        self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Restarted caldera server clients re-connected{CommandlineColors.ENDC}", 1)
+                        # End of fix
 
         self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Finished Caldera attacks{CommandlineColors.ENDC}", 1)
 

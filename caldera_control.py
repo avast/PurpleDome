@@ -104,7 +104,7 @@ def create_parser():
     parser_delete_agents.set_defaults(func=delete_agents)
 
     # For all parsers
-    main_parser.add_argument("--caldera_url", help="caldera url, including port", default="http://192.168.178.118:8888/")
+    main_parser.add_argument("--caldera_url", help="caldera url, including port", default="http://192.168.178.125:8888/")
     main_parser.add_argument("--apikey", help="caldera api key", default="ADMIN123")
 
     return main_parser
