@@ -26,12 +26,12 @@ class NmapSneakyPlugin(KaliPlugin):
         """
 
         res = ""
-
-        cmd = f"cd {self.get_playground()};"
+        pg = self.get_attacker_playground()
+        cmd = f"cd {pg};"
         for t in targets:
             cmd += f"sudo nmap -T1 -F -D RND:5 -f --randomize-hosts {t};"
 
-        res += self.run_cmd(cmd) or ""
+        res += self.attacker_run_cmd(cmd) or ""
 
         return res
 

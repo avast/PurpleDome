@@ -4,6 +4,7 @@
 import os
 import yaml
 # from shutil import copy
+from app.exceptions import PluginError
 
 # TODO: Proper planning and re-building of plugin system. Especially the default config handling should be streamlined. All the plugin types should have a very similar programming interface.
 
@@ -32,6 +33,9 @@ class BasePlugin():
          Which is the folder on the machine where we run our tasks in
          """
 
+        if self.machine_plugin is None:
+            raise PluginError("Default machine not configured. Maybe you are creating an attack plugin. Then there are special attack/target machines")
+
         return self.machine_plugin.get_playground()
 
     def set_logger(self, attack_logger):
@@ -40,6 +44,11 @@ class BasePlugin():
 
     def process_templates(self):
         """ A method you can optionally implement to transfer your jinja2 templates into the files yo want to send to the target. See 'required_files' """
+
+        return
+
+    def copy_to_attacker_and_defender(self):
+        """ Copy attacker/defender specific files to the machines """
 
         return
 
@@ -52,6 +61,8 @@ class BasePlugin():
             src = os.path.join(os.path.dirname(self.plugin_path), a_file)
             self.vprint(src, 3)
             self.copy_to_machine(src)
+
+        self.copy_to_attacker_and_defender()
 
     def set_machine_plugin(self, machine_plugin):
         """ Set the machine plugin class to communicate with
@@ -87,7 +98,8 @@ class BasePlugin():
         @param filename: File from the plugin folder to copy to the machine share.
         """
 
-        self.machine_plugin.put(filename, self.machine_plugin.get_playground())
+        if self.machine_plugin is not None:
+            self.machine_plugin.put(filename, self.machine_plugin.get_playground())
 
     def get_from_machine(self, src, dst):
         """ Get a file from the machine """
@@ -99,6 +111,9 @@ class BasePlugin():
          @param command: Command to execute
          @param disown: Run in background
          """
+
+        if self.machine_plugin is None:
+            raise PluginError("machine to run command on is not registered")
 
         self.vprint(f"      Plugin running command {command}", 3)
 

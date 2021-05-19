@@ -15,6 +15,8 @@ from app.interface_sfx import CommandlineColors
 from caldera_control import CalderaControl
 from machine_control import Machine
 from app.exceptions import ServerError
+from plugins.base.kali import KaliPlugin
+from app.pluginmanager import PluginManager
 
 
 # TODO: Multi threading at least when starting machines
@@ -33,6 +35,7 @@ class Experiment():
 
         self.experiment_config = ExperimentConfig(configfile)
         self.attack_logger = AttackLog(verbosity)
+        self.plugin_manager = PluginManager(self.attack_logger)
         self.__start_attacker()
         caldera_url = "http://" + self.attacker_1.getip() + ":8888"
         caldera_control = CalderaControl(caldera_url, attack_logger=self.attack_logger, config=self.experiment_config)
@@ -155,7 +158,8 @@ class Experiment():
             for attack in kali_attacks:
                 # TODO: Work with snapshots
                 self.attack_logger.vprint(f"Attacking machine with PAW: {target_1.get_paw()} with attack: {attack}", 1)
-                self.attacker_1.kali_attack(attack, target_1.getip(), self.experiment_config)
+                # self.attacker_1.kali_attack(attack, target_1.getip(), self.experiment_config)
+                self.attack(target_1, attack)
                 self.attack_logger.vprint(f"Pausing before next attack (config: nap_time): {self.experiment_config.get_nap_time()}", 3)
                 time.sleep(self.experiment_config.get_nap_time())
 
@@ -180,6 +184,26 @@ class Experiment():
 
         self.attack_logger.write_json(os.path.join(self.lootdir, "attack.json"))
         self.zip_loot()
+
+    def attack(self, target, attack):
+        """ Pick an attack and run it
+
+        @param attack: Name of the attack to run
+        @param target: IP address of the target
+        @returns: The output of the cmdline attacking tool
+        """
+
+        # TODO: Extend beyond Kali
+
+        for plugin in self.plugin_manager.get_plugins(KaliPlugin, [attack]):
+            name = plugin.get_name()
+
+            self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Running Kali plugin {name}{CommandlineColors.ENDC}", 2)
+            plugin.process_config(self.experiment_config.kali_conf(plugin.get_config_section_name()))    # TODO: De-kalify
+            plugin.set_attacker_machine(self.attacker_1)
+
+            # plugin.__set_logger__(self.attack_logger)
+            plugin.__execute__([target.getip()])
 
     def zip_loot(self):
         """ Zip the loot together """

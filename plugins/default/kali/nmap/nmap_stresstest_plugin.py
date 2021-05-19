@@ -27,11 +27,13 @@ class NmapStresstestPlugin(KaliPlugin):
 
         res = ""
 
-        cmd = f"cd {self.get_playground()};"
+        pg = self.get_attacker_playground()
+
+        cmd = f"cd {pg};"
         for t in targets:
             cmd += f"nmap -T5 --min-parallelism 100 --max-scan-delay 1 {t};"
 
-        res += self.run_cmd(cmd) or ""
+        res += self.attacker_run_cmd(cmd) or ""
 
         return res
 

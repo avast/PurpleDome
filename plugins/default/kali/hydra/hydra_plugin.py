@@ -13,7 +13,7 @@ class HydraPlugin(KaliPlugin):
     ttp = "T1110"
     references = ["https://attack.mitre.org/techniques/T1110/"]
 
-    required_files = ["passwords.txt", "users.txt"]    # Files shipped with the plugin which are needed by the kali tool. Will be copied to the kali share
+    required_files_attacker = ["passwords.txt", "users.txt"]    # Files shipped with the plugin which are needed by the kali tool. Will be copied to the kali share
 
     def __init__(self):
         super().__init__()
@@ -26,7 +26,7 @@ class HydraPlugin(KaliPlugin):
         """
 
         # Set defaults if not present in config
-        playground = self.machine_plugin.get_playground()
+        playground = self.attacker_machine_plugin.get_playground()
 
         # Generate command
         cmd = f"cd {playground};"
@@ -35,6 +35,6 @@ class HydraPlugin(KaliPlugin):
             for p in self.conf['protocols']:
                 cmd += f"hydra -L {self.conf['userfile']}  -P {self.conf['pwdfile']} {p}://{t};"
 
-        res = self.run_cmd(cmd) or ""
+        res = self.attacker_run_cmd(cmd) or ""
 
         return res

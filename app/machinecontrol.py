@@ -7,12 +7,11 @@ import time
 
 import requests
 
-from app.config import MachineConfig, ExperimentConfig
+from app.config import MachineConfig
 from app.exceptions import ServerError, ConfigurationError
 from app.pluginmanager import PluginManager
 from app.calderacontrol import CalderaControl
 from app.interface_sfx import CommandlineColors
-from plugins.base.kali import KaliPlugin
 from plugins.base.machinery import MachineryPlugin
 from plugins.base.sensor import SensorPlugin
 from plugins.base.vulnerability_plugin import VulnerabilityPlugin
@@ -148,27 +147,6 @@ class Machine():
         """
 
         return self.vm_manager.__call_remote_run__(cmd, disown)
-
-    def kali_attack(self, attack, target, config: ExperimentConfig):
-        """ Pick a Kali attack and run it
-
-        @param attack: Name of the attack to run
-        @param target: IP address of the target
-        @param config: A full experiment config object that has the methog "kali_conf" (just in case I want to split the config later)
-        @returns: The output of the cmdline attacking tool
-        """
-
-        for plugin in self.plugin_manager.get_plugins(KaliPlugin, [attack]):
-            name = plugin.get_name()
-
-            self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Running Kali plugin {name}{CommandlineColors.ENDC}", 2)
-            syscon = {"abs_machinepath_internal": self.abs_machinepath_internal,
-                      "abs_machinepath_external": self.abs_machinepath_external}
-            plugin.set_sysconf(syscon)
-            plugin.process_config(config.kali_conf(plugin.get_config_section_name()))
-            plugin.set_machine_plugin(self.vm_manager)
-            # plugin.__set_logger__(self.attack_logger)
-            plugin.__execute__([target])
 
     def load_machine_plugin(self):
         """ Loads the matching machine plugin """
