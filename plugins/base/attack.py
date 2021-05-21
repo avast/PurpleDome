@@ -6,7 +6,7 @@ from app.exceptions import PluginError
 import os
 
 
-class KaliPlugin(BasePlugin):
+class AttackPlugin(BasePlugin):
     """ Class to execute a command on a kali system targeting another system """
 
     # Boilerplate

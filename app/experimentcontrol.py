@@ -15,7 +15,7 @@ from app.interface_sfx import CommandlineColors
 from caldera_control import CalderaControl
 from machine_control import Machine
 from app.exceptions import ServerError
-from plugins.base.kali import KaliPlugin
+from plugins.base.attack import AttackPlugin
 from app.pluginmanager import PluginManager
 
 
@@ -195,7 +195,7 @@ class Experiment():
 
         # TODO: Extend beyond Kali
 
-        for plugin in self.plugin_manager.get_plugins(KaliPlugin, [attack]):
+        for plugin in self.plugin_manager.get_plugins(AttackPlugin, [attack]):
             name = plugin.get_name()
 
             self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Running Kali plugin {name}{CommandlineColors.ENDC}", 2)

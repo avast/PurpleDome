@@ -6,7 +6,7 @@ from glob import glob
 import os
 
 from plugins.base.plugin_base import BasePlugin
-from plugins.base.kali import KaliPlugin
+from plugins.base.attack import AttackPlugin
 from plugins.base.machinery import MachineryPlugin
 from plugins.base.sensor import SensorPlugin
 from plugins.base.vulnerability_plugin import VulnerabilityPlugin
@@ -17,7 +17,7 @@ sections = [{"name": "Vulnerabilities",
             {"name": "Machinery",
              "subclass": MachineryPlugin},
             {"name": "Kali",
-             "subclass": KaliPlugin},
+             "subclass": AttackPlugin},
             {"name": "Sensors",
              "subclass": SensorPlugin},
             ]
@@ -38,7 +38,7 @@ class PluginManager():
         """ Returns a list plugins matching specified criteria
 
 
-        :param subclass: The subclass to use to filter plugins. Currently: KaliPlugin, MachineryPlugin, SensorPlugin, VulnerabilityPlugin
+        :param subclass: The subclass to use to filter plugins. Currently: AttackPlugin, MachineryPlugin, SensorPlugin, VulnerabilityPlugin
         :param name_filter: an optional list of names to select the plugins by
         :return: A list of instantiated plugins
         """

@@ -2,10 +2,10 @@
 
 # A plugin to nmap targets slow motion, to evade sensors
 
-from plugins.base.kali import KaliPlugin
+from plugins.base.attack import AttackPlugin
 
 
-class NmapSneakyPlugin(KaliPlugin):
+class NmapSneakyPlugin(AttackPlugin):
 
     # Boilerplate
     name = "nmap_sneaky"

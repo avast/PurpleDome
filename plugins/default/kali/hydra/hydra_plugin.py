@@ -2,10 +2,10 @@
 
 # A plugin for hydra bruteforce attacks
 
-from plugins.base.kali import KaliPlugin
+from plugins.base.attack import AttackPlugin
 
 
-class HydraPlugin(KaliPlugin):
+class HydraPlugin(AttackPlugin):
 
     # Boilerplate
     name = "hydra"
@@ -22,7 +22,7 @@ class HydraPlugin(KaliPlugin):
     def run(self, targets):
         """ Run the command
 
-        @param targets: A list of targets, ip addresses will do
+        @param targets: A list of targets
         """
 
         # Set defaults if not present in config

@@ -2,10 +2,10 @@
 
 # A plugin to nmap targets - in an agressive way to break sensors
 
-from plugins.base.kali import KaliPlugin
+from plugins.base.attack import AttackPlugin
 
 
-class NmapStresstestPlugin(KaliPlugin):
+class NmapStresstestPlugin(AttackPlugin):
 
     # Boilerplate
     name = "nmap_stresstest"

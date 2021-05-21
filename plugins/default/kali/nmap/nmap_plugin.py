@@ -2,7 +2,7 @@
 
 # A plugin to nmap targets
 
-from plugins.base.kali import KaliPlugin
+from plugins.base.attack import AttackPlugin
 
 
 # TODO All scan patterns need explicit logging into the attack log !
@@ -56,7 +56,7 @@ from plugins.base.kali import KaliPlugin
 
 # TODO Verify decoy scan: -D RND:5 to generate 5 decoys
 
-class NmapPlugin(KaliPlugin):
+class NmapPlugin(AttackPlugin):
 
     # Boilerplate
     name = "nmap"
