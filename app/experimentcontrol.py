@@ -38,10 +38,12 @@ class Experiment():
         self.plugin_manager = PluginManager(self.attack_logger)
         self.__start_attacker()
         caldera_url = "http://" + self.attacker_1.getip() + ":8888"
-        caldera_control = CalderaControl(caldera_url, attack_logger=self.attack_logger, config=self.experiment_config)
+        self.caldera_control = CalderaControl(caldera_url, attack_logger=self.attack_logger, config=self.experiment_config)
+        # self.caldera_control = CalderaControl("http://" + self.attacker_1.getip() + ":8888", self.attack_logger,
+        #                                     config=self.experiment_config)
         # Deleting all currently registered Caldera gents
-        self.attack_logger.vprint(caldera_control.kill_all_agents(), 3)
-        self.attack_logger.vprint(caldera_control.delete_all_agents(), 3)
+        self.attack_logger.vprint(self.caldera_control.kill_all_agents(), 3)
+        self.attack_logger.vprint(self.caldera_control.delete_all_agents(), 3)
 
         self.starttime = datetime.now().strftime("%Y_%m_%d___%H_%M_%S")
         self.lootdir = os.path.join(self.experiment_config.loot_dir(), self.starttime)
@@ -93,7 +95,7 @@ class Experiment():
         self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Contacting caldera agents on all targets ....{CommandlineColors.ENDC}", 1)
         # Wait until all targets are registered as Caldera targets
         for target_1 in self.targets:
-            running_agents = caldera_control.list_paws_of_running_agents()
+            running_agents = self.caldera_control.list_paws_of_running_agents()
             self.attack_logger.vprint(f"Agents currently running: {running_agents}", 2)
             while target_1.get_paw() not in running_agents:
                 self.attack_logger.vprint(f"Connecting to caldera {caldera_url}, running agents are: {running_agents}", 3)
@@ -101,7 +103,7 @@ class Experiment():
                 target_1.start_caldera_client()
                 self.attack_logger.vprint(f"Restarted caldera agent: {target_1.get_paw()} ...", )
                 time.sleep(120)    # Was 30, but maybe there are timing issues
-                running_agents = caldera_control.list_paws_of_running_agents()
+                running_agents = self.caldera_control.list_paws_of_running_agents()
         self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Caldera agents reached{CommandlineColors.ENDC}", 1)
 
         # Attack them
@@ -115,9 +117,8 @@ class Experiment():
                     # TODO: Work with snapshots
                     # TODO: If we have several targets in the same group, it is nonsense to attack each one separately. Make this smarter
                     self.attack_logger.vprint(f"Attacking machine with PAW: {target_1.get_paw()} with {attack}", 2)
-                    caldera_control = CalderaControl("http://" + self.attacker_1.getip() + ":8888", self.attack_logger, config=self.experiment_config)
 
-                    it_worked = caldera_control.attack(attack_logger=self.attack_logger,
+                    it_worked = self.caldera_control.attack(attack_logger=self.attack_logger,
                                                        paw=target_1.get_paw(),
                                                        ability_id=attack,
                                                        group=target_1.get_group(),
@@ -137,11 +138,11 @@ class Experiment():
                         time.sleep(self.experiment_config.get_nap_time())
                         retries = 100
                         for target_system in self.targets:
-                            running_agents = caldera_control.list_paws_of_running_agents()
+                            running_agents = self.caldera_control.list_paws_of_running_agents()
                             self.attack_logger.vprint(f"Agents currently connected to the server: {running_agents}", 2)
                             while target_system.get_paw() not in running_agents:
                                 time.sleep(1)
-                                running_agents = caldera_control.list_paws_of_running_agents()
+                                running_agents = self.caldera_control.list_paws_of_running_agents()
                                 retries -= 1
                                 self.attack_logger.vprint(f"Waiting for clients to re-connect ({retries}, {running_agents}) ", 3)
                                 if retries <= 0:
