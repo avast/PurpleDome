@@ -33,7 +33,7 @@ class HydraPlugin(AttackPlugin):
         cmd += "sudo apt -y install hydra;"
         for t in targets:
             for p in self.conf['protocols']:
-                cmd += f"hydra -L {self.conf['userfile']}  -P {self.conf['pwdfile']} {p}://{t};"
+                cmd += f"hydra -L {self.conf['userfile']}  -P {self.conf['pwdfile']} {p}://{t.getip()};"
 
         res = self.attacker_run_cmd(cmd) or ""
 

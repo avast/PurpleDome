@@ -31,7 +31,7 @@ class NmapStresstestPlugin(AttackPlugin):
 
         cmd = f"cd {pg};"
         for t in targets:
-            cmd += f"nmap -T5 --min-parallelism 100 --max-scan-delay 1 {t};"
+            cmd += f"nmap -T5 --min-parallelism 100 --max-scan-delay 1 {t.getip()};"
 
         res += self.attacker_run_cmd(cmd) or ""
 

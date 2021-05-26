@@ -204,7 +204,7 @@ class Experiment():
             plugin.set_attacker_machine(self.attacker_1)
 
             # plugin.__set_logger__(self.attack_logger)
-            plugin.__execute__([target.getip()])
+            plugin.__execute__([target])
 
     def zip_loot(self):
         """ Zip the loot together """

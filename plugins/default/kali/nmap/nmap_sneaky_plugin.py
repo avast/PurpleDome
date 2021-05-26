@@ -29,7 +29,7 @@ class NmapSneakyPlugin(AttackPlugin):
         pg = self.get_attacker_playground()
         cmd = f"cd {pg};"
         for t in targets:
-            cmd += f"sudo nmap -T1 -F -D RND:5 -f --randomize-hosts {t};"
+            cmd += f"sudo nmap -T1 -F -D RND:5 -f --randomize-hosts {t.getip()};"
 
         res += self.attacker_run_cmd(cmd) or ""
 

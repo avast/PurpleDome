@@ -544,7 +544,8 @@ class CalderaControl():
 
         if attack_logger:
             attack_logger.start_caldera_attack(source=self.url,
-                                               paw=paw, group=group,
+                                               paw=paw,
+                                               group=group,
                                                ability_id=ability_id,
                                                ttp=self.get_ability(ability_id)[0]["technique_id"],
                                                name=self.get_ability(ability_id)[0]["name"],

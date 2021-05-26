@@ -7,7 +7,7 @@ from plugins.base.attack import AttackPlugin
 
 # TODO All scan patterns need explicit logging into the attack log !
 # TODO: Add config for subnet range for ping sweeps
-# TODO: Add IP exclusion --exclude ip,ip,ip to not accidentially scan non-targets
+# TODO: Add IP exclusion --exclude ip,ip,ip to not accidentialy scan non-targets
 # TODO: host discovery Ping scan: -sn
 # TODO: host discovery PE ICMP echo
 # TODO: host discovery PP ICMP timestamp
@@ -21,7 +21,6 @@ from plugins.base.attack import AttackPlugin
 # TODO: --traceroute in addition to host discovery
 # TODO: -R <ip> reverse DNS. Needs a DNS in the big picture. No idea if valuable
 # TODO: host discovery reverse DNS resolution
-# TODO OS identification
 # TODO service discovery
 # TODO stealth scans
 # TODO firewall evasion
@@ -83,7 +82,7 @@ class NmapPlugin(AttackPlugin):
         cmd = f"cd {pg};"
 
         for t in targets:
-            cmd += f"nmap {t};"
+            cmd += f"nmap {t.getip()};"
 
         res += self.attacker_run_cmd(cmd) or ""
 
