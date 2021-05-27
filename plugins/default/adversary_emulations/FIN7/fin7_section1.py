@@ -50,7 +50,11 @@ class FIN7Plugin(AttackPlugin):
             f"{CommandlineColors.OKBLUE}Step 3: Target Assessment{CommandlineColors.ENDC}", 1)
 
         # WMI queries  https://attack.mitre.org/techniques/T1057/
-        # execute net view from spawned cmd https://attack.mitre.org/techniques/T1135/
+
+        # TODO execute net view from spawned cmd https://attack.mitre.org/techniques/T1135/
+
+        self.caldera_attack(self.targets[0], "deeac480-5c2a-42b5-90bb-41675ee53c7e", parameters={"remote.host.fqdn": self.targets[0].getip()})
+
         # check for sandbox https://attack.mitre.org/techniques/T1497/
         # query username https://attack.mitre.org/techniques/T1497/
         # query computername https://attack.mitre.org/techniques/T1082/
@@ -175,16 +179,15 @@ class FIN7Plugin(AttackPlugin):
         @param targets: A list of targets
         """
 
-        # Set defaults if not present in config
-        playground = self.attacker_machine_plugin.get_playground()
+        self.step1()
+        self.step2()
+        self.step3()
+        self.step4()
+        self.step5()
+        self.step6()
+        self.step7()
+        self.step8()
+        self.step9()
+        self.step10()
 
-        # Generate command
-        cmd = f"cd {playground};"
-        cmd += "sudo apt -y install hydra;"
-        for t in targets:
-            for p in self.conf['protocols']:
-                cmd += f"hydra -L {self.conf['userfile']}  -P {self.conf['pwdfile']} {p}://{t};"
-
-        res = self.attacker_run_cmd(cmd) or ""
-
-        return res
+        return ""

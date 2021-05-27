@@ -202,6 +202,7 @@ class Experiment():
             self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Running Kali plugin {name}{CommandlineColors.ENDC}", 2)
             plugin.process_config(self.experiment_config.kali_conf(plugin.get_config_section_name()))    # TODO: De-kalify
             plugin.set_attacker_machine(self.attacker_1)
+            plugin.set_caldera(self.caldera_control)
 
             # plugin.__set_logger__(self.attack_logger)
             plugin.__execute__([target])
