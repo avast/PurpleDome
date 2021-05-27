@@ -134,6 +134,44 @@ class CalderaControl():
         agents = self.__contact_server__(payload)
         return agents
 
+    def list_sources(self):
+        """ List stored facts
+
+        """
+        # TODO: Add filters for specific platforms/executors  :  , platform_filter=None, executor_filter=None as parameters
+        # curl -H 'KEY: ADMIN123' http://192.168.178.102:8888/api/rest -H 'Content-Type: application/json' -d '{"index":"agents"}'
+        payload = {"index": "sources"}
+
+        facts = self.__contact_server__(payload)
+        return facts
+
+    def list_sources_for_name(self, name):
+        """ List facts in a source pool with a specific name """
+
+        for i in self.list_sources():
+            if i["name"] == name:
+                return i
+        return None
+
+    def list_facts_for_name(self, name):
+        """ Pretty format for facts
+
+        @param name: Name of the source ot look into
+        """
+
+        source = self.list_sources_for_name(name)
+
+        if source is None:
+            return {}
+
+        res = {}
+        for i in source["facts"]:
+            res[i["trait"]] = {"value": i["value"],
+                               "technique_id": i["technique_id"],
+                               "collected_by": i["collected_by"]
+                               }
+        return res
+
     def list_paws_of_running_agents(self):
         """ Returns a list of all paws of running agents """
         return [i["paw"] for i in self.list_agents()]
@@ -184,6 +222,12 @@ class CalderaControl():
         return None
 
     #  ######### Get by id
+
+    def get_source(self, source_name):
+
+        payload = {"index": "sources",
+                   "name": source_name}
+        return self.__contact_server__(payload)
 
     def get_ability(self, abid):
         """" Return an ability by id
@@ -290,7 +334,26 @@ class CalderaControl():
 
     #  ######### Add
 
-    def add_operation(self, name, advid, group="red", state="running", obfuscator="plain-text", jitter='4/8'):
+    def add_sources(self, name, parameters):
+        """ Adds a data source and seeds it with facts """
+
+        payload = {"index": "sources",
+                   "name": name,
+                   # "id": "123456-1234-1234-1234-12345678",
+                   "rules": [],
+                   "relationships": []
+                   }
+
+        if parameters is not None:
+            facts = []
+            for k, v in parameters.items():
+                facts.append({"trait": k, "value": v})
+            payload["facts"] = facts
+
+            print(payload)
+        return self.__contact_server__(payload, method="put")
+
+    def add_operation(self, name, advid, group="red", state="running", obfuscator="plain-text", jitter='4/8', parameters=None):
         """ Adds a new operation
 
         @param name: Name of the operation
@@ -299,10 +362,18 @@ class CalderaControl():
         @param state: state to initially set
         @param obfuscator: obfuscator to use for the attack
         @param jitter: jitter to use for the attack
+        @param parameters: parameters to pass to the ability
         """
 
         # Add operation: curl -X PUT -H "KEY:$KEY" http://127.0.0.1:8888/api/rest -d '{"index":"operations","name":"testoperation1"}'
         # observed from GUI sniffing: PUT {'name': 'schnuffel2', 'group': 'red', 'adversary_id': '0f4c3c67-845e-49a0-927e-90ed33c044e0', 'state': 'running', 'planner': 'atomic', 'autonomous': '1', 'obfuscator': 'plain-text', 'auto_close': '1', 'jitter': '4/8', 'source': 'Alice Filters', 'visibility': '50'}
+
+        sources_name = "source_" + name
+        self.add_sources(sources_name, parameters)
+
+        print("Got:")
+        print(self.get_source("source_name"))
+
         payload = {"index": "operations",
                    "name": name,
                    "state": state,
@@ -310,7 +381,7 @@ class CalderaControl():
                    'obfuscator': obfuscator,
                    'auto_close': '1',
                    'jitter': jitter,
-                   'source': 'Alice Filters',
+                   'source': sources_name,
                    'visibility': '50',
                    "group": group,
                    #
@@ -348,12 +419,13 @@ class CalderaControl():
 
     # TODO View the abilities a given agent could execute. curl -H "key:$API_KEY" -X POST localhost:8888/plugin/access/abilities -d '{"paw":"$PAW"}'
 
-    def execute_ability(self, paw, ability_id, obfuscator="plain-text"):
+    def execute_ability(self, paw, ability_id, obfuscator="plain-text", parameters=None):
         """ Executes an ability on a target. This happens outside of the scop of an operation. You will get no result of the ability back
 
         @param paw: Paw of the target
         @param ability_id: ability to execute
         @param obfuscator: Obfuscator to use
+        @param parameters: parameters to pass to the ability
         """
 
         # curl -H "key:ADMIN123" -X POST localhost:8888/plugin/access/exploit -d '{"paw":"$PAW","ability_id":"$ABILITY_ID"}'```
@@ -362,6 +434,15 @@ class CalderaControl():
         payload = {"paw": paw,
                    "ability_id": ability_id,
                    "obfuscator": obfuscator}
+
+        if parameters is not None:
+            facts = []
+            for k, v in parameters.items():
+                facts.append({"trait": k, "value": v})
+            payload["facts"] = facts
+
+            print(payload)
+
         return self.__contact_server__(payload, rest_path="plugin/access/exploit_ex")
 
     def execute_operation(self, operation_id, state="running"):
@@ -506,7 +587,7 @@ class CalderaControl():
 
     #  ######## All inclusive methods
 
-    def attack(self, attack_logger: AttackLog = None, paw="kickme", ability_id="bd527b63-9f9e-46e0-9816-b8434d2b8989", group="red", target_platform=None):
+    def attack(self, attack_logger: AttackLog = None, paw="kickme", ability_id="bd527b63-9f9e-46e0-9816-b8434d2b8989", group="red", target_platform=None, parameters = None):
         """ Attacks a system and returns results
 
         @param attack_logger: An attack logger class to log attacks with
@@ -514,6 +595,7 @@ class CalderaControl():
         @param group: Group to attack. Paw must be in the group
         @param ability_id: Ability to run against the target
         @param target_platform: Platform of the target machine. Optional. Used for quick-outs
+        @param parameters: Dict containing key-values of parameters to pass to the ability
 
         @:return : True if the attack was executed. False if it was not. For example the target os is not supported by this attack
         """
@@ -561,7 +643,8 @@ class CalderaControl():
                                  advid=adid,
                                  group=group,
                                  obfuscator=obfuscator,
-                                 jitter=jitter
+                                 jitter=jitter,
+                                 parameters=parameters
                                  )
         self.attack_logger.vprint(pformat(res), 3)
 
@@ -605,6 +688,8 @@ class CalderaControl():
             outp = str(output)
             self.attack_logger.vprint(f"{CommandlineColors.BACKGROUND_GREEN} Output: {outp} {CommandlineColors.ENDC}", 2)
             pprint(output)
+
+        self.attack_logger.vprint(self.list_facts_for_name("source_"+operation_name), 2)
 
         #  ######## Cleanup
         self.execute_operation(opid, "cleanup")

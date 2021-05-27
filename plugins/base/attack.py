@@ -98,16 +98,20 @@ class AttackPlugin(BasePlugin):
          """
         self.caldera = caldera
 
-    def caldera_attack(self, target, ability_id):
+    def caldera_attack(self, target, ability_id, parameters=None):
         """ Attack a single target using caldera
 
+        @param target: Target machine object
+        @param ability_id: Ability if od caldera ability to run
+        @param parameters: parameters to pass to the ability
         """
 
         self.caldera.attack(self.attack_logger,
                             paw=target.get_paw(),
                             ability_id=ability_id,
                             group=target.get_group(),
-                            target_platform=target.get_os()
+                            target_platform=target.get_os(),
+                            parameters=parameters
                             )
 
     def get_attacker_playground(self):

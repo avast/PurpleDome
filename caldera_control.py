@@ -24,6 +24,36 @@ def list_agents(calcontrol, arguments):  # pylint: disable=unused-argument
     print(f"Running agents: {calcontrol.list_agents()}")
 
 
+def list_facts(calcontrol, arguments):  # pylint: disable=unused-argument
+    """ Call list fact stores ("sources") in caldera control
+
+    @param calcontrol: Connection to the caldera server
+    @param arguments: Parser command line arguments
+    """
+
+
+    printme = "No found"
+
+    if arguments.name:
+        printme = calcontrol.list_facts_for_name(arguments.name)
+    else:
+        printme = calcontrol.list_sources()
+
+    print(f"Stored facts: {printme}")
+
+
+def add_facts(calcontrol, arguments):  # pylint: disable=unused-argument
+    """ Generate new facts in caldera
+
+    @param calcontrol: Connection to the caldera server
+    @param arguments: Parser command line arguments
+    """
+    name = "Test"
+    data = {"foo": "bar"}
+
+    print(f'Created fact: {calcontrol.add_sources(name, data)}')
+
+
 def delete_agents(calcontrol, arguments):  # pylint: disable=unused-argument
     """ Call list agents in caldera control
 
@@ -102,6 +132,13 @@ def create_parser():
     parser_delete_agents = subparsers.add_parser("delete_agents", help="agents")
     parser_delete_agents.add_argument("--paw", default=None, help="PAW to delete. if not set it will delete all agents")
     parser_delete_agents.set_defaults(func=delete_agents)
+
+    parser_facts = subparsers.add_parser("facts", help="facts")
+    parser_facts.set_defaults(func=list_facts)
+    parser_facts.add_argument("--name", default=None, help="Name of a fact source to focus on")
+
+    parser_facts = subparsers.add_parser("add_facts", help="facts")
+    parser_facts.set_defaults(func=add_facts)
 
     # For all parsers
     main_parser.add_argument("--caldera_url", help="caldera url, including port", default="http://192.168.178.125:8888/")
