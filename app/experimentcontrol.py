@@ -37,9 +37,9 @@ class Experiment():
         self.attack_logger = AttackLog(verbosity)
         self.plugin_manager = PluginManager(self.attack_logger)
         self.__start_attacker()
-        caldera_url = "http://" + self.attacker_1.getip() + ":8888"
+        caldera_url = "http://" + self.attacker_1.get_ip() + ":8888"
         self.caldera_control = CalderaControl(caldera_url, attack_logger=self.attack_logger, config=self.experiment_config)
-        # self.caldera_control = CalderaControl("http://" + self.attacker_1.getip() + ":8888", self.attack_logger,
+        # self.caldera_control = CalderaControl("http://" + self.attacker_1.get_ip() + ":8888", self.attack_logger,
         #                                     config=self.experiment_config)
         # Deleting all currently registered Caldera gents
         self.attack_logger.vprint(self.caldera_control.kill_all_agents(), 3)
@@ -59,7 +59,7 @@ class Experiment():
 
             self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}preparing target {tname} ....{CommandlineColors.ENDC}", 1)
             target_1 = Machine(target_conf, attack_logger=self.attack_logger)
-            target_1.set_caldera_server(self.attacker_1.getip())
+            target_1.set_caldera_server(self.attacker_1.get_ip())
             try:
                 if not target_conf.use_existing_machine():
                     target_1.destroy()
@@ -159,7 +159,7 @@ class Experiment():
             for attack in kali_attacks:
                 # TODO: Work with snapshots
                 self.attack_logger.vprint(f"Attacking machine with PAW: {target_1.get_paw()} with attack: {attack}", 1)
-                # self.attacker_1.kali_attack(attack, target_1.getip(), self.experiment_config)
+                # self.attacker_1.kali_attack(attack, target_1.get_ip(), self.experiment_config)
                 self.attack(target_1, attack)
                 self.attack_logger.vprint(f"Pausing before next attack (config: nap_time): {self.experiment_config.get_nap_time()}", 3)
                 time.sleep(self.experiment_config.get_nap_time())

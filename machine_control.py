@@ -38,7 +38,7 @@ def create_machines(arguments):
     print("Attacker done")
 
     target_.destroy()
-    target_.set_caldera_server(attacker_1.getip())
+    target_.set_caldera_server(attacker_1.get_ip())
     target_.install_caldera_service()
     target_.create()
     print("Target up")
@@ -46,7 +46,7 @@ def create_machines(arguments):
     target_.start_caldera_client()
     print("Target done")
 
-    print("Caldera server running at: http://{}:8888/".format(attacker_1.getip()))
+    print("Caldera server running at: http://{}:8888/".format(attacker_1.get_ip()))
     # target_.install_caldera_client(attacker_1.getip(), "target1elf")
 
 
