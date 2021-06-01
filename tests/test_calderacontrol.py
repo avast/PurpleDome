@@ -273,18 +273,18 @@ class TestExample(unittest.TestCase):
                 "name": "source_name"
                 }
         exp3 = {"index": "operations",
-               "name": name,
-               "state": state,
-               "autonomous": 1,
-               'obfuscator': 'plain-text',
-               'auto_close': '1',
-               'jitter': '4/8',
-               'source': 'source_test_name',
-               'visibility': '50',
-               "group": group,
-               "planner": "atomic",
-               "adversary_id": advid,
-               }
+                "name": name,
+                "state": state,
+                "autonomous": 1,
+                'obfuscator': 'plain-text',
+                'auto_close': '1',
+                'jitter': '4/8',
+                'source': 'source_test_name',
+                'visibility': '50',
+                "group": group,
+                "planner": "atomic",
+                "adversary_id": advid,
+                }
         with patch.object(self.cc, "__contact_server__", return_value=None) as mock_method:
             self.cc.add_operation(name, advid, group, state)
         # mock_method.assert_called_once_with(exp, method="put")
@@ -300,7 +300,7 @@ class TestExample(unittest.TestCase):
                 "rules": [],
                 "relationships": [],
                 "facts": []
-               }
+                }
         exp2 = {"index": "sources",
                 "name": "source_name"
                 }

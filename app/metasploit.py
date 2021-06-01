@@ -3,8 +3,6 @@
 from pymetasploit3.msfrpc import MsfRpcClient
 from app.machinecontrol import Machine
 
-
-
 # https://github.com/DanMcInerney/pymetasploit3
 
 # Requirements
@@ -80,8 +78,6 @@ class MSFVenom():
         if outfile is not None:
             cmd += f" -o {outfile}"
 
-
-
         # -p payload  linux/x86/meterpreter_reverse_tcp
         # -f format: elf, exe, powershell, python
         # --platform: linux, windows, osx
@@ -120,4 +116,3 @@ class MSFVenom():
         cmd = self.generate_cmd(**kwargs)
 
         self.attacker.remote_run(cmd)
-

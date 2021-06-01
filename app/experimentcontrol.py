@@ -119,11 +119,11 @@ class Experiment():
                     self.attack_logger.vprint(f"Attacking machine with PAW: {target_1.get_paw()} with {attack}", 2)
 
                     it_worked = self.caldera_control.attack(attack_logger=self.attack_logger,
-                                                       paw=target_1.get_paw(),
-                                                       ability_id=attack,
-                                                       group=target_1.get_group(),
-                                                       target_platform=target_1.get_os()
-                                                       )
+                                                            paw=target_1.get_paw(),
+                                                            ability_id=attack,
+                                                            group=target_1.get_group(),
+                                                            target_platform=target_1.get_os()
+                                                            )
 
                     # Moved to fix section below. If fix works: can be removed
                     # print(f"Pausing before next attack (config: nap_time): {self.experiment_config.get_nap_time()}")

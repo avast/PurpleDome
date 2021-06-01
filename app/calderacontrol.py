@@ -587,7 +587,7 @@ class CalderaControl():
 
     #  ######## All inclusive methods
 
-    def attack(self, attack_logger: AttackLog = None, paw="kickme", ability_id="bd527b63-9f9e-46e0-9816-b8434d2b8989", group="red", target_platform=None, parameters = None):
+    def attack(self, attack_logger: AttackLog = None, paw="kickme", ability_id="bd527b63-9f9e-46e0-9816-b8434d2b8989", group="red", target_platform=None, parameters=None):
         """ Attacks a system and returns results
 
         @param attack_logger: An attack logger class to log attacks with
@@ -689,7 +689,7 @@ class CalderaControl():
             self.attack_logger.vprint(f"{CommandlineColors.BACKGROUND_GREEN} Output: {outp} {CommandlineColors.ENDC}", 2)
             pprint(output)
 
-        self.attack_logger.vprint(self.list_facts_for_name("source_"+operation_name), 2)
+        self.attack_logger.vprint(self.list_facts_for_name("source_" + operation_name), 2)
 
         #  ######## Cleanup
         self.execute_operation(opid, "cleanup")

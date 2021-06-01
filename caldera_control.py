@@ -31,7 +31,6 @@ def list_facts(calcontrol, arguments):  # pylint: disable=unused-argument
     @param arguments: Parser command line arguments
     """
 
-
     printme = "No found"
 
     if arguments.name:

@@ -125,11 +125,11 @@ class MachineryPlugin(BasePlugin):
         """  The path external to the vm where specific data is stored """
         return os.path.join(self.config.vagrantfilepath(), self.config.machinepath())
 
-
     ###############
     # This is the interface from the main code to the plugin system. Do not touch
     def __call_halt__(self):
         """ Wrapper around halt """
+
         self.vprint(f"{CommandlineColors.OKBLUE}Stopping machine: {self.config.vmname()} {CommandlineColors.ENDC}", 1)
         self.halt()
         self.vprint(f"{CommandlineColors.OKGREEN}Machine stopped: {self.config.vmname()}{CommandlineColors.ENDC}", 1)
