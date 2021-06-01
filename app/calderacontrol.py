@@ -344,13 +344,13 @@ class CalderaControl():
                    "relationships": []
                    }
 
+        facts = []
         if parameters is not None:
-            facts = []
             for k, v in parameters.items():
                 facts.append({"trait": k, "value": v})
-            payload["facts"] = facts
+        payload["facts"] = facts
 
-            print(payload)
+        print(payload)
         return self.__contact_server__(payload, method="put")
 
     def add_operation(self, name, advid, group="red", state="running", obfuscator="plain-text", jitter='4/8', parameters=None):
@@ -435,13 +435,13 @@ class CalderaControl():
                    "ability_id": ability_id,
                    "obfuscator": obfuscator}
 
+        facts = []
         if parameters is not None:
-            facts = []
             for k, v in parameters.items():
                 facts.append({"trait": k, "value": v})
-            payload["facts"] = facts
+        payload["facts"] = facts
 
-            print(payload)
+        print(payload)
 
         return self.__contact_server__(payload, rest_path="plugin/access/exploit_ex")
 
