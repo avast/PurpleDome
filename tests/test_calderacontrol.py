@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, call
 from app.calderacontrol import CalderaControl
 from simplejson.errors import JSONDecodeError
 from app.exceptions import CalderaError
@@ -263,14 +263,23 @@ class TestExample(unittest.TestCase):
         group = "test_group"
         advid = "test_id"
 
-        exp = {"index": "operations",
+        exp1 = {"index": "sources",
+                "name": "source_test_name",
+                "rules": [],
+                "relationships": [],
+                "facts": []
+                }
+        exp2 = {"index": "sources",
+                "name": "source_name"
+                }
+        exp3 = {"index": "operations",
                "name": name,
                "state": state,
                "autonomous": 1,
                'obfuscator': 'plain-text',
                'auto_close': '1',
                'jitter': '4/8',
-               'source': 'Alice Filters',
+               'source': 'source_test_name',
                'visibility': '50',
                "group": group,
                "planner": "atomic",
@@ -278,29 +287,39 @@ class TestExample(unittest.TestCase):
                }
         with patch.object(self.cc, "__contact_server__", return_value=None) as mock_method:
             self.cc.add_operation(name, advid, group, state)
-        mock_method.assert_called_once_with(exp, method="put")
+        # mock_method.assert_called_once_with(exp, method="put")
+        mock_method.assert_has_calls([call(exp1, method="put"), call(exp2), call(exp3, method="put")])
 
     # add_operation defaults
     def test_add_operation_defaults(self):
         name = "test_name"
         advid = "test_id"
 
-        exp = {"index": "operations",
-               "name": name,
-               "state": "running",  # default
-               "autonomous": 1,
-               'obfuscator': 'plain-text',
-               'auto_close': '1',
-               'jitter': '4/8',
-               'source': 'Alice Filters',
-               'visibility': '50',
-               "group": "red",  # default
-               "planner": "atomic",
-               "adversary_id": advid,
+        exp1 = {"index": "sources",
+                "name": "source_test_name",
+                "rules": [],
+                "relationships": [],
+                "facts": []
                }
+        exp2 = {"index": "sources",
+                "name": "source_name"
+                }
+        exp3 = {"index": "operations",
+                "name": name,
+                "state": "running",  # default
+                "autonomous": 1,
+                'obfuscator': 'plain-text',
+                'auto_close': '1',
+                'jitter': '4/8',
+                'source': 'source_test_name',
+                'visibility': '50',
+                "group": "red",  # default
+                "planner": "atomic",
+                "adversary_id": advid,
+                }
         with patch.object(self.cc, "__contact_server__", return_value=None) as mock_method:
             self.cc.add_operation(name, advid)
-        mock_method.assert_called_once_with(exp, method="put")
+        mock_method.assert_has_calls([call(exp1, method="put"), call(exp2), call(exp3, method="put")])
 
     # add_adversary
     def test_add_adversary(self):
@@ -342,7 +361,8 @@ class TestExample(unittest.TestCase):
 
         exp = {"paw": paw,
                "ability_id": ability_id,
-               "obfuscator": obfuscator}
+               "obfuscator": obfuscator,
+               "facts": []}
         with patch.object(self.cc, "__contact_server__", return_value=None) as mock_method:
             self.cc.execute_ability(paw, ability_id, obfuscator)
         mock_method.assert_called_once_with(exp, rest_path="plugin/access/exploit_ex")
@@ -353,7 +373,8 @@ class TestExample(unittest.TestCase):
 
         exp = {"paw": paw,
                "ability_id": ability_id,
-               "obfuscator": "plain-text"}
+               "obfuscator": "plain-text",
+               "facts": []}
         with patch.object(self.cc, "__contact_server__", return_value=None) as mock_method:
             self.cc.execute_ability(paw, ability_id)
         mock_method.assert_called_once_with(exp, rest_path="plugin/access/exploit_ex")

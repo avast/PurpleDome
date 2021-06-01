@@ -532,8 +532,7 @@ class TestExperimentConfig(unittest.TestCase):
         """  Getting kali config for a specific attack. Attack missing """
 
         ex = ExperimentConfig("tests/data/basic.yaml")
-        with self.assertRaises(ConfigurationError):
-            ex.kali_conf("BOOM")
+        self.assertEqual(ex.kali_conf("BOOM"), {})
 
     def test_working_kali_config(self):
         """  Getting kali config for a specific attack """
