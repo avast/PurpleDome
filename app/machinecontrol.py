@@ -308,7 +308,7 @@ class Machine():
 
     ############
 
-    def getip(self):
+    def get_ip(self):
         """ Returns the IP of the main ethernet interface of this machine """
 
         # TODO: Create special code to extract windows IPs
@@ -316,6 +316,26 @@ class Machine():
         # TODO: Find a smarter way to get the ip
 
         return self.vm_manager.get_ip()
+
+    def get_playground(self):
+        """ Return this machine's playground """
+
+        return self.vm_manager.get_playground()
+
+    def get_machine_path_external(self):
+        """ Returns the external path for this machine """
+
+        return self.vm_manager.get_machine_path_external()
+
+    def put(self, src, dst):
+        """ Send a file to the machine """
+
+        return self.vm_manager.put(src, dst)
+
+    def get(self, src, dst):
+        """ Get a file from a machine """
+
+        return self.vm_manager.get(src, dst)
 
     def install_caldera_server(self, cleanup=False, version="2.8.1"):
         """ Installs the caldera server on the VM
@@ -343,7 +363,7 @@ class Machine():
         """
         for i in range(timeout):
             time.sleep(10)
-            caldera_url = "http://" + self.getip() + ":8888"
+            caldera_url = "http://" + self.get_ip() + ":8888"
             caldera_control = CalderaControl(caldera_url, self.attack_logger, apikey=self.calderakey)
             self.attack_logger.vprint(f"{i}  Trying to connect to {caldera_url} Caldera API", 3)
             try:
@@ -371,7 +391,7 @@ class Machine():
     def create_start_caldera_client_cmd(self):
         """ Creates a command to start the caldera client """
 
-        playground = self.vm_manager.get_playground()
+        playground = self.get_playground()
 
         if self.get_os() == "linux":
             # cmd = f"""chmod +x caldera_agent.sh; nohup bash {playground}/caldera_agent.sh start &"""
@@ -401,7 +421,7 @@ class Machine():
                                          file="sandcat.go",
                                          target_dir=self.abs_machinepath_external,
                                          extension=".go")
-            dst = self.vm_manager.get_playground()
+            dst = self.get_playground()
             src = os.path.join(self.abs_machinepath_external, "caldera_agent.bat")
             self.vm_manager.put(src, dst)
             src = os.path.join(self.abs_machinepath_external, "splunkd.go")  # sandcat.go local name
@@ -413,7 +433,7 @@ class Machine():
             self.vm_manager.remote_run(cmd, disown=True)
 
         if self.get_os() == "linux":
-            dst = self.vm_manager.get_playground()
+            dst = self.get_playground()
             src = os.path.join(self.abs_machinepath_external, "caldera_agent.sh")
             self.vm_manager.put(src, dst)
 
@@ -432,7 +452,7 @@ class Machine():
     def __wmi_cmd_for_caldera_implant(self):
         """ Creates a windows specific command to start the caldera implant in background using wmi """
 
-        playground = self.vm_manager.get_playground()
+        playground = self.get_playground()
         if playground:  # Workaround for Windows: Can not set target dir for fabric-put in Windows. Only default (none=user) dir available.
             playground = playground + "\\"
         else:
@@ -444,7 +464,7 @@ class Machine():
         return res
 
     def __install_caldera_service_cmd(self):
-        playground = self.vm_manager.get_playground()
+        playground = self.get_playground()
 
         if self.get_os() == "linux":
             return f"""

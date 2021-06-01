@@ -7,6 +7,7 @@ from enum import Enum
 from app.config import MachineConfig
 from app.interface_sfx import CommandlineColors
 from plugins.base.plugin_base import BasePlugin
+import os
 
 
 class MachineStates(Enum):
@@ -112,6 +113,18 @@ class MachineryPlugin(BasePlugin):
         """ Get the name of the machine """
 
         return self.config.vmname()
+
+    def get_machine_path_internal(self):
+        """ The vm internal path for all the data """
+
+        # Maybe we do not need that ! playground should replace it
+
+        raise NotImplementedError
+
+    def get_machine_path_external(self):
+        """  The path external to the vm where specific data is stored """
+        return os.path.join(self.config.vagrantfilepath(), self.config.machinepath())
+
 
     ###############
     # This is the interface from the main code to the plugin system. Do not touch
