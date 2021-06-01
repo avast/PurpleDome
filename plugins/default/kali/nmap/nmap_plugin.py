@@ -82,7 +82,7 @@ class NmapPlugin(AttackPlugin):
         cmd = f"cd {pg};"
 
         for t in targets:
-            cmd += f"nmap {t.getip()};"
+            cmd += f"nmap {t.get_ip()};"
 
         res += self.attacker_run_cmd(cmd) or ""
 
