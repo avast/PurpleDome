@@ -139,7 +139,7 @@ class AttackPlugin(BasePlugin):
         """
 
         self.targets = targets
-        ips = [tgt.getip() for tgt in targets]
+        ips = [tgt.get_ip() for tgt in targets]
         self.setup()
         self.attack_logger.start_kali_attack(self.attacker_machine_plugin.config.vmname(), ips, self.name, ttp=self.get_ttp())
         res = self.run(targets)

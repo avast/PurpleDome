@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """ A class you can use to add SSH features to you plugin. Useful for vm_controller/machinery classes """
+import os.path
 
 from fabric import Connection
 from app.exceptions import NetworkError
@@ -134,6 +135,9 @@ class SSHFeatures(BasePlugin):
         @param dst: destination
         """
         self.connect()
+
+        if os.path.isdir(dst):
+            dst = os.path.join(dst, os.path.basename(src))
 
         retry = 2
         while retry > 0:
