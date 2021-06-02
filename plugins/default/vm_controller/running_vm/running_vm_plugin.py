@@ -16,8 +16,6 @@ class RunningVMPlugin(SSHFeatures, MachineryPlugin):
 
     def __init__(self):
         super().__init__()
-        # super(SSHFeatures).__init__()
-        # super(MachineryPlugin).__init__()
         self.plugin_path = __file__
         self.vagrantfilepath = None
         self.vagrantfile = None

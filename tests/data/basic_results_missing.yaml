@@ -143,22 +143,7 @@ kali_conf:
 
 ###
 # Settings for the results being harvested
-results:
+#results:
   ###
   # The directory the loot will be in
-  loot_dir: loot
-
-###
-# General sensor config config
-sensors:
-  ###
-  # Windows sensor plugin configuration
-  windows_sensor:
-    ###
-    # Name of the dll to use. Must match AV version
-    # dll_name: aswidptestdll.dll
-    dll_name: windows_sensor.dll
-
-    ###
-    # Folder where the sensor tool is located
-    sensor_tool_folder: windows_sensor
+ # loot_dir: loot

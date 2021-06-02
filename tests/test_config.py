@@ -511,6 +511,24 @@ class TestExperimentConfig(unittest.TestCase):
         self.assertEqual(ex.raw_config["caldera"]["apikey"], "ADMIN123")
         self.assertEqual(ex.caldera_apikey(), "ADMIN123")
 
+    def test_loot_dir(self):
+        """ Test with existing loot dir """
+
+        ex = ExperimentConfig("tests/data/basic.yaml")
+        self.assertEqual(ex.loot_dir(), "loot")
+
+    def test_missing_loot_dir(self):
+        """ Test with missing loot dir """
+
+        with self.assertRaises(ConfigurationError):
+            ExperimentConfig("tests/data/basic_loot_missing.yaml")
+
+    def test_missing_results(self):
+        """ Test with missing results """
+
+        with self.assertRaises(ConfigurationError):
+            ExperimentConfig("tests/data/basic_results_missing.yaml")
+
     def test_basic_loading_targets_read(self):
         """ Targets in config: can be found """
         ex = ExperimentConfig("tests/data/basic.yaml")
@@ -541,6 +559,14 @@ class TestExperimentConfig(unittest.TestCase):
 
         data = ex.kali_conf("hydra")
         self.assertEqual(data["userfile"], "users.txt")
+
+    def test_kali_config_missing_attack_data(self):
+        """  Getting kali config for a specific attack: Missing """
+
+        ex = ExperimentConfig("tests/data/attacks_missing.yaml")
+
+        data = ex.kali_conf("missing")
+        self.assertEqual(data, {})
 
     def test_missing_caldera_config_obfuscator(self):
         """ A config file with no caldera config at all """
@@ -663,6 +689,34 @@ class TestExperimentConfig(unittest.TestCase):
         ex = ExperimentConfig("tests/data/attacks_perfect.yaml")
 
         self.assertEqual(ex.get_caldera_attacks("windows"), ["bd527b63-9f9e-46e0-9816-b8434d2b8989", "foo", "bar"])
+
+    def test_basic_sensor_config(self):
+        """ Test global configuration for a specific sensor """
+
+        ex = ExperimentConfig("tests/data/basic.yaml")
+
+        self.assertEqual(ex.get_sensor_config("windows_sensor"), {"dll_name": "windows_sensor.dll", "sensor_tool_folder": "windows_sensor"})
+
+    def test_basic_sensor_config_missing(self):
+        """ Test global configuration for a specific and missing sensor """
+
+        ex = ExperimentConfig("tests/data/basic.yaml")
+
+        self.assertEqual(ex.get_sensor_config("missing_windows_sensor"), {})
+
+    def test_basic_sensor_entry_missing(self):
+        """ Test global configuration for a specific and missing sensor entry"""
+
+        ex = ExperimentConfig("tests/data/attacks_missing.yaml")
+
+        self.assertEqual(ex.get_sensor_config("windows_sensor"), {})
+
+    def test_basic_sensor_entry_empty(self):
+        """ Test global configuration for a specific and empty sensor entry"""
+
+        ex = ExperimentConfig("tests/data/basic_empty_sensor.yaml")
+
+        self.assertEqual(ex.get_sensor_config("windows_sensor"), {})
 
 
 if __name__ == '__main__':

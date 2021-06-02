@@ -91,21 +91,6 @@ class VagrantPlugin(SSHFeatures, MachineryPlugin):
         else:
             return super().connect()
 
-        # if self.config.os() == "linux":
-        #     super
-
-        # if self.config.os() == "windows":
-        #     args = {"key_filename": os.path.join(self.sysconf["abs_machinepath_external"], self.config.ssh_keyfile())}
-        #     if self.config.ssh_password():
-        #         args["password"] = self.config.ssh_password()
-        #     uhp = self.get_ip()
-        #     print(uhp)
-        #     print(args)
-        #     print(self.config.ssh_user())
-        #     self.c = Connection(uhp, user=self.config.ssh_user(), connect_kwargs=args)
-        #     print(self.c)
-        #     return self.c
-
     def get_state(self):
         """ Get detailed state of a machine """
 
@@ -127,20 +112,6 @@ class VagrantPlugin(SSHFeatures, MachineryPlugin):
     def get_ip(self):
         """ Return the machine ip """
 
-        # TODO: Create special code to extract windows IPs
-
-        # TODO: Find a smarter way to get the ip
-
-        # ips = []
-        # cmd = "ifconfig"
-        # res = self.vm_manager.__call_remote_run__(cmd)
-
-        # for line in res.split("\n"):
-        #     m = re.match(r".*inet (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}).*", line)
-        #     if m:
-        #         print(m.group(1))
-        #         ips.append(m.group(1))
-
-        filename = os.path.join(self.sysconf["abs_machinepath_external"], "ip4.txt")
+        filename = os.path.join(self.get_machine_path_external(), "ip4.txt")
         with open(filename, "rt") as fh:
             return fh.readline().strip()

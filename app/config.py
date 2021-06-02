@@ -151,6 +151,9 @@ class ExperimentConfig():
         self._attackers = []
         self.load(configfile)
 
+        # Test essential data that is a hard requirement. Should throw errors if anything is wrong
+        self.loot_dir()
+
     def load(self, configfile):
         """ Loads the configuration file
 
@@ -194,7 +197,13 @@ class ExperimentConfig():
     def loot_dir(self):
         """ Returns the loot dir """
 
-        return self.raw_config["results"]["loot_dir"]
+        if "results" not in self.raw_config or self.raw_config["results"] is None:
+            raise ConfigurationError("results missing in configuration")
+        try:
+            res = self.raw_config["results"]["loot_dir"]
+        except KeyError:
+            raise ConfigurationError("results/loot_dir not properly set in configuration")
+        return res
 
     def kali_conf(self, attack):
         """ Get kali config for a specific kali attack
@@ -274,5 +283,9 @@ class ExperimentConfig():
         """
         if "sensors" not in self.raw_config:
             return {}
-        if name not in self.raw_config["sensors"]:
+        if self.raw_config["sensors"] is None:  # Better for unit tests that way.
+            return {}
+        if name in self.raw_config["sensors"]:
             return self.raw_config["sensors"][name]
+
+        return {}

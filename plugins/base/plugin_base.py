@@ -78,8 +78,9 @@ class BasePlugin():
         @param config: A dict with system configuration relevant for all plugins
         """
 
-        self.sysconf["abs_machinepath_internal"] = config["abs_machinepath_internal"]
-        self.sysconf["abs_machinepath_external"] = config["abs_machinepath_external"]
+        # TODO: Verify if it works properly. It should wotk thanks to the new design
+        # self.sysconf["abs_machinepath_internal"] = config["abs_machinepath_internal"]
+        # self.sysconf["abs_machinepath_external"] = config["abs_machinepath_external"]
         self.load_default_config()
 
     def process_config(self, config):

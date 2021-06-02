@@ -137,6 +137,8 @@ kali_conf:
     ###
     # A file containing potential passwords
     pwdfile: passwords.txt
+  missing:
+    # intentionally left blank
 
 ###
 # Settings for the results being harvested
@@ -144,3 +146,7 @@ results:
   ###
   # The directory the loot will be in
   loot_dir: loot
+
+###
+# General sensor config config
+# sensors:
