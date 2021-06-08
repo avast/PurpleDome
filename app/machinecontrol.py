@@ -102,11 +102,11 @@ class Machine():
         """ Reboot a machine """
 
         if self.get_os() == "windows":
-            self.vm_manager.remote_run("shutdown /r")
+            self.remote_run("shutdown /r")
             self.vm_manager.__call_disconnect__()
             time.sleep(60)   # Shutdown can be slow....
         if self.get_os() == "linux":
-            self.vm_manager.remote_run("reboot")
+            self.remote_run("reboot")
             self.vm_manager.__call_disconnect__()
         res = None
         while not res:
@@ -317,6 +317,11 @@ class Machine():
 
         return self.vm_manager.get_ip()
 
+    def get_name(self):
+        """ Returns the machine name """
+
+        return self.config.vmname()
+
     def get_playground(self):
         """ Return this machine's playground """
 
@@ -382,9 +387,9 @@ class Machine():
         self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Starting Caldera server {CommandlineColors.ENDC}", 1)
 
         # The pkill was added because the server sometimes gets stuck. And we can not re-create the attacking machines in all cases
-        self.vm_manager.__call_remote_run__(" pkill -f server.py;", disown=False)
+        self.remote_run(" pkill -f server.py;", disown=False)
         cmd = f"cd {self.caldera_basedir}; cd caldera ; nohup python3 server.py --insecure &"
-        self.vm_manager.__call_remote_run__(cmd, disown=True)
+        self.remote_run(cmd, disown=True)
         self.wait_for_caldera_server()
         self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Caldera server started. Confirmed it is running.  {CommandlineColors.ENDC}", 1)
 
@@ -430,7 +435,7 @@ class Machine():
             # cmd = self.__install_caldera_service_cmd().strip()
             cmd = self.__wmi_cmd_for_caldera_implant()
             print(cmd)
-            self.vm_manager.remote_run(cmd, disown=True)
+            self.remote_run(cmd, disown=True)
 
         if self.get_os() == "linux":
             dst = self.get_playground()
@@ -440,7 +445,7 @@ class Machine():
             cmd = self.create_start_caldera_client_cmd().strip()
 
             print(cmd)
-            self.vm_manager.remote_run(cmd, disown=True)
+            self.remote_run(cmd, disown=True)
 
         self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Caldera client started {CommandlineColors.ENDC}", 1)
 
