@@ -59,6 +59,7 @@ class SSHFeatures(BasePlugin):
     def remote_run(self, cmd, disown=False):
         """ Connects to the machine and runs a command there
 
+        @param cmd: The command to execute
         @param disown: Send the connection into background
         """
 
