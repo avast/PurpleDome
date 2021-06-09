@@ -1,8 +1,11 @@
-************
-Kali plugins
-************
+**************
+Attack plugins
+**************
 
-Kali attacks can be extended using a plugin system. An example plugin is in the file *hydra_plugin.py*. It contains a plugin class that **MUST** be based on the *KaliPlugin* class.
+
+Attack features of PurpleDome can be extended using a plugin system. Those attack plugins can start Caldera ttacks, run Kali command line tools ir use Metasploit.
+
+An example plugin is in the file *hydra_plugin.py*. It contains a plugin class that **MUST** be based on the *AttackPlugin* class.
 
 ::
 
@@ -16,7 +19,7 @@ Kali attacks can be extended using a plugin system. An example plugin is in the 
 Usage
 =====
 
-To create a new plugin, start a sub-folder in plugins. The python file in there must contain a class that inherits from *KaliPlugin*.
+To create a new plugin, start a sub-folder in plugins. The python file in there must contain a class that inherits from *AttackPlugin*.
 
 There is an example plugin *hydra.py* that you can use as template.
 
@@ -59,5 +62,5 @@ If you are using the plugin, you **must** have a config section for this kali pl
 The plugin class
 ================
 
-.. autoclass:: plugins.base.kali.KaliPlugin
+.. autoclass:: plugins.base.attack.AttackPlugin
    :members:

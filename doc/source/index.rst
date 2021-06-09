@@ -12,7 +12,7 @@ Welcome to the Purple Dome documentation!
 =========================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Contents:
 
    basics/background
@@ -25,13 +25,13 @@ Welcome to the Purple Dome documentation!
 
    usage/cli
 
-   extending/vulnerability_plugins.rst
+   extending/vulnerability_plugins
 
-   extending/kali_plugins
+   extending/attack_plugins
 
    extending/sensor_plugins
 
-   extending/vm_controller_plugins.rst
+   extending/vm_controller_plugins
 
    extending/extending
 

