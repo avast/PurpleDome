@@ -27,7 +27,7 @@ Welcome to the Purple Dome documentation!
 
    extending/vulnerability_plugins.rst
 
-   extending/kali_plugins
+   extending/attack_plugins
 
    extending/sensor_plugins
 

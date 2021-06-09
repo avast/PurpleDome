@@ -1,31 +1,62 @@
-# Creates vulnerable systems
+# PurpleDome creates simulated systems which hack each other 
 
-Uses vagrant to set up vulnerable systems. Sensors and maybe attack agents will be installed as well.
+It creates several virtual machines to simulate a target network. A Kali attacker will be spawned and use configured attacks to blast at the targets. Those attacks can be Kali command line tools, Caldera abilities or Metasploit tools.
 
-Will use vagrant config. It is quite likely that it we will need some parameters to create similar but not identical systems.
+The goal is to test sensors and detection logic on the targets and in the network and improve them.
+
+The system is at the same time reproducible and quite flexible (target system wise, vulnerabilities on the targets, attacks).
+
+## Installation
+
+Setting up the python environment:
+
+```
+./init.sh
+```
+
+The typical local use case is to create the machines using Vagrant and running them in VirtualBox:
+
+...
+sudo apt install vagrant virtualbox
+...
+
+You will have to switch into the python environment to run it
+
+Before using any PurpleDome commands switch into the python environment:
+
+...
+source venv/bin/activate
+...
+
+(this will contain the libraries in the required versions)
 
 ## Testing
 
-*Prerequisites:*
-
-Install python environment, e.g. using `conda`:
-```
-conda create -n purpledome python=3.8
-conda activate purpledome
-```
-
-Then install the required dependencies in the crated python environment:
-```
-pip install -r requirements.txt
-```
-
-*Call test suite:*
+Basic code and unit tests can be run by
 
 ```
 make test
 ```
 
-## Documentation
+That way you can also see if your env is set up properly
+
+## Running the basic commands
+
+All command line tools have a help included. You can access it by the "--help" parameter
+
+...
+python3 ./experiment_control.py -v  run
+...
+
+* -v is verbosity. To spam stdout use -vvv
+* run is the default command
+* --configfile <filename> is optional. If not supplied it will take experiment.yaml
+
+Most of the configuration is done in the yaml config file. For more details check out the full documentation
+
+## The real documentation
+
+This README is just a short overview. In depth documentation can be found in the *doc* folder.
 
 Documentation is using sphinx
 
