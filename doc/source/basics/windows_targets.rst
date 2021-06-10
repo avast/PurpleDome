@@ -7,11 +7,10 @@ Windows Vagrant boxes need a special setup. They have to be created from a runni
 Windows Box
 -----------
 
-If you use Vagrant you need a vagrant box first. It is a base image the vm will be based on.
+If you use Vagrant you need a vagrant box first. On this image the vm will be based on.
 
-The base vm must be running in VirtualBox !
+The base vm must be running in VirtualBox when taking the snapshot. To do so, use::
 
-Bash::
 
     vagrant package --base 'Windows 10 x64'
 
@@ -26,8 +25,6 @@ After that it can be used under this name in a Vagrantfile.
 Setting up Windows for Purple Dome
 ----------------------------------
 
-* Mount the vagrant share to X: (at least my scripts expect it) *net use x:\\vboxsvr\share*
-* Create a batch file in C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup to automatically start *caldera_agent.bat* in the vagrant share for this machine. This ensures that the caldera agent can be started in reboot
 * Install OpenSSH on the windows target (https://docs.microsoft.com/de-de/windows-server/administration/openssh/openssh_install_firstuse  and https://docs.microsoft.com/de-de/windows-server/administration/openssh/openssh_keymanagement)
 
 Some SSH hints (powershell):
@@ -74,12 +71,12 @@ To connect from linux call bash::
 (Capital letters for user name !)
 * The parameters enforce the use of a specific key. You can also drop that into the ssh config
 
-Footnote: WinRM failed. I tried. The python code does not support ssh-style "disown". Vagrant files needed a special configuration-and sometimes failed connecting to the windows host properly. Base problem was that it does not properly support empty passwords (not on python, anyway) - and I used them for auto-login. Because some windows versions are a bit tricky with auto-login settings as they should be. Windows 10 is mutating here like hell.
+Footnote: WinRM failed.
 
 SCP from and to Windows
 -----------------------
 
-Just use the user's home folder as entry and do::
+Just use the user's home folder as "entry folder" and do::
 
     scp win10:my_logs.zip .
 

@@ -8,8 +8,11 @@ A VM plugin handles several things:
 
 * vm creation/destruction
 * vm starting/stopping
-* connecting to the VM (ssh or similar) and running commands there
-* Copy files from and to the VM
+
+VM controller plugins can use SSH as a mixin class. This is implemented in *ssh_features.py* and reduces code duplication. In certain cases (for example if SSH needs some extra features) you can extend or replace methods from there. SSH handles:
+
+* connecting to the VM and running commands there
+* Copying files from and to the VM
 
 
 
@@ -29,68 +32,28 @@ The boilerplate contains some basics:
 * description. A human readable description for this plugin.
 * required_files: A list. If you ship files with your plugin, listing them here will cause them to be installed on plugin init.
 
-Method: process_config
-----------------------
+Some relevant methods are
+
+process_config
+--------------
 
 The configuration for this machine is a sub-section in the experiment config. As the different machinery systems might require special handling, you can parse the config in this section and add your own processing or defaults
 
-Method: create
---------------
-
-Creates the machine (for systems like vagrant that build a machine out of a config file)
-
-Method: up
-----------
-
-Starts the machine
-
-Method: halt
-------------
-
-Stops the machine
-
-Method: destroy
----------------
-
-Remove the machine from disk. Only smart if you can re-create it with *create*
-
-Method: connect
----------------
-
-Create a connection to this machine to run shell commands or copy files
-
-Method: remote_run
-------------------
-
-Execute a command on the running machine
-
-Method: put
------------
-
-Copy a file to the machine
-
-Method: get
------------
-
-Get a file from the machine
-
-Method: disconnect
-------------------
-
-Disconnect the command channel from the  vm
-
-Method: get_state
------------------
+get_state
+---------
 
 Get the machines state. The class MachineStates contains potential return values
 
-Method: get_ip
---------------
+get_ip
+------
 
 Get the ip of the machine. If the machine is registered at the system resolver (/etc/hosts, dns, ...) a machine name would also be a valid response. As long as the network layer can reach it, everything is fine.
 
 The plugin class
 ================
+
+The machine class can also be very essential if you write attack plugins. Those have access to the kali attack and one or more targets. And those are Machinery objects.
+For a full list of methods read on:
 
 .. autoclass:: plugins.base.machinery.MachineryPlugin
    :members:

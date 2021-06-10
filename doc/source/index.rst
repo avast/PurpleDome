@@ -17,13 +17,11 @@ Welcome to the Purple Dome documentation!
 
    basics/background
 
+   usage/cli
+
    basics/configuration
 
    basics/windows_targets
-
-   usage/usage
-
-   usage/cli
 
    extending/vulnerability_plugins
 

@@ -9,19 +9,13 @@ Usage
 
 To create a new plugin, start a sub-folder in plugins. The python file in there must contain a class that inherits from *SensorPlugin*.
 
-If the plugin is activated for a specific machine four specific methods will be called to interact with the target:
+If the plugin is activated for a specific machine specific methods will be called to interact with the target:
 
-* Install
-* Start
-* Stop
-* Collect results
-
-Methods for these four are called by PurpleDome. Normally you should not have to edit these methods. Just the commands you that are called by them. And those commands are created by specific methods:
-
-* install_command
-* start_command
-* stop_command
-* collect_command
+* prime: Easrly installation steps, can trigger a reboot of the machine by returning True
+* install: Normal, simple installation. No reboot
+* start: Start the sensor
+* stop: Stop the sensor
+* collect: Collect results
 
 Boilerplate
 -----------

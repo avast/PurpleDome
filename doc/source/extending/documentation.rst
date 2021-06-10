@@ -2,7 +2,7 @@
 Extending the documentation
 ===========================
 
-Tools being used are:
+Tools being used for documentation are:
 
 
 * Argparse for my command line tools
@@ -20,3 +20,7 @@ Tools being used are:
 * Autoyaml
 
  - https://github.com/Jakski/sphinxcontrib-autoyaml
+
+* Asciinema
+
+ - https://pypi.org/project/sphinxcontrib.asciinema/
