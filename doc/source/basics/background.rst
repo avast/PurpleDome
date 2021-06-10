@@ -2,7 +2,7 @@
 Basics
 ======
 
-Purple Dome is a simulated and automated environment to play with several operating system attacking each other.
+Purple Dome is a simulated and automated environment to experiment with several operating system attacking each other.
 
 This tool generates an attacker VM and target VMs. Automated attacks are then run against the targets and they will log system events. Those logs will then be stored away for analysis.
 
@@ -17,21 +17,21 @@ Features
 * VM controller abstracted as plugins
     * Local vagrant based (debug and development)
     * Cloud based
-* Caldera attacks
-* Kali attack tools as plugins
-* Data collection: Attack log and sensor data
+* Attacks as plugins controlling
+    * Caldera attacks
+    * Kali attacks
+    * Metasploit attacks
+* Data collection: Attack log and sensor data in parallel with timestamps for matching events
 * Vulnerability plugins: Modify the targets before the attack
 
 Components
 ==========
 
-You will interact with the command line tools. Those are described in the *CLI* chapter.
+The command line tools are the way you will interact with Purple Dome the most. Those are described in the *CLI* chapter.
 
-If you want to modify Purple Dome and contribute to it I can point you to the *Extending* chapter
+The experiments are configured in YAML files, the format is described in the *configuration* chapter. You will also want to create some target VMs. You can do this manually or use Vagrant. Vagrant makes it simple to create Linux targets. Windows targets (with some start configuration) are harder and have an own chapter.
 
-On of the first things you will want to do is configuring the whole thing. Basically you have to touch two things: The configuration file must be modified (in YAML format). And you will also want to create some target VMs.
-
-Vagrant makes it simple to create Linux targets. Windows targets (with some start configuration) are harder and have an own chapter.
+If you want to modify Purple Dome and contribute to it I can point you to the *Extending* chapter. Thanks to a plugin interface this is quite simple.
 
 
 

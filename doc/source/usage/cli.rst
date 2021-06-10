@@ -19,6 +19,26 @@ Experiment control is the core tool to run an experiment. It accepts a yaml conf
     :func: create_parser
     :prog: ./experiment_control.py
 
+Plugin manager
+==============
+
+List available plugins or a specific plugin config
+
+.. argparse::
+    :filename: ../plugin_manager.py
+    :func: create_parser
+    :prog: ./plugin_manager.py
+
+Caldera control
+===============
+
+Directly control a caldera server. You will need a running caldera server to connect to. This plugin is handy to list available attacks and find the attack IDs matching specific TTP-IDs.
+
+.. argparse::
+    :filename: ../caldera_control.py
+    :func: create_parser
+    :prog: ./caldera_control.py
+
 Machine control
 ===============
 
@@ -29,12 +49,3 @@ Directly control the machines
     :func: create_parser
     :prog: ./machine_control.py
 
-Caldera control
-===============
-
-Directly control a caldera server
-
-.. argparse::
-    :filename: ../caldera_control.py
-    :func: create_parser
-    :prog: ./caldera_control.py

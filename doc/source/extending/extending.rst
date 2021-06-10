@@ -8,13 +8,13 @@ Modules
 Several core module create the system.
 
 * CalderaControl: remote control for Caldera using the Caldera REST API
+* Metasploit: Metasploit control
 * MachineControl: Create/start and stop VMs
 * ExperimentControl: Control experiments. Will internally use the modules already mentioned
+* PluginManager: Plugin manager tasks
+* MachineConfig / ExperimentConfig: Reading and processing configuration files
+* AttackLog: Logging attack steps and output to stdio
 
-.. sidebar:: Plugins
-
-   There will be a plugin system soon. Until then the only way to extend
-   PurpleDome is to modify the core source code. If it is not urgent, maybe better be patient and ask for a specific plugin interface.
 
 --------------
 CalderaControl
@@ -23,6 +23,24 @@ CalderaControl
 Class for Caldera communication
 
 .. autoclass:: app.calderacontrol.CalderaControl
+   :members:
+
+----------
+MetaSploit
+----------
+
+Class for Metasploit automation
+
+.. autoclass:: app.metasploit.Metasploit
+   :members:
+
+--------
+MSFVenom
+--------
+
+Class for MSFVenom automation
+
+.. autoclass:: app.metasploit.MSFVenom
    :members:
 
 --------------
@@ -53,4 +71,22 @@ Internal configuration handling. Currently there are two classes. One for the wh
    :members:
 
 .. autoclass:: app.config.MachineConfig
+   :members:
+
+-------------
+PluginManager
+-------------
+
+Managing plugins
+
+.. autoclass:: app.pluginmanager.PluginManager
+   :members:
+
+---------
+AttackLog
+---------
+
+Attack specific logging
+
+.. autoclass:: app.attack_log.AttackLog
    :members:

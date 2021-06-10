@@ -1,11 +1,18 @@
-We are looking forward to your contribution. To do so:
+We are looking forward to your contribution.
 
+You can find the project at https://github.com/avast/PurpleDome
+
+To simplify the process and enable others to contribute, we are using automated features from Github. For them to work properly, follow these steps:
+
+* Create an issue in our project to discuss your idea. This prevents duplicate implementations
+* Fork this project
 * Develop in an own branch for each feature
 * Test it using 'make test' which executes tox
-* If there are no bugs, create a PR to the master branch
+* After that you can push your branch to your fork
+* Create a pull request in the web ui. Please add as much information as possible
 
-If you have bigger changes please also execute experiment_control.py and verify the basic experiment still works.
+Now automated scripts will verify the code and notify us.
 
-Server side tests:
-At the moment we do not test on the server. For the proper tests we would need an isolated test environment (AWS, Azure, ...). As it will have to run attacks. We are not there yet.
-=> Please test your changes
+Maybe we will give you some feedback. But the scripts should already have handled most of the issues.
+
+If you have bigger changes please also execute experiment_control.py and verify the basic experiment still works before pushing.

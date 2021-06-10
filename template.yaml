@@ -89,14 +89,17 @@ targets:
     vm_name: target2
     os: windows
     paw: target2w
+
     ###
     # Targets need to be in a group for caldera. The group is more relevant than the paw. Better put every target in a unique group
-    group: red
+    group: red_windows
 
     machinepath: target2w
 
+    ###
     # Do not destroy/create the machine: Set this to "yes".
     use_existing_machine: yes
+
     ###
     # Optional setting to activate force when halting the machine. Windows guests sometime get stuck
     halt_needs_force: yes
@@ -118,10 +121,13 @@ targets:
     # Windows can only use default playground at the moment !
     # playground: C:\\Users\\PurpleDome
 
+    ###
     # Sensors to run on this machine
     sensors:
       - windows_idp
 
+    ###
+    # Vulnerabilities to pre-install
     vulnerabilities:
       - weak_user_passwords
       - rdp_config_vul
