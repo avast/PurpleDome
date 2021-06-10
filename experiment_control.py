@@ -46,9 +46,9 @@ def create_parser():
     # Sub parser for machine creation
     parser_run = subparsers.add_parser("run", help="run experiments")
     parser_run.set_defaults(func=run)
-    parser_run.add_argument("--configfile", default="experiment.yaml", help="Config file to create from")
-    parser_run.add_argument("--caldera_attack", default=None, help="The id of a specific caldera attack to run")
-    parser_run.add_argument("--caldera_attack_file", default=None, help="The file name containing a list of caldera attacks to run")
+    parser_run.add_argument("--configfile", default="experiment.yaml", help="Config file to create the experiment from")
+    parser_run.add_argument("--caldera_attack", default=None, help="The id of a specific caldera attack to run, will override experiment configuration for attacks")
+    parser_run.add_argument("--caldera_attack_file", default=None, help="The file name containing a list of caldera attacks to run, will override experiment configuration for attacks")
 
     return parser
 

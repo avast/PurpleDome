@@ -105,12 +105,12 @@ class MachineryPlugin(BasePlugin):
         raise NotImplementedError
 
     def get_playground(self):
-        """ path where all the attack tools will be copied to on a client. Your specific machine plugin can overwrite it. """
+        """ Path on the machine  where all the attack tools will be copied to. """
 
         return self.config.get_playground()
 
     def get_vm_name(self):
-        """ Get the name of the machine """
+        """ Get the specific name of the machine """
 
         return self.config.vmname()
 
@@ -122,7 +122,7 @@ class MachineryPlugin(BasePlugin):
         raise NotImplementedError
 
     def get_machine_path_external(self):
-        """  The path external to the vm where specific data is stored """
+        """  The path on the controlling host where vm specific data is stored """
         return os.path.join(self.config.vagrantfilepath(), self.config.machinepath())
 
     ###############
