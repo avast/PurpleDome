@@ -118,8 +118,7 @@ class Experiment():
                     # TODO: If we have several targets in the same group, it is nonsense to attack each one separately. Make this smarter
                     self.attack_logger.vprint(f"Attacking machine with PAW: {target_1.get_paw()} with {attack}", 2)
 
-                    it_worked = self.caldera_control.attack(attack_logger=self.attack_logger,
-                                                            paw=target_1.get_paw(),
+                    it_worked = self.caldera_control.attack(paw=target_1.get_paw(),
                                                             ability_id=attack,
                                                             group=target_1.get_group(),
                                                             target_platform=target_1.get_os()
@@ -202,6 +201,7 @@ class Experiment():
             self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Running Kali plugin {name}{CommandlineColors.ENDC}", 2)
             plugin.process_config(self.experiment_config.kali_conf(plugin.get_config_section_name()))    # TODO: De-kalify
             plugin.set_attacker_machine(self.attacker_1)
+            plugin.set_logger(self.attack_logger)
             plugin.set_caldera(self.caldera_control)
 
             # plugin.__set_logger__(self.attack_logger)

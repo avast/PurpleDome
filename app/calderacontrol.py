@@ -11,7 +11,6 @@ import simplejson
 
 from app.exceptions import CalderaError
 from app.interface_sfx import CommandlineColors
-from app.attack_log import AttackLog
 from pprint import pprint, pformat
 
 
@@ -587,10 +586,9 @@ class CalderaControl():
 
     #  ######## All inclusive methods
 
-    def attack(self, attack_logger: AttackLog = None, paw="kickme", ability_id="bd527b63-9f9e-46e0-9816-b8434d2b8989", group="red", target_platform=None, parameters=None):
+    def attack(self, paw="kickme", ability_id="bd527b63-9f9e-46e0-9816-b8434d2b8989", group="red", target_platform=None, parameters=None):
         """ Attacks a system and returns results
 
-        @param attack_logger: An attack logger class to log attacks with
         @param paw: Paw to attack
         @param group: Group to attack. Paw must be in the group
         @param ability_id: Ability to run against the target
@@ -624,17 +622,16 @@ class CalderaControl():
         self.add_adversary(adversary_name, ability_id)
         adid = self.get_adversary(adversary_name)["adversary_id"]
 
-        if attack_logger:
-            attack_logger.start_caldera_attack(source=self.url,
-                                               paw=paw,
-                                               group=group,
-                                               ability_id=ability_id,
-                                               ttp=self.get_ability(ability_id)[0]["technique_id"],
-                                               name=self.get_ability(ability_id)[0]["name"],
-                                               description=self.get_ability(ability_id)[0]["description"],
-                                               obfuscator=obfuscator,
-                                               jitter=jitter
-                                               )
+        self.attack_logger.start_caldera_attack(source=self.url,
+                                                paw=paw,
+                                                group=group,
+                                                ability_id=ability_id,
+                                                ttp=self.get_ability(ability_id)[0]["technique_id"],
+                                                name=self.get_ability(ability_id)[0]["name"],
+                                                description=self.get_ability(ability_id)[0]["description"],
+                                                obfuscator=obfuscator,
+                                                jitter=jitter
+                                                )
 
         #  ##### Create / Run Operation
 
@@ -695,17 +692,16 @@ class CalderaControl():
         self.execute_operation(opid, "cleanup")
         self.delete_adversary(adid)
         self.delete_operation(opid)
-        if attack_logger:
-            attack_logger.stop_caldera_attack(source=self.url,
-                                              paw=paw,
-                                              group=group,
-                                              ability_id=ability_id,
-                                              ttp=self.get_ability(ability_id)[0]["technique_id"],
-                                              name=self.get_ability(ability_id)[0]["name"],
-                                              description=self.get_ability(ability_id)[0]["description"],
-                                              obfuscator=obfuscator,
-                                              jitter=jitter
-                                              )
+        self.attack_logger.stop_caldera_attack(source=self.url,
+                                               paw=paw,
+                                               group=group,
+                                               ability_id=ability_id,
+                                               ttp=self.get_ability(ability_id)[0]["technique_id"],
+                                               name=self.get_ability(ability_id)[0]["name"],
+                                               description=self.get_ability(ability_id)[0]["description"],
+                                               obfuscator=obfuscator,
+                                               jitter=jitter
+                                               )
         return True
 
     def pretty_print_ability(self, abi):
