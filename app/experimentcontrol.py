@@ -2,7 +2,6 @@
 
 """ A class to control a whole experiment. From setting up the machines to running the attacks """
 
-import glob
 import os
 import subprocess
 import time
@@ -167,9 +166,10 @@ class Experiment():
 
         # Stop sensor plugins
         # Collect data
+        zip_this = []
         for a_target in self.targets:
             a_target.stop_sensors()
-            a_target.collect_sensors(self.lootdir)
+            zip_this += a_target.collect_sensors(self.lootdir)
 
         # Uninstall vulnerabilities
         for a_target in self.targets:
@@ -183,7 +183,7 @@ class Experiment():
         self.__stop_attacker()
 
         self.attack_logger.write_json(os.path.join(self.lootdir, "attack.json"))
-        self.zip_loot()
+        self.zip_loot(zip_this)
 
     def attack(self, target, attack):
         """ Pick an attack and run it
@@ -207,25 +207,18 @@ class Experiment():
             # plugin.__set_logger__(self.attack_logger)
             plugin.__execute__([target])
 
-    def zip_loot(self):
+    def zip_loot(self, zip_this):
         """ Zip the loot together """
 
         filename = os.path.join(self.lootdir, self.starttime + ".zip")
-        globs = ["/**/*.json",
-                 "/**/*.proto",
-                 "/*/**/*.zip",
-
-                 ]
 
         self.attack_logger.vprint(f"Creating zip file {filename}", 1)
 
         with zipfile.ZipFile(filename, "w") as zfh:
-            for a_glob in globs:
-                a_glob = self.lootdir + a_glob
-                for a_file in glob.iglob(a_glob, recursive=True):
-                    if a_file != filename:
-                        self.attack_logger.vprint(a_file, 2)
-                        zfh.write(a_file)
+            for a_file in zip_this:
+                if a_file != filename:
+                    self.attack_logger.vprint(a_file, 2)
+                    zfh.write(a_file)
 
     @staticmethod
     def __get_results_files(root):

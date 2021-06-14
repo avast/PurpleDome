@@ -62,11 +62,12 @@ class SensorPlugin(BasePlugin):
 
         path = os.path.join(machine_path, "sensors", self.name)
         os.makedirs(path)
-        self.collect(path)
+        return self.collect(path)
 
-    def collect(self, path):
+    def collect(self, path) -> []:
         """ Collect data from sensor. Copy it from sensor collection dir on target OS to the share
 
         @param path: The path to copy the data into
+        @returns: A list of files to put into the loot zip
         """
         raise NotImplementedError
