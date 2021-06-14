@@ -98,6 +98,84 @@ class AttackLog():
                 }
         self.log.append(data)
 
+    def start_file_write(self, source, target, file_name, ttp=None):
+        """ Mark the start of a file being written to the target (payload !)
+
+        @param source: source of the attack. Attack IP (empty if written from controller)
+        @param target: Target machine of the attack
+        @param file_name: Name of the file being written
+        @param ttp: TTP of the attack. From plugin
+        """
+
+        data = {"timestamp": __get_timestamp__(),
+                "event": "start",
+                "type": "dropping_file",
+                "sub-type": "by PurpleDome",
+                "source": source,
+                "target": target,
+                "file_name": file_name
+                }
+        self.log.append(data)
+
+    def stop_file_write(self, source, target, file_name, ttp=None):
+        """ Mark the stop of a file being written to the target (payload !)
+
+        @param source: source of the attack. Attack IP (empty if written from controller)
+        @param target: Target machine of the attack
+        @param attack_name: Name of the attack. From plugin
+        @param file_name: Name of the file being written
+        @param ttp: TTP of the attack. From plugin
+        """
+
+        data = {"timestamp": __get_timestamp__(),
+                "event": "stop",
+                "type": "dropping_file",
+                "sub-type": "by PurpleDome",
+                "source": source,
+                "target": target,
+                "file_name": file_name
+                }
+        self.log.append(data)
+
+    def start_execute_payload(self, source, target, command, ttp=None):
+        """ Mark the start of a payload being executed
+
+        @param source: source of the attack. Attack IP (empty if written from controller)
+        @param target: Target machine of the attack
+        @param command: Name of the file being written
+        @param ttp: TTP of the attack. From plugin
+        """
+
+        data = {"timestamp": __get_timestamp__(),
+                "event": "start",
+                "type": "execute_payload",
+                "sub-type": "by PurpleDome",
+                "source": source,
+                "target": target,
+                "command": command
+                }
+        self.log.append(data)
+
+    def stop_execute_payload(self, source, target, command, ttp=None):
+        """ Mark the stop of a payload being executed
+
+        @param source: source of the attack. Attack IP (empty if written from controller)
+        @param target: Target machine of the attack
+        @param command: Name of the attack. From plugin
+        @param file_name: Name of the file being written
+        @param ttp: TTP of the attack. From plugin
+        """
+
+        data = {"timestamp": __get_timestamp__(),
+                "event": "stop",
+                "type": "execute_payload",
+                "sub-type": "by PurpleDome",
+                "source": source,
+                "target": target,
+                "command": command
+                }
+        self.log.append(data)
+
     def start_kali_attack(self, source, target, attack_name, ttp=None):
         """ Mark the start of a Kali based attack
 

