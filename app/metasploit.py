@@ -122,18 +122,17 @@ class Metasploit():
         # print(f"Session ID: {session_id}")
         shell = self.client.sessions.session(session_id)
         res = []
-        time.sleep(1)
+        time.sleep(1)  # To ensure an active session
         for cmd in cmds:
             shell.write(cmd)
             time.sleep(delay)
-            retries = 10
+            retries = 20
+            r = ""
             while retries > 0:
-                r = shell.read()
+                r += shell.read()
                 time.sleep(0.5)   # Command needs time to execute
                 retries -= 1
-                if len(r) > 0:
-                    res.append(r)
-                    break
+            res.append(r)
 
         return res
 
@@ -242,7 +241,6 @@ class MSFVenom():
         if self.attack_logger:
             self.attack_logger.stop_file_write("", self.target.get_name(), payload_name)
 
-        # TODO run on target
         if self.target.get_os() == "linux":
             if self.target.get_playground() is not None:
                 cmd = f"cd {self.target.get_playground()};"
