@@ -546,6 +546,21 @@ class TestExperimentConfig(unittest.TestCase):
         self.assertEqual(ex.attackers()[0].vmname(), "attacker")
         self.assertEqual(ex.attacker(0).vmname(), "attacker")
 
+    def test_nicknames_missing(self):
+        """ Test when the machine nicknames are non existing """
+        ex = ExperimentConfig("tests/data/basic.yaml")
+        self.assertEqual(ex._attackers[0].get_nicknames(), [])
+
+    def test_nicknames_present_but_empty(self):
+        """ Test when the machine nicknames are empty """
+        ex = ExperimentConfig("tests/data/attacker_has_empty_nicknames.yaml")
+        self.assertEqual(ex._attackers[0].get_nicknames(), [])
+
+    def test_nicknames_present(self):
+        """ Test when the machine nicknames are there """
+        ex = ExperimentConfig("tests/data/attacker_has_empty_nicknames.yaml")
+        self.assertEqual(ex._targets[0].get_nicknames(), [1, 2, 3])
+
     def test_missing_kali_config(self):
         """  Getting kali config for a specific attack. Attack missing """
 

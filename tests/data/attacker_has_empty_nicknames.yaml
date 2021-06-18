@@ -23,6 +23,9 @@ attackers:
       # # path where the vagrantfile is in
       vagrantfilepath: systems
 
+    # Empty for a reason. It is being tested
+    nicknames:
+
     ###
     # Name of machine in Vagrantfile
     vm_name: attacker
@@ -30,7 +33,7 @@ attackers:
     ###
     # machinepath is a path where the machine specific files and logs are stored. Relative to the Vagrantfile path
     # and will be mounted internally as /vagrant/<name>
-    # If machinepath is not set PurpleDome will try "vm_name"
+    # If machinepoath is not set AttackX will try "vm_name"
     machinepath: attacker1
 
     ###
@@ -44,6 +47,32 @@ attackers:
 ###
 # List of targets
 targets:
+  ###
+  # Specific target
+  target1:
+    vm_controller:
+      type: vagrant
+      vagrantfilepath: systems
+
+    vm_name: target1
+
+    # Used for tests
+    nicknames:
+      - 1
+      - 2
+      - 3
+
+    os: linux
+    ###
+    # Targets need a unique PAW name for caldera
+    paw: target1
+    ###
+    # Targets need to be in a group for caldera
+    group: red
+
+    machinepath: target1
+    # Do not destroy/create the machine: Set this to "yes".
+    use_existing_machine: yes
 
   target2:
     #root: systems/target1
@@ -51,18 +80,10 @@ targets:
       type: vagrant
       vagrantfilepath: systems
 
-    ###
-    # simple switch if targets is used in attack simulation. Default is true. If set to false the machine will not be started
-    active: yes
-
     vm_name: target2
-
-    nicknames:
-      - hotelmanager
-
     os: windows
     paw: target2w
-    group: red_windows
+    group: red
 
     machinepath: target2w
 
@@ -77,41 +98,8 @@ targets:
     ssh_user: ATTACKX
 
     ###
-    # If SSH without vagrant support is used (Windows !) we maybe need a password
-    ssh_password: AttackX
-
-    ###
     # For non-vagrant ssh connections a ssh keyfile stored in the machinepath is required.
-    ssh_keyfile: systems/target2w/id_rsa.3
-
-    ###
-    # The folder all the implants will be installed into
-    # Windows can only use default playground at the moment !
-    # playground: C:\\Users\\AttackX
-
-    # Sensors to run on this machine
-    sensors:
-      - windows_idp
-
-    vulnerabilities:
-      - weak_user_passwords
-      - rdp_config_vul
-
-
-###
-# General sensor config config
-sensors:
-  ###
-  # Windows IDP plugin configuration
-  windows_idp:
-    ###
-    # Name of the dll to use. Must match AV version
-    # dll_name: aswidptestdll.dll
-    dll_name: aswidptestdll.dll_21_1_B
-
-    ###
-    # Folder where the IDP tool is located
-    idp_tool_folder: C:\\capture
+    ssh_keyfile: id_rsa.3
 
 ###
 # General attack config
@@ -120,20 +108,17 @@ attacks:
   # configure the seconds the system idles between the attacks. Makes it slower. But attack and defense logs will be simpler to match
   nap_time: 5
 
-
 ###
-# Configuration for caldera
-caldera_conf:
+# A list of caldera attacks to run against the targets.
+caldera_attacks:
   ###
-  # The obfuscator to use between the implant and the server. Not all obfuscators are supported by all implants. Existing obfuscators:
-  # plain-text, base64, base64jumble, caesar, base64noPadding, steganography
-  obfuscator: plain-text
-
+  # Linux specific attacks. A list of caldera ability IDs
+  linux:
+    - "bd527b63-9f9e-46e0-9816-b8434d2b8989"
   ###
-  # Jitter settings for the implant. it is min/max seconds. The first number has to be smaller. Default is 4/8
-  jitter: 4/8
-
-
+  # Windows specific attacks. A list of caldera ability IDs
+  windows:
+    - "bd527b63-9f9e-46e0-9816-b8434d2b8989"
 
 ###
 # Kali tool based attacks. Will result in kali commandline tools to be called. Currently supported are: "hydra"
@@ -141,10 +126,11 @@ kali_attacks:
   ###
   # Linux specific attacks, a list
   linux:
+    - hydra
   ###
   # Windows specific attacks, a list
   windows:
-    - fin7_1
+    - hydra
 
 ###
 # Configuration for the kali attack tools
@@ -156,7 +142,7 @@ kali_conf:
     # A list of protocols to brute force against. Supported: "ssh"
     protocols:
       - ssh
-      - rdp
+      #- ftp
       #- ftps
     ###
     # A file containing potential user names
@@ -164,8 +150,6 @@ kali_conf:
     ###
     # A file containing potential passwords
     pwdfile: passwords.txt
-  nmap:
-
 
 ###
 # Settings for the results being harvested
@@ -173,3 +157,18 @@ results:
   ###
   # The directory the loot will be in
   loot_dir: loot
+
+###
+# General sensor config config
+sensors:
+  ###
+  # Windows sensor plugin configuration
+  windows_sensor:
+    ###
+    # Name of the dll to use. Must match AV version
+    # dll_name: aswidptestdll.dll
+    dll_name: windows_sensor.dll
+
+    ###
+    # Folder where the sensor tool is located
+    sensor_tool_folder: windows_sensor

@@ -28,6 +28,11 @@ attackers:
     vm_name: attacker
 
     ###
+    # Machine can have nicknames. They can be used in complex attacks to reference the machine
+    nicknames:
+      - "suspect 1"
+
+    ###
     # machinepath is a path where the machine specific files and logs are stored. Relative to the Vagrantfile path
     # and will be mounted internally as /vagrant/<name>
     # If machinepath is not set PurpleDome will try "vm_name"
@@ -56,6 +61,12 @@ targets:
     active: no
 
     vm_name: target1
+
+    ###
+    # Machine can have nicknames. They can be used in complex attacks to reference the machine
+    nicknames:
+      - "web server"
+
     os: linux
     ###
     # Targets need a unique PAW name for caldera
@@ -87,6 +98,13 @@ targets:
     active: no
 
     vm_name: target2
+
+    ###
+    # Machine can have nicknames. They can be used in complex attacks to reference the machine
+    nicknames:
+      - "t2"
+      - "practice target"
+
     os: windows
     paw: target2w
 
@@ -144,6 +162,13 @@ targets:
     active: yes
 
     vm_name: target3
+
+    ###
+    # Machine can have nicknames. They can be used in complex attacks to reference the machine
+    nicknames:
+      - "red shirt"
+      - "the flag"
+
     os: linux
     ###
     # Targets need a unique PAW name for caldera
