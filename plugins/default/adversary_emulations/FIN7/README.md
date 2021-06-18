@@ -43,7 +43,7 @@ Windows 10, Build 18363
 
 ## 3 accounting
 
-Hast the valuables
+Has the valuables
 
 Windows 10, 18363
 
