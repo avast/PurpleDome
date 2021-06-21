@@ -203,6 +203,7 @@ class Experiment():
             plugin.set_attacker_machine(self.attacker_1)
             plugin.set_logger(self.attack_logger)
             plugin.set_caldera(self.caldera_control)
+            plugin.install()
 
             # plugin.__set_logger__(self.attack_logger)
             plugin.__execute__([target])
@@ -219,6 +220,8 @@ class Experiment():
                 if a_file != filename:
                     self.attack_logger.vprint(a_file, 2)
                     zfh.write(a_file)
+
+            zfh.write(os.path.join(self.lootdir, "attack.json"))
 
     @staticmethod
     def __get_results_files(root):

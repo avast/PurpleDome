@@ -136,6 +136,12 @@ class AttackPlugin(BasePlugin):
         """
         raise NotImplementedError
 
+    def install(self):
+        """ Install and setup requirements for the attack
+        """
+
+        return None
+
     def __execute__(self, targets):
         """ Execute the plugin. This is called by the code
 
