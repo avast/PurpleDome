@@ -57,8 +57,10 @@ targets:
 
     vm_name: target2
 
+    # TODO: itadmin must be moved to another target
     nicknames:
       - hotelmanager
+      - itadmin
 
     os: windows
     paw: target2w

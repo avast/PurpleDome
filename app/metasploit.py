@@ -6,6 +6,7 @@ from app.attack_log import AttackLog
 from app.interface_sfx import CommandlineColors
 import time
 import socket
+from app.exceptions import MetasploitError
 
 
 import os
@@ -79,7 +80,14 @@ class Metasploit():
         """
 
         # Get_ip can also return a network name. Matching a session needs a real ip
-        ip = socket.gethostbyname(target.get_ip())
+        name_resolution_worked = True
+        try:
+            ip = socket.gethostbyname(target.get_ip())
+        except socket.gaierror:
+            ip = target.get_ip()   # Limp on feature if we can not get a name resolution
+            name_resolution_worked = False
+            print(f"Name resolution for {target.get_ip()} failed. Sessions are: {self.get_client().sessions.list}")
+            # TODO: Try to get the ip address from kali system
 
         retries = 100
         while retries > 0:
@@ -90,7 +98,7 @@ class Metasploit():
 
             time.sleep(1)
             retries -= 1
-        return None  # TODO: Better error handlign as soon as we know where we use it
+        raise MetasploitError(f"Could not find session for {target.get_ip()} Name resolution worked: {name_resolution_worked}")
 
     def meterpreter_execute(self, cmds: [str], session_number: int, delay=0) -> str:
         """ Executes commands on the meterpreter, returns results read from shell
