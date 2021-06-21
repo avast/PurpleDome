@@ -324,6 +324,11 @@ class Machine():
 
         return self.config.vmname()
 
+    def get_nicknames(self):
+        """ Returns the machine name """
+
+        return self.config.get_nicknames()
+
     def get_playground(self):
         """ Return this machine's playground """
 

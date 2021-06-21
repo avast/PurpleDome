@@ -6,6 +6,7 @@ from app.attack_log import AttackLog
 from app.interface_sfx import CommandlineColors
 import time
 import socket
+from app.exceptions import MetasploitError
 
 
 import os
@@ -79,7 +80,14 @@ class Metasploit():
         """
 
         # Get_ip can also return a network name. Matching a session needs a real ip
-        ip = socket.gethostbyname(target.get_ip())
+        name_resolution_worked = True
+        try:
+            ip = socket.gethostbyname(target.get_ip())
+        except socket.gaierror:
+            ip = target.get_ip()   # Limp on feature if we can not get a name resolution
+            name_resolution_worked = False
+            print(f"Name resolution for {target.get_ip()} failed. Sessions are: {self.get_client().sessions.list}")
+            # TODO: Try to get the ip address from kali system
 
         retries = 100
         while retries > 0:
@@ -90,7 +98,7 @@ class Metasploit():
 
             time.sleep(1)
             retries -= 1
-        return None  # TODO: Better error handlign as soon as we know where we use it
+        raise MetasploitError(f"Could not find session for {target.get_ip()} Name resolution worked: {name_resolution_worked}")
 
     def meterpreter_execute(self, cmds: [str], session_number: int, delay=0) -> str:
         """ Executes commands on the meterpreter, returns results read from shell
@@ -122,18 +130,17 @@ class Metasploit():
         # print(f"Session ID: {session_id}")
         shell = self.client.sessions.session(session_id)
         res = []
-        time.sleep(1)
+        time.sleep(1)  # To ensure an active session
         for cmd in cmds:
             shell.write(cmd)
             time.sleep(delay)
-            retries = 10
+            retries = 20
+            r = ""
             while retries > 0:
-                r = shell.read()
+                r += shell.read()
                 time.sleep(0.5)   # Command needs time to execute
                 retries -= 1
-                if len(r) > 0:
-                    res.append(r)
-                    break
+            res.append(r)
 
         return res
 
@@ -242,7 +249,6 @@ class MSFVenom():
         if self.attack_logger:
             self.attack_logger.stop_file_write("", self.target.get_name(), payload_name)
 
-        # TODO run on target
         if self.target.get_os() == "linux":
             if self.target.get_playground() is not None:
                 cmd = f"cd {self.target.get_playground()};"

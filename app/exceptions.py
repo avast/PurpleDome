@@ -20,3 +20,7 @@ class CalderaError(Exception):
 
 class NetworkError(Exception):
     """ Network connection (like ssh) can not be established """
+
+
+class MetasploitError(Exception):
+    """ Metasploit had an error """

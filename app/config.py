@@ -50,6 +50,14 @@ class MachineConfig():
 
         return self.raw_config["vm_name"]
 
+    def get_nicknames(self):
+        """ Gets the nicknames """
+
+        if "nicknames" in self.raw_config:
+            return self.raw_config["nicknames"] or []
+
+        return []
+
     def vmcontroller(self):
         """ Returns the vm controller. lowercase """
 

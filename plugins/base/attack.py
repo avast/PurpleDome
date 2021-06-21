@@ -2,7 +2,7 @@
 """ Base class for Kali plugins """
 
 from plugins.base.plugin_base import BasePlugin
-from app.exceptions import PluginError
+from app.exceptions import PluginError, ConfigurationError
 from app.calderacontrol import CalderaControl
 # from app.metasploit import MSFVenom, Metasploit
 import os
@@ -139,7 +139,7 @@ class AttackPlugin(BasePlugin):
     def __execute__(self, targets):
         """ Execute the plugin. This is called by the code
 
-        @param targets: A list of targets, ip addresses will do
+        @param targets: A list of targets => machines
         """
 
         self.targets = targets
@@ -164,3 +164,21 @@ class AttackPlugin(BasePlugin):
             return self.references
 
         raise NotImplementedError
+
+    def get_target_by_name(self, name):
+        """ Returns a target machine out of the target pool by matching the name
+        If there is no matching name it will look into the "nicknames" list of the machine config
+
+        @param name: The name to match for
+        @returns: the machine
+        """
+
+        for t in self.targets:
+            if t.get_name() == name:
+                return t
+
+        for t in self.targets:
+            if name in t.get_nicknames():
+                return t
+
+        raise ConfigurationError(f"No matching machine in experiment config for {name}")

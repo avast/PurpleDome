@@ -28,11 +28,6 @@ attackers:
     vm_name: attacker
 
     ###
-    # Machine can have nicknames. They can be used in complex attacks to reference the machine
-    nicknames:
-      - "suspect 1"
-
-    ###
     # machinepath is a path where the machine specific files and logs are stored. Relative to the Vagrantfile path
     # and will be mounted internally as /vagrant/<name>
     # If machinepath is not set PurpleDome will try "vm_name"
@@ -49,43 +44,6 @@ attackers:
 ###
 # List of targets
 targets:
-  ###
-  # Specific target
-  target1:
-    vm_controller:
-      type: vagrant
-      vagrantfilepath: systems
-
-    ###
-    # simple switch if targets is used in attack simulation. Default is true. If set to false the machine will not be started
-    active: no
-
-    vm_name: target1
-
-    ###
-    # Machine can have nicknames. They can be used in complex attacks to reference the machine
-    nicknames:
-      - "web server"
-
-    os: linux
-    ###
-    # Targets need a unique PAW name for caldera
-    paw: target1
-    ###
-    # Targets need to be in a group for caldera. The group is more relevant than the paw. Better put every target in a unique group
-    group: red
-
-    machinepath: target1
-    # Do not destroy/create the machine: Set this to "yes".
-    use_existing_machine: yes
-
-    ###
-    # The folder all the implants will be installed into
-    playground: /home/vagrant
-
-    # Sensors to run on this machine
-    sensors:
-      # - linux_idp
 
   target2:
     #root: systems/target1
@@ -95,103 +53,52 @@ targets:
 
     ###
     # simple switch if targets is used in attack simulation. Default is true. If set to false the machine will not be started
-    active: no
+    active: yes
 
     vm_name: target2
 
-    ###
-    # Machine can have nicknames. They can be used in complex attacks to reference the machine
+    # TODO: itadmin must be moved to another target
     nicknames:
-      - "t2"
-      - "practice target"
+      - hotelmanager
+      - itadmin
 
     os: windows
     paw: target2w
-
-    ###
-    # Targets need to be in a group for caldera. The group is more relevant than the paw. Better put every target in a unique group
     group: red_windows
 
     machinepath: target2w
 
-    ###
     # Do not destroy/create the machine: Set this to "yes".
     use_existing_machine: yes
-
     ###
     # Optional setting to activate force when halting the machine. Windows guests sometime get stuck
     halt_needs_force: yes
 
     ###
     # If SSH without vagrant support is used (Windows !) we need a user name (uppercase)
-    ssh_user: PURPLEDOME
+    ssh_user: ATTACKX
 
     ###
     # If SSH without vagrant support is used (Windows !) we maybe need a password
-    ssh_password: PURPLEDOME
+    ssh_password: AttackX
 
     ###
     # For non-vagrant ssh connections a ssh keyfile stored in the machinepath is required.
-    ssh_keyfile: id_rsa.3
+    ssh_keyfile: systems/target2w/id_rsa.3
 
     ###
     # The folder all the implants will be installed into
     # Windows can only use default playground at the moment !
-    # playground: C:\\Users\\PurpleDome
+    # playground: C:\\Users\\AttackX
 
-    ###
     # Sensors to run on this machine
     sensors:
       - windows_idp
 
-    ###
-    # Vulnerabilities to pre-install
     vulnerabilities:
       - weak_user_passwords
       - rdp_config_vul
 
-
-  # Ubuntu 20.10 (Groovy)
-  target3:
-    vm_controller:
-      type: vagrant
-      vagrantfilepath: systems
-
-    ###
-    # simple switch if targets is used in attack simulation. Default is true. If set to false the machine will not be started
-    active: yes
-
-    vm_name: target3
-
-    ###
-    # Machine can have nicknames. They can be used in complex attacks to reference the machine
-    nicknames:
-      - "red shirt"
-      - "the flag"
-
-    os: linux
-    ###
-    # Targets need a unique PAW name for caldera
-    paw: target3
-    ###
-    # Targets need to be in a group for caldera. The group is more relevant than the paw. Better put every target in a unique group
-    group: red
-
-    machinepath: target3
-    # Do not destroy/create the machine: Set this to "yes".
-    use_existing_machine: no
-
-    ###
-    # The folder all the implants will be installed into
-    playground: /home/vagrant
-
-    # Sensors to run on this machine
-    sensors:
-      - linux_idp
-
-    vulnerabilities:
-      - sshd_config_vul
-      - weak_user_passwords
 
 ###
 # General sensor config config
@@ -201,7 +108,8 @@ sensors:
   windows_idp:
     ###
     # Name of the dll to use. Must match AV version
-    dll_name: aswidptestdll.dll
+    # dll_name: aswidptestdll.dll
+    dll_name: aswidptestdll.dll_21_1_B
 
     ###
     # Folder where the IDP tool is located
@@ -213,6 +121,7 @@ attacks:
   ###
   # configure the seconds the system idles between the attacks. Makes it slower. But attack and defense logs will be simpler to match
   nap_time: 5
+
 
 ###
 # Configuration for caldera
@@ -226,17 +135,7 @@ caldera_conf:
   # Jitter settings for the implant. it is min/max seconds. The first number has to be smaller. Default is 4/8
   jitter: 4/8
 
-###
-# A list of caldera attacks to run against the targets.
-caldera_attacks:
-  ###
-  # Linux specific attacks. A list of caldera ability IDs
-  linux:
-    - "bd527b63-9f9e-46e0-9816-b8434d2b8989"
-  ###
-  # Windows specific attacks. A list of caldera ability IDs
-  windows:
-    - "bd527b63-9f9e-46e0-9816-b8434d2b8989"
+
 
 ###
 # Kali tool based attacks. Will result in kali commandline tools to be called. Currently supported are: "hydra"
@@ -244,13 +143,10 @@ kali_attacks:
   ###
   # Linux specific attacks, a list
   linux:
-    - hydra
-    - nmap
   ###
   # Windows specific attacks, a list
   windows:
-    - hydra
-    - nmap
+    - fin7_1
 
 ###
 # Configuration for the kali attack tools
