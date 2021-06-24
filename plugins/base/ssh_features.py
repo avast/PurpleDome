@@ -136,6 +136,7 @@ class SSHFeatures(BasePlugin):
         @param dst: destination
         """
         self.connect()
+        res = None
 
         if os.path.isdir(dst):
             dst = os.path.join(dst, os.path.basename(src))

