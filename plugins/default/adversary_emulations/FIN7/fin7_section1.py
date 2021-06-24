@@ -249,9 +249,6 @@ class FIN7Plugin(AttackPlugin):
 
         # Start situation: Step 6 executed a meterpreter in hollow.exe We can fake that to be able to start with step 7 directly
 
-
-
-
         # This is meterpreter !
         # Emulating DLL hijacking functionality of BOOSTWRITE
 
