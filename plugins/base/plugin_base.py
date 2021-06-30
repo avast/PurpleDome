@@ -5,6 +5,7 @@ import os
 import yaml
 # from shutil import copy
 from app.exceptions import PluginError
+import app.exceptions
 
 # TODO: Proper planning and re-building of plugin system. Especially the default config handling should be streamlined. All the plugin types should have a very similar programming interface.
 
@@ -191,6 +192,12 @@ class BasePlugin():
         Defaults to the name of the plugin. This method should be overwritten if it gets more complicated """
 
         return self.get_name()
+
+    def main_path(self):
+        """ Returns the main path of the Purple Dome installation """
+        app_dir = os.path.dirname(app.exceptions.__file__)
+
+        return os.path.split(app_dir)[0]
 
     def vprint(self, text, verbosity):
         """ verbosity based stdout printing

@@ -8,7 +8,7 @@ Must not be overwritten;
 unsigned char buf[] = "Leave me be";
 
 unsigned char buf[] =
-"So not touch"
+"Do not touch"
 "This buf"
 ;
 
