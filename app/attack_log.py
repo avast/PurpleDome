@@ -220,6 +220,90 @@ class AttackLog():
                 }
         self.log.append(data)
 
+    def start_metasploit_attack(self, source, target, metasploit_command, ttp=None):
+        """ Mark the start of a Metasploit based attack
+
+        @param source: source of the attack. Attack IP
+        @param target: Target machine of the attack
+        @param metasploit_command: The command to metasploit
+        @param ttp: TTP of the attack. From plugin
+        """
+
+        data = {"timestamp": __get_timestamp__(),
+                "event": "start",
+                "type": "attack",
+                "sub-type": "metasploit",
+                "source": source,
+                "target": target,
+                "metasploit_command": metasploit_command,
+                "hunting_tag": __mitre_fix_ttp__(ttp),
+                }
+        self.log.append(data)
+
+    def stop_metasploit_attack(self, source, target, metasploit_command, ttp=None):
+        """ Mark the start of a Metasploit based attack
+
+        @param source: source of the attack. Attack IP
+        @param target: Target machine of the attack
+        @param metasploit_command: The command to metasploit
+        @param ttp: TTP of the attack. From plugin
+        """
+
+        data = {"timestamp": __get_timestamp__(),
+                "event": "stop",
+                "type": "attack",
+                "sub-type": "metasploit",
+                "source": source,
+                "target": target,
+                "metasploit_command": metasploit_command,
+                "hunting_tag": __mitre_fix_ttp__(ttp),
+                }
+        self.log.append(data)
+
+    def start_attack_plugin(self, source, target, plugin_name, ttp=None):
+        """ Mark the start of an attack plugin
+
+        @param source: source of the attack. Attack IP
+        @param target: Target machine of the attack
+        @param plugin_name: Name of the plugin
+        @param ttp: TTP of the attack. From plugin
+        """
+
+        data = {"timestamp": __get_timestamp__(),
+                "event": "start",
+                "type": "attack",
+                "sub-type": "attack_plugin",
+                "source": source,
+                "target": target,
+                "plugin_name": plugin_name,
+                "hunting_tag": __mitre_fix_ttp__(ttp),
+                }
+        self.log.append(data)
+
+    # TODO: Add parameter
+    # TODO: Add config
+    # TODO: Add results
+
+    def stop_attack_plugin(self, source, target, plugin_name, ttp=None):
+        """ Mark the end of an attack plugin
+
+        @param source: source of the attack. Attack IP
+        @param target: Target machine of the attack
+        @param plugin_name: Name of the plugin
+        @param ttp: TTP of the attack. From plugin
+        """
+
+        data = {"timestamp": __get_timestamp__(),
+                "event": "stop",
+                "type": "attack",
+                "sub-type": "attack_plugin",
+                "source": source,
+                "target": target,
+                "plugin_name": plugin_name,
+                "hunting_tag": __mitre_fix_ttp__(ttp),
+                }
+        self.log.append(data)
+
     def write_json(self, filename):
         """ Write the json data for this log
 

