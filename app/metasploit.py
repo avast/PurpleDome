@@ -6,7 +6,9 @@ from app.attack_log import AttackLog
 from app.interface_sfx import CommandlineColors
 import time
 import socket
-from app.exceptions import MetasploitError
+from app.exceptions import MetasploitError, ServerError
+import requests
+import random
 
 
 import os
@@ -55,7 +57,7 @@ class Metasploit():
     def start_msfrpcd(self):
         """ Starts the msfrpcs on the attacker. Metasploit must alredy be installed there ! """
 
-        cmd = f"nohup msfrpcd -P {self.password} -U {self.username} -S &"
+        cmd = f"killall msfrpcd; nohup msfrpcd -P {self.password} -U {self.username} -S &"
 
         self.attacker.remote_run(cmd, disown=True)
         # print("msfrpcd started")
@@ -71,8 +73,25 @@ class Metasploit():
 
         if self.client:
             return self.client
-        self.client = MsfRpcClient(self.password, **self.kwargs)
-        # print(f"Got client {self.client}")
+
+        self.client = None
+        retries = 5
+        sleeptime = 5
+
+        while retries:
+            try:
+                self.client = MsfRpcClient(self.password, **self.kwargs)
+                break
+            except requests.exceptions.ConnectionError:
+                self.start_msfrpcd()
+                time.sleep(sleeptime)
+                sleeptime += 5
+                print("Failed getting connection to msfrpcd. Retries left: {retries}")
+            retries -= 1
+
+        if self.client is None:
+            raise ServerError("Was not able to properly start and connect to msfrpcd")
+
         return self.client
 
     def wait_for_session(self, retries=50):
@@ -344,6 +363,52 @@ class MetasploitInstant(Metasploit):
         super().__init__(password, **kwargs)
         self.attack_logger = attack_logger
 
+    def parse_ps(self, ps_output):
+        d = []
+        for line in ps_output.split("\n")[6:]:
+            pieces = line.split("  ")
+            cleaned_pieces = []
+            for p in pieces:
+                if len(p):
+                    cleaned_pieces.append(p)
+
+            if len(cleaned_pieces) > 2:
+                rep = {"PID": int(cleaned_pieces[0].strip()),
+                       "PPID": int(cleaned_pieces[1].strip()),
+                       "Name": cleaned_pieces[2].strip(),
+                       "Arch": None,
+                       "Session": None,
+                       "User": None,
+                       "Path": None}
+                if len(cleaned_pieces) >= 4:
+                    rep["Arch"] = cleaned_pieces[3].strip()
+                if len(cleaned_pieces) >= 5:
+                    rep["Session"] = int(cleaned_pieces[4].strip())
+                if len(cleaned_pieces) >= 6:
+                    rep["User"] = cleaned_pieces[5].strip()
+                if len(cleaned_pieces) >= 7:
+                    rep["Path"] = cleaned_pieces[6].strip()
+                d.append(rep)
+
+        return d
+
+    def filter_ps_results(self, data, user=None, name=None, arch=None):
+        """  Filter the process lists for certain
+
+        @param user: The user to filter for.
+        @param name: The process name to filter for (executable name)
+        @param arch: The architecture to select. 'x64' is one option
+        """
+
+        res = data
+        if user is not None:
+            res = [item for item in res if item["User"] == user]
+        if name is not None:
+            res = [item for item in res if item["Name"] == name]
+        if arch is not None:
+            res = [item for item in res if item["Arch"] == arch]
+        return res
+
     def ps_process_discovery(self, target):
         """ Do a process discovery on the target """
 
@@ -353,6 +418,40 @@ class MetasploitInstant(Metasploit):
         self.attack_logger.vprint(
             f"{CommandlineColors.OKCYAN}Execute {command} through meterpreter{CommandlineColors.ENDC}", 1)
 
+        self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
+                                                   target=target.get_ip(),
+                                                   metasploit_command=command,
+                                                   ttp=ttp)
+        res = self.meterpreter_execute_on([command], target)
+
+        ps = self.parse_ps(res[0])
+        self.attack_logger.stop_metasploit_attack(source=self.attacker.get_ip(),
+                                                  target=target.get_ip(),
+                                                  metasploit_command=command,
+                                                  ttp=ttp)
+        return res
+
+    def migrate(self, target, user=None, name=None, arch=None):
+        """  Migrate to a process matching certain criteria
+
+        @param user: The user to filter for.
+        @param name: The process name to filter for (executable name)
+        @param arch: The architecture to select. 'x64' is one option
+        """
+
+        ttp = "T1055"
+
+        process_list = self.ps_process_discovery(target)
+        ps = self.parse_ps(process_list[0])
+        filtered_list = self.filter_ps_results(ps, user, name, arch)
+
+        if len(filtered_list) == 0:
+            raise MetasploitError("Did not find a matching process to migrate to")
+
+        # picking random target process
+        target_process = random.choice(filtered_list)
+        print(f"Migrating to process {target_process}")
+        command = f"migrate {target_process['PID']}"
         self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
                                                    target=target.get_ip(),
                                                    metasploit_command=command,
@@ -407,4 +506,3 @@ class MetasploitInstant(Metasploit):
                                                   metasploit_command=command,
                                                   ttp=ttp)
         return res
-
