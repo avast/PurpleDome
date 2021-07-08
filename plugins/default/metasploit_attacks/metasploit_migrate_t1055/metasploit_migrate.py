@@ -27,7 +27,7 @@ class MetasploitMigratePlugin(AttackPlugin):
         """
 
         res = ""
-        payload_type = "windows/x64/meterpreter/reverse_https"
+        payload_type = "windows/meterpreter_reverse_https"
         payload_name = "babymetal.exe"
         target = self.targets[0]
 
