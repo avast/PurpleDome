@@ -119,3 +119,87 @@ class TestMachineConfig(unittest.TestCase):
         self.assertEqual(data[0]["target"], target)
         self.assertEqual(data[0]["kali_name"], attack_name)
         self.assertEqual(data[0]["hunting_tag"], "MITRE_" + ttp)
+
+    def test_metasploit_attack_start(self):
+        """ Starting a metasploit attack """
+        al = AttackLog()
+        source = "asource"
+        target = "a target"
+        ttp = "1234"
+        attack_name = "a name"
+        al.start_metasploit_attack(source=source,
+                                   target=target,
+                                   metasploit_command=attack_name,
+                                   ttp=ttp,
+                                   )
+        data = al.get_dict()
+        self.assertEqual(data[0]["event"], "start")
+        self.assertEqual(data[0]["type"], "attack")
+        self.assertEqual(data[0]["sub-type"], "metasploit")
+        self.assertEqual(data[0]["source"], source)
+        self.assertEqual(data[0]["target"], target)
+        self.assertEqual(data[0]["metasploit_command"], attack_name)
+        self.assertEqual(data[0]["hunting_tag"], "MITRE_" + ttp)
+
+    def test_metasploit_attack_stop(self):
+        """ Stopping a metasploit attack """
+        al = AttackLog()
+        source = "asource"
+        target = "a target"
+        ttp = "1234"
+        attack_name = "a name"
+        al.stop_metasploit_attack(source=source,
+                                  target=target,
+                                  metasploit_command=attack_name,
+                                  ttp=ttp,
+                                  )
+        data = al.get_dict()
+        self.assertEqual(data[0]["event"], "stop")
+        self.assertEqual(data[0]["type"], "attack")
+        self.assertEqual(data[0]["sub-type"], "metasploit")
+        self.assertEqual(data[0]["source"], source)
+        self.assertEqual(data[0]["target"], target)
+        self.assertEqual(data[0]["metasploit_command"], attack_name)
+        self.assertEqual(data[0]["hunting_tag"], "MITRE_" + ttp)
+
+    def test_attack_plugin_start(self):
+        """ Starting a attack plugin """
+        al = AttackLog()
+        source = "asource"
+        target = "a target"
+        ttp = "1234"
+        attack_name = "a name"
+        al.start_attack_plugin(source=source,
+                               target=target,
+                               plugin_name=attack_name,
+                               ttp=ttp,
+                               )
+        data = al.get_dict()
+        self.assertEqual(data[0]["event"], "start")
+        self.assertEqual(data[0]["type"], "attack")
+        self.assertEqual(data[0]["sub-type"], "attack_plugin")
+        self.assertEqual(data[0]["source"], source)
+        self.assertEqual(data[0]["target"], target)
+        self.assertEqual(data[0]["plugin_name"], attack_name)
+        self.assertEqual(data[0]["hunting_tag"], "MITRE_" + ttp)
+
+    def test_attack_plugin_stop(self):
+        """ Stopping a attack plugin"""
+        al = AttackLog()
+        source = "asource"
+        target = "a target"
+        ttp = "1234"
+        attack_name = "a name"
+        al.stop_attack_plugin(source=source,
+                              target=target,
+                              plugin_name=attack_name,
+                              ttp=ttp,
+                              )
+        data = al.get_dict()
+        self.assertEqual(data[0]["event"], "stop")
+        self.assertEqual(data[0]["type"], "attack")
+        self.assertEqual(data[0]["sub-type"], "attack_plugin")
+        self.assertEqual(data[0]["source"], source)
+        self.assertEqual(data[0]["target"], target)
+        self.assertEqual(data[0]["plugin_name"], attack_name)
+        self.assertEqual(data[0]["hunting_tag"], "MITRE_" + ttp)

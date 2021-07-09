@@ -332,6 +332,7 @@ class FIN7Plugin(AttackPlugin):
         # spawn powershell through cmd
         # !!! admin host!!! use password with paexec to move lateral to it admin host https://attack.mitre.org/techniques/T1021/002/
         # paexec  starts temporary windows service and executes hollow.exe https://attack.mitre.org/techniques/T1021/002/
+        # https://www.poweradmin.com/paexec/
         # => Lateral move to itadmin
         # hollow.exe spawns svchost and unmaps memory image https://attack.mitre.org/techniques/T1055/012/
         # svchost starts data exchange
