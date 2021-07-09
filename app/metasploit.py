@@ -273,7 +273,7 @@ class MSFVenom():
 
         # Detecting all the mistakes that already have been made. To be continued
         # Check if encoder supports the architecture
-        if encoder=="x86/shikata_ga_nai" and architecture=="x64":
+        if encoder == "x86/shikata_ga_nai" and architecture == "x64":
             raise MetasploitError(f"Encoder {encoder} does not support 64 bit architecture")
 
         # Check if payload is for the right amount of bit
@@ -417,7 +417,6 @@ class MetasploitInstant(Metasploit):
                                                    ttp=ttp)
         res = self.meterpreter_execute_on([command], target)
 
-        ps = self.parse_ps(res[0])
         self.attack_logger.stop_metasploit_attack(source=self.attacker.get_ip(),
                                                   target=target.get_ip(),
                                                   metasploit_command=command,
@@ -526,7 +525,7 @@ class MetasploitInstant(Metasploit):
         """ Creates a screenshot
 
         Before using it, migrate to a process running while you want to monitor.
-        One with the permission "NT AUTHORITY\SYSTEM"
+        One with the permission "NT AUTHORITY\\SYSTEM"
         """
 
         command = "screengrab"
@@ -580,3 +579,49 @@ class MetasploitInstant(Metasploit):
                                                   metasploit_command=command,
                                                   ttp=ttp)
         return res
+
+    def getuid(self, target):
+        """ Returns the UID
+
+        """
+
+        command = "getuid"
+        ttp = "T1056.001"   # It uses one out of three different ways to elevate privileges.
+
+        self.attack_logger.vprint(
+            f"{CommandlineColors.OKCYAN}Execute {command} through meterpreter{CommandlineColors.ENDC}", 1)
+
+        self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
+                                                   target=target.get_ip(),
+                                                   metasploit_command=command,
+                                                   ttp=ttp)
+        res = self.meterpreter_execute_on([command], target)
+
+        self.attack_logger.stop_metasploit_attack(source=self.attacker.get_ip(),
+                                                  target=target.get_ip(),
+                                                  metasploit_command=command,
+                                                  ttp=ttp)
+        return res[0]
+
+    def sysinfo(self, target):
+        """ Returns the sysinfo
+
+        """
+
+        command = "sysinfo"
+        ttp = "T1082"   # It uses one out of three different ways to elevate privileges.
+
+        self.attack_logger.vprint(
+            f"{CommandlineColors.OKCYAN}Execute {command} through meterpreter{CommandlineColors.ENDC}", 1)
+
+        self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
+                                                   target=target.get_ip(),
+                                                   metasploit_command=command,
+                                                   ttp=ttp)
+        res = self.meterpreter_execute_on([command], target)
+
+        self.attack_logger.stop_metasploit_attack(source=self.attacker.get_ip(),
+                                                  target=target.get_ip(),
+                                                  metasploit_command=command,
+                                                  ttp=ttp)
+        return res[0]
