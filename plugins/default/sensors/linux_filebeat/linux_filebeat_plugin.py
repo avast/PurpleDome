@@ -25,8 +25,6 @@ class LinuxFilebeatPlugin(SensorPlugin):
     def process_templates(self):
         """ process jinja2 templates of the config files and insert own config """
 
-        # TODO: Implement
-
         env = Environment(
             loader=FileSystemLoader(self.get_plugin_path(), encoding='utf-8', followlinks=False),
             autoescape=select_autoescape()

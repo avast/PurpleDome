@@ -6,7 +6,6 @@ import argparse
 from app.experimentcontrol import Experiment
 
 
-# TODO: Add verbose settings: -v to -vvv
 # TODO: Name experiments. Name will be written to the log
 
 def explain(args):  # pylint: disable=unused-argument

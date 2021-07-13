@@ -7,8 +7,6 @@ import yaml
 from app.exceptions import PluginError
 import app.exceptions
 
-# TODO: Proper planning and re-building of plugin system. Especially the default config handling should be streamlined. All the plugin types should have a very similar programming interface.
-
 
 class BasePlugin():
     """ Base class for plugins """
@@ -79,7 +77,6 @@ class BasePlugin():
         @param config: A dict with system configuration relevant for all plugins
         """
 
-        # TODO: Verify if it works properly. It should wotk thanks to the new design
         # self.sysconf["abs_machinepath_internal"] = config["abs_machinepath_internal"]
         # self.sysconf["abs_machinepath_external"] = config["abs_machinepath_external"]
         self.load_default_config()

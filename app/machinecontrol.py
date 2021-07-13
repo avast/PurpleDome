@@ -313,8 +313,6 @@ class Machine():
     def get_ip(self):
         """ Returns the IP of the main ethernet interface of this machine """
 
-        # TODO: Create special code to extract windows IPs
-
         # TODO: Find a smarter way to get the ip
 
         return self.vm_manager.get_ip()

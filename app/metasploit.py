@@ -130,7 +130,6 @@ class Metasploit():
             ip = target.get_ip()   # Limp on feature if we can not get a name resolution
             name_resolution_worked = False
             print(f"Name resolution for {target.get_ip()} failed. Sessions are: {self.get_client().sessions.list}")
-            # TODO: Try to get the ip address from kali system
 
         retries = 100
         while retries > 0:

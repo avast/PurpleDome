@@ -139,9 +139,6 @@ class PluginManager():
     def print_check(self):
         """ Iterates through all installed plugins and verifies them """
 
-        # TODO: Identical name
-        # TODO: identical class name
-
         names = {}
         cnames = {}
 
