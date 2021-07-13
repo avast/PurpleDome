@@ -6,7 +6,7 @@ from plugins.base.attack import AttackPlugin
 from app.metasploit import MetasploitInstant
 
 
-class MetasploitMigratePlugin(AttackPlugin):
+class MetasploitClearevPlugin(AttackPlugin):
 
     # Boilerplate
     name = "metasploit_clearev"

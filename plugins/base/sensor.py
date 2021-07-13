@@ -39,7 +39,7 @@ class SensorPlugin(BasePlugin):
         """ Install the sensor. Executed on the target. Take the sensor from the share and (maybe) copy it to its destination. Do some setup
         """
 
-        raise NotImplementedError
+        raise True
 
     def start(self, disown=None):
         """ Start the sensor. The connection to the client is disowned here. = Sent to background. This keeps the process running.
@@ -47,12 +47,12 @@ class SensorPlugin(BasePlugin):
         @param disown: Send async into background
         """
 
-        raise NotImplementedError
+        raise True
 
     def stop(self):
         """ Stop the sensor """
 
-        raise NotImplementedError
+        raise True
 
     def __call_collect__(self, machine_path):
         """ Generate the data collect command

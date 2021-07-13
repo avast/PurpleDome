@@ -116,8 +116,8 @@ caldera_attacks:
     - "bd527b63-9f9e-46e0-9816-b8434d2b8989"
 
 ###
-# Kali tool based attacks. Will result in kali commandline tools to be called. Currently supported are: "hydra"
-kali_attacks:
+# Plugin based attacks. Will result in plugins being called
+plugin_based_attacks:
   ###
   # Linux specific attacks, a list
   linux:

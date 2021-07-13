@@ -6,7 +6,7 @@ from plugins.base.attack import AttackPlugin
 from app.metasploit import MetasploitInstant
 
 
-class MetasploitKeyloggingPlugin(AttackPlugin):
+class MetasploitGetuidPlugin(AttackPlugin):
 
     # Boilerplate
     name = "metasploit_getuid"
