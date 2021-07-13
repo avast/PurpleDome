@@ -638,28 +638,28 @@ class TestExperimentConfig(unittest.TestCase):
 
         ex = ExperimentConfig("tests/data/attacks_missing.yaml")
 
-        self.assertEqual(ex.get_kali_attacks("linux"), [])
+        self.assertEqual(ex.get_plugin_based_attacks("linux"), [])
 
     def test_kali_attacks_empty(self):
         """ zero entries in kali attacks list """
 
         ex = ExperimentConfig("tests/data/attacks_perfect.yaml")
 
-        self.assertEqual(ex.get_kali_attacks("missing"), [])
+        self.assertEqual(ex.get_plugin_based_attacks("missing"), [])
 
     def test_kali_attacks_one(self):
         """ One entry in kali attacks list """
 
         ex = ExperimentConfig("tests/data/attacks_perfect.yaml")
 
-        self.assertEqual(ex.get_kali_attacks("linux"), ["hydra"])
+        self.assertEqual(ex.get_plugin_based_attacks("linux"), ["hydra"])
 
     def test_kali_attacks_many(self):
         """ Many entries in kali attacks list """
 
         ex = ExperimentConfig("tests/data/attacks_perfect.yaml")
 
-        self.assertEqual(ex.get_kali_attacks("windows"), ["hydra", "medusa", "skylla"])
+        self.assertEqual(ex.get_plugin_based_attacks("windows"), ["hydra", "medusa", "skylla"])
 
     def test_caldera_attacks_missing(self):
         """ caldera attacks entry fully missing from config """
@@ -673,8 +673,8 @@ class TestExperimentConfig(unittest.TestCase):
 
         ex = ExperimentConfig("tests/data/attacks_half.yaml")
 
-        self.assertEqual(ex.get_kali_attacks("linux"), ["hydra"])
-        self.assertEqual(ex.get_kali_attacks("windows"), [])
+        self.assertEqual(ex.get_plugin_based_attacks("linux"), ["hydra"])
+        self.assertEqual(ex.get_plugin_based_attacks("windows"), [])
 
     def test_caldera_attacks_half(self):
         """ caldera attacks entry partially missing from config """

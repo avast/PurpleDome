@@ -151,18 +151,18 @@ class Experiment():
         self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Finished Caldera attacks{CommandlineColors.ENDC}", 1)
 
         # Run Kali attacks
-        self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Running Kali attacks{CommandlineColors.ENDC}", 1)
+        self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Running attack plugins{CommandlineColors.ENDC}", 1)
         for target_1 in self.targets:
-            kali_attacks = self.experiment_config.get_kali_attacks(target_1.get_os())
-            for attack in kali_attacks:
+            plugin_based_attacks = self.experiment_config.get_plugin_based_attacks(target_1.get_os())
+            for attack in plugin_based_attacks:
                 # TODO: Work with snapshots
                 self.attack_logger.vprint(f"Attacking machine with PAW: {target_1.get_paw()} with attack: {attack}", 1)
-                # self.attacker_1.kali_attack(attack, target_1.get_ip(), self.experiment_config)
+
                 self.attack(target_1, attack)
                 self.attack_logger.vprint(f"Pausing before next attack (config: nap_time): {self.experiment_config.get_nap_time()}", 3)
                 time.sleep(self.experiment_config.get_nap_time())
 
-        self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Finished Kali attacks{CommandlineColors.ENDC}", 1)
+        self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Finished attack plugins{CommandlineColors.ENDC}", 1)
 
         # Stop sensor plugins
         # Collect data

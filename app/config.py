@@ -246,17 +246,17 @@ class ExperimentConfig():
             return "4/8"
         return res
 
-    def get_kali_attacks(self, for_os):
+    def get_plugin_based_attacks(self, for_os):
         """ Get the configured kali attacks to run for a specific OS
 
         @param for_os: The os to query the registered attacks for
         """
 
-        if "kali_attacks" not in self.raw_config:
+        if "plugin_based_attacks" not in self.raw_config:
             return []
-        if for_os not in self.raw_config["kali_attacks"]:
+        if for_os not in self.raw_config["plugin_based_attacks"]:
             return []
-        res = self.raw_config["kali_attacks"][for_os]
+        res = self.raw_config["plugin_based_attacks"][for_os]
         if res is None:
             return []
         return res
