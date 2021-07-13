@@ -7,7 +7,6 @@ import yaml
 from app.exceptions import ConfigurationError
 
 
-# TODO: Add attack scripts (that will be CACAO in the future !) and plugin config
 # So the config being read is distributed into several files and they will have different formats (yaml, CACAO)
 # Currently it is a single file and YAML only.
 # We want to be independent from file structure or number of config files
@@ -213,14 +212,14 @@ class ExperimentConfig():
             raise ConfigurationError("results/loot_dir not properly set in configuration")
         return res
 
-    def kali_conf(self, attack):
+    def attack_conf(self, attack):
         """ Get kali config for a specific kali attack
 
         @param attack: Name of the attack to look up config for
         """
 
         try:
-            res = self.raw_config["kali_conf"][attack]
+            res = self.raw_config["attack_conf"][attack]
         except KeyError:
             res = {}
         if res is None:

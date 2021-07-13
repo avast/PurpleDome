@@ -15,8 +15,6 @@ from pprint import pprint, pformat
 
 
 # TODO: Ability deserves an own class.
-# TODO: Support Stealth settings: "plain-text obfuscation","base64 obfuscation","base64jumble obfuscation","caesar cipher obfuscation","base64noPadding obfuscation","steganography obfuscation"
-# TODO: Support Jitter (min/max)
 # TODO: Support all Caldera agents: "Sandcat (GoLang)","Elasticat (Blue Python/ Elasticsearch)","Manx (Reverse Shell TCP)","Ragdoll (Python/HTML)"
 
 class CalderaControl():

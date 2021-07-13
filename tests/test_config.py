@@ -561,26 +561,26 @@ class TestExperimentConfig(unittest.TestCase):
         ex = ExperimentConfig("tests/data/attacker_has_empty_nicknames.yaml")
         self.assertEqual(ex._targets[0].get_nicknames(), [1, 2, 3])
 
-    def test_missing_kali_config(self):
-        """  Getting kali config for a specific attack. Attack missing """
+    def test_missing_attack_config(self):
+        """  Getting attack config for a specific attack. Attack missing """
 
         ex = ExperimentConfig("tests/data/basic.yaml")
-        self.assertEqual(ex.kali_conf("BOOM"), {})
+        self.assertEqual(ex.attack_conf("BOOM"), {})
 
-    def test_working_kali_config(self):
-        """  Getting kali config for a specific attack """
+    def test_working_attack_config(self):
+        """  Getting attack config for a specific attack """
 
         ex = ExperimentConfig("tests/data/basic.yaml")
 
-        data = ex.kali_conf("hydra")
+        data = ex.attack_conf("hydra")
         self.assertEqual(data["userfile"], "users.txt")
 
-    def test_kali_config_missing_attack_data(self):
-        """  Getting kali config for a specific attack: Missing """
+    def test_attack_config_missing_attack_data(self):
+        """  Getting attack config for a specific attack: Missing """
 
         ex = ExperimentConfig("tests/data/attacks_missing.yaml")
 
-        data = ex.kali_conf("missing")
+        data = ex.attack_conf("missing")
         self.assertEqual(data, {})
 
     def test_missing_caldera_config_obfuscator(self):

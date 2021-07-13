@@ -121,8 +121,8 @@ plugin_based_attacks:
 #    - hydra
 
 ###
-# Configuration for the kali attack tools
-kali_conf:
+# Configuration for the plugin based attack tools
+attack_conf:
   ###
   # Hydra configuration
   hydra:
