@@ -10,7 +10,7 @@ test: tox.ini
 	coverage report;
 
 shipit: test
-	cd doc; make html; cd ..
+	cd doc; make zip; cd ..
 	git log --pretty="format: %aD %an:  %s" > shipit_log.txt
 	python3 tools/shipit.py
 
