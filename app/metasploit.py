@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+""" Module to control Metasploit and related tools (MSFVenom) on the attack server """
 
 from pymetasploit3.msfrpc import MsfRpcClient
 # from app.machinecontrol import Machine

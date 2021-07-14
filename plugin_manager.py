@@ -12,8 +12,8 @@ def list_plugins(arguments):
     """ List plugins """
 
     attack_logger = AttackLog(arguments.verbose)
-    p = PluginManager(attack_logger)
-    p.print_list()
+    plugin_manager = PluginManager(attack_logger)
+    plugin_manager.print_list()
     return 0
 
 
@@ -21,9 +21,9 @@ def check_plugins(arguments):
     """ Check plugins for validity """
 
     attack_logger = AttackLog(arguments.verbose)
-    p = PluginManager(attack_logger)
-    res = p.print_check()
-    if len(res):
+    plugin_manager = PluginManager(attack_logger)
+    res = plugin_manager.print_check()
+    if len(res) == 0:
         print("*************************************")
         print("Some issues in plugins were found: ")
         print("\n".join(res))
@@ -34,8 +34,8 @@ def get_default_config(arguments):
     """ print default config of a specific plugin """
 
     attack_logger = AttackLog(arguments.verbose)
-    p = PluginManager(attack_logger)
-    p.print_default_config(arguments.subclass_name, arguments.plugin_name)
+    plugin_manager = PluginManager(attack_logger)
+    plugin_manager.print_default_config(arguments.subclass_name, arguments.plugin_name)
 
 
 def create_parser():
