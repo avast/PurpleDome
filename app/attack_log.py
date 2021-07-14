@@ -6,10 +6,6 @@ import json
 import datetime
 
 
-def __get_timestamp__():
-    return datetime.datetime.now().strftime("%H:%M:%S.%f")
-
-
 def __mitre_fix_ttp__(ttp):
     """ enforce some systematic naming scheme for MITRE TTPs """
 
@@ -18,8 +14,8 @@ def __mitre_fix_ttp__(ttp):
 
     if ttp.startswith("MITRE_"):
         return ttp
-    else:
-        return "MITRE_" + ttp
+
+    return "MITRE_" + ttp
 
 
 class AttackLog():
@@ -32,6 +28,22 @@ class AttackLog():
         """
         self.log = []
         self.verbosity = verbosity
+
+        # TODO. As soon as someone wants custom timestamps, make the format variable
+        self.datetime_format = "%H:%M:%S.%f"
+
+    def __add_to_log__(self, item: dict):
+        """ internal command to add a item to the log
+
+        @param item: data chunk to add
+        """
+
+        self.log.append(item)
+
+    def __get_timestamp__(self):
+        """ Get the timestamp to add to the log entries. Currently not configurable """
+
+        return datetime.datetime.now().strftime(self.datetime_format)
 
     def start_caldera_attack(self, source, paw, group, ability_id, ttp=None, name=None, description=None, obfuscator="default", jitter="default"):  # pylint: disable=too-many-arguments
         """ Mark the start of a caldera attack
@@ -47,7 +59,7 @@ class AttackLog():
         @param jitter: Jitter being used
         """
 
-        data = {"timestamp": __get_timestamp__(),
+        data = {"timestamp": self.__get_timestamp__(),
                 "event": "start",
                 "type": "attack",
                 "sub-type": "caldera",
@@ -62,7 +74,7 @@ class AttackLog():
                 "jitter": jitter
                 }
 
-        self.log.append(data)
+        self.__add_to_log__(data)
 
     # TODO: Add parameter
     # TODO: Add config
@@ -82,7 +94,7 @@ class AttackLog():
         @param jitter: Jitter being used
         """
 
-        data = {"timestamp": __get_timestamp__(),
+        data = {"timestamp": self.__get_timestamp__(),
                 "event": "stop",
                 "type": "attack",
                 "sub-type": "caldera",
@@ -96,18 +108,17 @@ class AttackLog():
                 "obfuscator": obfuscator,
                 "jitter": jitter
                 }
-        self.log.append(data)
+        self.__add_to_log__(data)
 
-    def start_file_write(self, source, target, file_name, ttp=None):
+    def start_file_write(self, source, target, file_name):
         """ Mark the start of a file being written to the target (payload !)
 
         @param source: source of the attack. Attack IP (empty if written from controller)
         @param target: Target machine of the attack
         @param file_name: Name of the file being written
-        @param ttp: TTP of the attack. From plugin
         """
 
-        data = {"timestamp": __get_timestamp__(),
+        data = {"timestamp": self.__get_timestamp__(),
                 "event": "start",
                 "type": "dropping_file",
                 "sub-type": "by PurpleDome",
@@ -115,19 +126,18 @@ class AttackLog():
                 "target": target,
                 "file_name": file_name
                 }
-        self.log.append(data)
+        self.__add_to_log__(data)
 
-    def stop_file_write(self, source, target, file_name, ttp=None):
+    def stop_file_write(self, source, target, file_name):
         """ Mark the stop of a file being written to the target (payload !)
 
         @param source: source of the attack. Attack IP (empty if written from controller)
         @param target: Target machine of the attack
         @param attack_name: Name of the attack. From plugin
         @param file_name: Name of the file being written
-        @param ttp: TTP of the attack. From plugin
         """
 
-        data = {"timestamp": __get_timestamp__(),
+        data = {"timestamp": self.__get_timestamp__(),
                 "event": "stop",
                 "type": "dropping_file",
                 "sub-type": "by PurpleDome",
@@ -135,18 +145,17 @@ class AttackLog():
                 "target": target,
                 "file_name": file_name
                 }
-        self.log.append(data)
+        self.__add_to_log__(data)
 
-    def start_execute_payload(self, source, target, command, ttp=None):
+    def start_execute_payload(self, source, target, command):
         """ Mark the start of a payload being executed
 
         @param source: source of the attack. Attack IP (empty if written from controller)
         @param target: Target machine of the attack
         @param command: Name of the file being written
-        @param ttp: TTP of the attack. From plugin
         """
 
-        data = {"timestamp": __get_timestamp__(),
+        data = {"timestamp": self.__get_timestamp__(),
                 "event": "start",
                 "type": "execute_payload",
                 "sub-type": "by PurpleDome",
@@ -154,19 +163,18 @@ class AttackLog():
                 "target": target,
                 "command": command
                 }
-        self.log.append(data)
+        self.__add_to_log__(data)
 
-    def stop_execute_payload(self, source, target, command, ttp=None):
+    def stop_execute_payload(self, source, target, command):
         """ Mark the stop of a payload being executed
 
         @param source: source of the attack. Attack IP (empty if written from controller)
         @param target: Target machine of the attack
         @param command: Name of the attack. From plugin
         @param file_name: Name of the file being written
-        @param ttp: TTP of the attack. From plugin
         """
 
-        data = {"timestamp": __get_timestamp__(),
+        data = {"timestamp": self.__get_timestamp__(),
                 "event": "stop",
                 "type": "execute_payload",
                 "sub-type": "by PurpleDome",
@@ -174,7 +182,7 @@ class AttackLog():
                 "target": target,
                 "command": command
                 }
-        self.log.append(data)
+        self.__add_to_log__(data)
 
     def start_kali_attack(self, source, target, attack_name, ttp=None):
         """ Mark the start of a Kali based attack
@@ -185,7 +193,7 @@ class AttackLog():
         @param ttp: TTP of the attack. From plugin
         """
 
-        data = {"timestamp": __get_timestamp__(),
+        data = {"timestamp": self.__get_timestamp__(),
                 "event": "start",
                 "type": "attack",
                 "sub-type": "kali",
@@ -194,7 +202,7 @@ class AttackLog():
                 "kali_name": attack_name,
                 "hunting_tag": __mitre_fix_ttp__(ttp),
                 }
-        self.log.append(data)
+        self.__add_to_log__(data)
 
     # TODO: Add parameter
     # TODO: Add config
@@ -209,7 +217,7 @@ class AttackLog():
         @param ttp: TTP of the attack. From plugin
         """
 
-        data = {"timestamp": __get_timestamp__(),
+        data = {"timestamp": self.__get_timestamp__(),
                 "event": "stop",
                 "type": "attack",
                 "sub-type": "kali",
@@ -218,7 +226,7 @@ class AttackLog():
                 "kali_name": attack_name,
                 "hunting_tag": __mitre_fix_ttp__(ttp),
                 }
-        self.log.append(data)
+        self.__add_to_log__(data)
 
     def start_metasploit_attack(self, source, target, metasploit_command, ttp=None):
         """ Mark the start of a Metasploit based attack
@@ -229,7 +237,7 @@ class AttackLog():
         @param ttp: TTP of the attack. From plugin
         """
 
-        data = {"timestamp": __get_timestamp__(),
+        data = {"timestamp": self.__get_timestamp__(),
                 "event": "start",
                 "type": "attack",
                 "sub-type": "metasploit",
@@ -238,7 +246,7 @@ class AttackLog():
                 "metasploit_command": metasploit_command,
                 "hunting_tag": __mitre_fix_ttp__(ttp),
                 }
-        self.log.append(data)
+        self.__add_to_log__(data)
 
     def stop_metasploit_attack(self, source, target, metasploit_command, ttp=None):
         """ Mark the start of a Metasploit based attack
@@ -249,7 +257,7 @@ class AttackLog():
         @param ttp: TTP of the attack. From plugin
         """
 
-        data = {"timestamp": __get_timestamp__(),
+        data = {"timestamp": self.__get_timestamp__(),
                 "event": "stop",
                 "type": "attack",
                 "sub-type": "metasploit",
@@ -258,7 +266,7 @@ class AttackLog():
                 "metasploit_command": metasploit_command,
                 "hunting_tag": __mitre_fix_ttp__(ttp),
                 }
-        self.log.append(data)
+        self.__add_to_log__(data)
 
     def start_attack_plugin(self, source, target, plugin_name, ttp=None):
         """ Mark the start of an attack plugin
@@ -269,7 +277,7 @@ class AttackLog():
         @param ttp: TTP of the attack. From plugin
         """
 
-        data = {"timestamp": __get_timestamp__(),
+        data = {"timestamp": self.__get_timestamp__(),
                 "event": "start",
                 "type": "attack",
                 "sub-type": "attack_plugin",
@@ -278,7 +286,7 @@ class AttackLog():
                 "plugin_name": plugin_name,
                 "hunting_tag": __mitre_fix_ttp__(ttp),
                 }
-        self.log.append(data)
+        self.__add_to_log__(data)
 
     # TODO: Add parameter
     # TODO: Add config
@@ -293,7 +301,7 @@ class AttackLog():
         @param ttp: TTP of the attack. From plugin
         """
 
-        data = {"timestamp": __get_timestamp__(),
+        data = {"timestamp": self.__get_timestamp__(),
                 "event": "stop",
                 "type": "attack",
                 "sub-type": "attack_plugin",
@@ -302,7 +310,7 @@ class AttackLog():
                 "plugin_name": plugin_name,
                 "hunting_tag": __mitre_fix_ttp__(ttp),
                 }
-        self.log.append(data)
+        self.__add_to_log__(data)
 
     def write_json(self, filename):
         """ Write the json data for this log
