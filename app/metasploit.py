@@ -18,14 +18,16 @@ import os
 
 
 class Metasploit():
-    def __init__(self, password, **kwargs):
+    def __init__(self, password, attack_logger, **kwargs):
         """
 
         :param password: password for the msfrpcd
+        :param attack_logger: The attack logger to use for logging/printing
         :param kwargs: Relevant ones: uri, port, server, username
         """
 
         self.password = password
+        self.attack_logger = attack_logger
         self.username = kwargs.get("username", None)
         self.kwargs = kwargs
         self.client = None
@@ -353,8 +355,7 @@ class MetasploitInstant(Metasploit):
         :param attack_logger: The attack logging
         :param kwargs: Relevant ones: uri, port, server, username
         """
-        super().__init__(password, **kwargs)
-        self.attack_logger = attack_logger
+        super().__init__(password, attack_logger, **kwargs)
 
     def parse_ps(self, ps_output):
         d = []

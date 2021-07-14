@@ -6,12 +6,12 @@ import json
 import os
 import time
 
+from pprint import pprint, pformat
 import requests
 import simplejson
 
 from app.exceptions import CalderaError
 from app.interface_sfx import CommandlineColors
-from pprint import pprint, pformat
 
 
 # TODO: Ability deserves an own class.
@@ -51,7 +51,8 @@ class CalderaControl():
         fullurl = self.url + "file/download"
         request = requests.get(fullurl, headers=header)
         filename = request.headers["FILENAME"] + extension
-        open(os.path.join(target_dir, filename), "wb").write(request.content)
+        with open(os.path.join(target_dir, filename), "wb") as fh:
+            fh.write(request.content)
         # print(r.headers)
         return filename
 
@@ -221,6 +222,10 @@ class CalderaControl():
     #  ######### Get by id
 
     def get_source(self, source_name):
+        """ Retrieves data source and detailed  facts
+
+        @param: The name of the source
+        """
 
         payload = {"index": "sources",
                    "name": source_name}
@@ -343,8 +348,8 @@ class CalderaControl():
 
         facts = []
         if parameters is not None:
-            for k, v in parameters.items():
-                facts.append({"trait": k, "value": v})
+            for key, value in parameters.items():
+                facts.append({"trait": key, "value": value})
         payload["facts"] = facts
 
         print(payload)
@@ -368,8 +373,8 @@ class CalderaControl():
         sources_name = "source_" + name
         self.add_sources(sources_name, parameters)
 
-        print("Got:")
-        print(self.get_source("source_name"))
+        # To verify:
+        # print(self.get_source(sources_name))
 
         payload = {"index": "operations",
                    "name": name,
@@ -434,8 +439,8 @@ class CalderaControl():
 
         facts = []
         if parameters is not None:
-            for k, v in parameters.items():
-                facts.append({"trait": k, "value": v})
+            for key, value in parameters.items():
+                facts.append({"trait": key, "value": value})
         payload["facts"] = facts
 
         print(payload)

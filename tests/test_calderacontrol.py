@@ -269,9 +269,6 @@ class TestExample(unittest.TestCase):
                 "relationships": [],
                 "facts": []
                 }
-        exp2 = {"index": "sources",
-                "name": "source_name"
-                }
         exp3 = {"index": "operations",
                 "name": name,
                 "state": state,
@@ -288,7 +285,7 @@ class TestExample(unittest.TestCase):
         with patch.object(self.cc, "__contact_server__", return_value=None) as mock_method:
             self.cc.add_operation(name, advid, group, state)
         # mock_method.assert_called_once_with(exp, method="put")
-        mock_method.assert_has_calls([call(exp1, method="put"), call(exp2), call(exp3, method="put")])
+        mock_method.assert_has_calls([call(exp1, method="put"), call(exp3, method="put")])
 
     # add_operation defaults
     def test_add_operation_defaults(self):
@@ -300,9 +297,6 @@ class TestExample(unittest.TestCase):
                 "rules": [],
                 "relationships": [],
                 "facts": []
-                }
-        exp2 = {"index": "sources",
-                "name": "source_name"
                 }
         exp3 = {"index": "operations",
                 "name": name,
@@ -319,7 +313,7 @@ class TestExample(unittest.TestCase):
                 }
         with patch.object(self.cc, "__contact_server__", return_value=None) as mock_method:
             self.cc.add_operation(name, advid)
-        mock_method.assert_has_calls([call(exp1, method="put"), call(exp2), call(exp3, method="put")])
+        mock_method.assert_has_calls([call(exp1, method="put"), call(exp3, method="put")])
 
     # add_adversary
     def test_add_adversary(self):

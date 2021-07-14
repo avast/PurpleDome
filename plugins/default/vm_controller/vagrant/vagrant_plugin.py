@@ -28,7 +28,7 @@ class VagrantPlugin(SSHFeatures, MachineryPlugin):
         super().__init__()
         self.plugin_path = __file__
         self.v = None
-        self.c = None
+        self.connection = None
         self.vagrantfilepath = None
         self.vagrantfile = None
         self.sysconf = {}
@@ -80,13 +80,13 @@ class VagrantPlugin(SSHFeatures, MachineryPlugin):
 
         # For linux we are using Vagrant style
         if self.config.os() == "linux":
-            if self.c:
-                return self.c
+            if self.connection:
+                return self.connection
 
             uhp = self.v.user_hostname_port(vm_name=self.config.vmname())
             self.vprint(f"Connecting to {uhp}", 3)
-            self.c = Connection(uhp, connect_kwargs={"key_filename": self.v.keyfile(vm_name=self.config.vmname())})
-            return self.c
+            self.connection = Connection(uhp, connect_kwargs={"key_filename": self.v.keyfile(vm_name=self.config.vmname())})
+            return self.connection
 
         else:
             return super().connect()

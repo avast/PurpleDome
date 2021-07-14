@@ -32,7 +32,7 @@ class FIN7Plugin(AttackPlugin):
         if self.metasploit_1:
             return self.metasploit_1
 
-        self.metasploit_1 = Metasploit(self.metasploit_password, attacker=self.attacker_machine_plugin, username=self.metasploit_user)
+        self.metasploit_1 = Metasploit(self.metasploit_password, attack_logger=self.attack_logger, attacker=self.attacker_machine_plugin, username=self.metasploit_user)
         self.metasploit_1.start_exploit_stub_for_external_payload(payload=self.payload_type_1)
         self.metasploit_1.wait_for_session()
         return self.metasploit_1

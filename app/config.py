@@ -208,8 +208,8 @@ class ExperimentConfig():
             raise ConfigurationError("results missing in configuration")
         try:
             res = self.raw_config["results"]["loot_dir"]
-        except KeyError:
-            raise ConfigurationError("results/loot_dir not properly set in configuration")
+        except KeyError as error:
+            raise ConfigurationError("results/loot_dir not properly set in configuration") from error
         return res
 
     def attack_conf(self, attack):
