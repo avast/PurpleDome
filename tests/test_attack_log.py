@@ -4,6 +4,8 @@
 
 import unittest
 from app.attack_log import AttackLog
+import app.attack_log
+# from unittest.mock import patch, call
 # from app.exceptions import ConfigurationError
 
 # https://docs.python.org/3/library/unittest.html
@@ -203,3 +205,83 @@ class TestMachineConfig(unittest.TestCase):
         self.assertEqual(data[0]["target"], target)
         self.assertEqual(data[0]["plugin_name"], attack_name)
         self.assertEqual(data[0]["hunting_tag"], "MITRE_" + ttp)
+
+    def test_file_write_start(self):
+        """ Starting a file write """
+        al = AttackLog()
+        source = "asource"
+        target = "a target"
+        file_name = "a generic filename"
+        al.start_file_write(source=source,
+                            target=target,
+                            file_name=file_name,
+                            )
+        data = al.get_dict()
+        self.assertEqual(data[0]["event"], "start")
+        self.assertEqual(data[0]["type"], "dropping_file")
+        self.assertEqual(data[0]["sub-type"], "by PurpleDome")
+        self.assertEqual(data[0]["source"], source)
+        self.assertEqual(data[0]["target"], target)
+        self.assertEqual(data[0]["file_name"], file_name)
+
+    def test_file_write_stop(self):
+        """ Stopping a file write """
+        al = AttackLog()
+        source = "asource"
+        target = "a target"
+        file_name = "a generic filename"
+        al.stop_file_write(source=source,
+                           target=target,
+                           file_name=file_name,
+                           )
+        data = al.get_dict()
+        self.assertEqual(data[0]["event"], "stop")
+        self.assertEqual(data[0]["type"], "dropping_file")
+        self.assertEqual(data[0]["sub-type"], "by PurpleDome")
+        self.assertEqual(data[0]["source"], source)
+        self.assertEqual(data[0]["target"], target)
+        self.assertEqual(data[0]["file_name"], file_name)
+
+    def test_execute_payload_start(self):
+        """ Starting a execute payload """
+        al = AttackLog()
+        source = "asource"
+        target = "a target"
+        command = "a generic command"
+        al.start_execute_payload(source=source,
+                                 target=target,
+                                 command=command,
+                                 )
+        data = al.get_dict()
+        self.assertEqual(data[0]["event"], "start")
+        self.assertEqual(data[0]["type"], "execute_payload")
+        self.assertEqual(data[0]["sub-type"], "by PurpleDome")
+        self.assertEqual(data[0]["source"], source)
+        self.assertEqual(data[0]["target"], target)
+        self.assertEqual(data[0]["command"], command)
+
+    def test_execute_payload_stop(self):
+        """ Stopping a execute payload """
+        al = AttackLog()
+        source = "asource"
+        target = "a target"
+        command = "a generic command"
+        al.stop_execute_payload(source=source,
+                                target=target,
+                                command=command,
+                                )
+        data = al.get_dict()
+        self.assertEqual(data[0]["event"], "stop")
+        self.assertEqual(data[0]["type"], "execute_payload")
+        self.assertEqual(data[0]["sub-type"], "by PurpleDome")
+        self.assertEqual(data[0]["source"], source)
+        self.assertEqual(data[0]["target"], target)
+        self.assertEqual(data[0]["command"], command)
+
+    def test_mitre_fix_ttp_is_none(self):
+        """ Testing the mitre ttp fix for ttp being none """
+        self.assertEqual(app.attack_log.__mitre_fix_ttp__(None), "")
+
+    def test_mitre_fix_ttp_is_MITRE_SOMETHING(self):
+        """ Testing the mitre ttp fix for ttp being MITRE_ """
+        self.assertEqual(app.attack_log.__mitre_fix_ttp__("MITRE_FOO"), "MITRE_FOO")
