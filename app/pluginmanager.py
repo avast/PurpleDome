@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """ Manage plugins """
 
-import straight.plugin
 from glob import glob
 import os
 
@@ -10,6 +9,7 @@ from plugins.base.attack import AttackPlugin
 from plugins.base.machinery import MachineryPlugin
 from plugins.base.sensor import SensorPlugin
 from plugins.base.vulnerability_plugin import VulnerabilityPlugin
+import straight.plugin
 from app.interface_sfx import CommandlineColors
 # from app.interface_sfx import CommandlineColors
 
@@ -180,15 +180,16 @@ class PluginManager():
     # TODO: Add verify command to verify all plugins (or a specific one)
 
     def print_default_config(self, subclass_name, name):
+        """ Pretty prints the default config for this plugin """
 
         subclass = None
 
-        for a in sections:
-            if a["name"] == subclass_name:
-                subclass = a["subclass"]
+        for section in sections:
+            if section["name"] == subclass_name:
+                subclass = section["subclass"]
         if subclass is None:
             print("Use proper subclass. Available subclasses are: ")
-            "\n- ".join([a for a in sections["name"]])
+            "\n- ".join(list(sections["name"]))
 
         plugins = self.get_plugins(subclass, [name])
         for plugin in plugins:

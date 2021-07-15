@@ -3,11 +3,10 @@
 """ Base class for classes to control any kind of machine: vm, bare metal, cloudified """
 
 from enum import Enum
-
+import os
 from app.config import MachineConfig
 from app.interface_sfx import CommandlineColors
 from plugins.base.plugin_base import BasePlugin
-import os
 
 
 class MachineStates(Enum):

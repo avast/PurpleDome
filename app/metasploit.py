@@ -1,23 +1,25 @@
 #!/usr/bin/env python3
 """ Module to control Metasploit and related tools (MSFVenom) on the attack server """
 
+import time
+import socket
+import os
+import random
+import requests
+
 from pymetasploit3.msfrpc import MsfRpcClient
 # from app.machinecontrol import Machine
 from app.attack_log import AttackLog
 from app.interface_sfx import CommandlineColors
-import time
-import socket
 from app.exceptions import MetasploitError, ServerError
-import requests
-import random
 
-
-import os
 
 # https://github.com/DanMcInerney/pymetasploit3
 
 
 class Metasploit():
+    """ Metasploit class for basic Metasploit wrapping """
+
     def __init__(self, password, attack_logger, **kwargs):
         """
 
@@ -42,7 +44,7 @@ class Metasploit():
             time.sleep(3)   # Waiting for server to start. Or we would get https connection errors when getting the client.
 
     def start_exploit_stub_for_external_payload(self, payload='linux/x64/meterpreter_reverse_tcp', exploit='exploit/multi/handler'):
-        """
+        """ Start a metasploit handler and wait for external payload to connect
 
         @:returns: res, which contains "job_id" and "uuid"
         """
@@ -128,18 +130,18 @@ class Metasploit():
         # Get_ip can also return a network name. Matching a session needs a real ip
         name_resolution_worked = True
         try:
-            ip = socket.gethostbyname(target.get_ip())
+            target_ip = socket.gethostbyname(target.get_ip())
         except socket.gaierror:
-            ip = target.get_ip()   # Limp on feature if we can not get a name resolution
+            target_ip = target.get_ip()   # Limp on feature if we can not get a name resolution
             name_resolution_worked = False
             print(f"Name resolution for {target.get_ip()} failed. Sessions are: {self.get_client().sessions.list}")
 
         retries = 100
         while retries > 0:
-            for k, v in self.get_client().sessions.list.items():
-                if v["session_host"] == ip:
+            for key, value in self.get_client().sessions.list.items():
+                if value["session_host"] == target_ip:
                     # print(f"session list: {self.get_client().sessions.list}")
-                    return k
+                    return key
 
             time.sleep(1)
             retries -= 1
@@ -180,12 +182,12 @@ class Metasploit():
             shell.write(cmd)
             time.sleep(delay)
             retries = 20
-            r = ""
+            shell_result = ""
             while retries > 0:
-                r += shell.read()
+                shell_result += shell.read()
                 time.sleep(0.5)   # Command needs time to execute
                 retries -= 1
-            res.append(r)
+            res.append(shell_result)
 
         return res
 
@@ -223,6 +225,8 @@ class Metasploit():
 
 
 class MSFVenom():
+    """ Class to remote controll payload generator MSFVenom on the attacker machine """
+
     def __init__(self, attacker, target, attack_logger: AttackLog):
         """
 
@@ -348,23 +352,18 @@ class MetasploitInstant(Metasploit):
 
     """
 
-    def __init__(self, password, attack_logger, **kwargs):
-        """
-
-        :param password: password for the msfrpcd
-        :param attack_logger: The attack logging
-        :param kwargs: Relevant ones: uri, port, server, username
-        """
-        super().__init__(password, attack_logger, **kwargs)
-
     def parse_ps(self, ps_output):
-        d = []
+        """ Parses the data from ps
+        :param ps_output: Metasploit ps output
+        :return: A list of dicts
+        """
+        ps_data = []
         for line in ps_output.split("\n")[6:]:
             pieces = line.split("  ")
             cleaned_pieces = []
-            for p in pieces:
-                if len(p):
-                    cleaned_pieces.append(p)
+            for piece in pieces:
+                if len(piece):
+                    cleaned_pieces.append(piece)
 
             if len(cleaned_pieces) > 2:
                 rep = {"PID": int(cleaned_pieces[0].strip()),
@@ -382,9 +381,9 @@ class MetasploitInstant(Metasploit):
                     rep["User"] = cleaned_pieces[5].strip()
                 if len(cleaned_pieces) >= 7:
                     rep["Path"] = cleaned_pieces[6].strip()
-                d.append(rep)
+                ps_data.append(rep)
 
-        return d
+        return ps_data
 
     def filter_ps_results(self, data, user=None, name=None, arch=None):
         """  Filter the process lists for certain

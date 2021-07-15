@@ -1,21 +1,27 @@
 #!/usr/bin/env python3
 """ A class you can use to add SSH features to you plugin. Useful for vm_controller/machinery classes """
 import os.path
+import socket
+import time
+import paramiko
 
 from fabric import Connection
-from app.exceptions import NetworkError
 from invoke.exceptions import UnexpectedExit
-import paramiko
-import time
-import socket
+from app.exceptions import NetworkError
 from plugins.base.plugin_base import BasePlugin
 
 
 class SSHFeatures(BasePlugin):
+    """ A Mixin class to add SSH features to all kind of VM machinery """
 
     def __init__(self):
+        self.config = None
         super().__init__()
         self.connection = None
+
+    def get_ip(self):
+        """ Get the IP of a machine, must be overwritten in the machinery class """
+        raise NotImplementedError
 
     def connect(self):
         """ Connect to a machine """
@@ -79,14 +85,13 @@ class SSHFeatures(BasePlugin):
                 result = self.connection.run(cmd, disown=disown)
                 print(result)
                 # paramiko.ssh_exception.SSHException in the next line is needed for windows openssh
-            except (paramiko.ssh_exception.NoValidConnectionsError, UnexpectedExit, paramiko.ssh_exception.SSHException):
+            except (paramiko.ssh_exception.NoValidConnectionsError, UnexpectedExit, paramiko.ssh_exception.SSHException) as error:
                 if retry <= 0:
-                    raise NetworkError
-                else:
-                    self.disconnect()
-                    self.connect()
-                    retry -= 1
-                    self.vprint("Got some SSH errors. Retrying", 2)
+                    raise NetworkError from error
+                self.disconnect()
+                self.connect()
+                retry -= 1
+                self.vprint("Got some SSH errors. Retrying", 2)
             else:
                 break
 
@@ -122,8 +127,8 @@ class SSHFeatures(BasePlugin):
                 time.sleep(retry_sleep)
                 self.disconnect()
                 self.connect()
-            except FileNotFoundError as e:
-                self.vprint(f"File not found: {e}", 0)
+            except FileNotFoundError as error:
+                self.vprint(f"File not found: {error}", 0)
                 break
             else:
                 return res
@@ -146,16 +151,15 @@ class SSHFeatures(BasePlugin):
         while retry > 0:
             try:
                 res = self.connection.get(src, dst)
-            except (paramiko.ssh_exception.NoValidConnectionsError, UnexpectedExit):
+            except (paramiko.ssh_exception.NoValidConnectionsError, UnexpectedExit) as error:
                 if retry <= 0:
-                    raise NetworkError
-                else:
-                    self.disconnect()
-                    self.connect()
-                    retry -= 1
-                    self.vprint("Got some SSH errors. Retrying", 2)
-            except FileNotFoundError as e:
-                self.vprint(e, 0)
+                    raise NetworkError from error
+                self.disconnect()
+                self.connect()
+                retry -= 1
+                self.vprint("Got some SSH errors. Retrying", 2)
+            except FileNotFoundError as error:
+                self.vprint(error, 0)
                 break
             else:
                 break
