@@ -167,14 +167,13 @@ class PluginManager():
 
                 # Deep checks
 
-                result = self.check(plugin)
+                results = self.check(plugin)
 
-                for r in result:
-                    print(f"* Issue: {r}")
-                if len(result):
-                    for r in result:
-                        issues.append(r)
-                        self.attack_logger.vprint(f"{CommandlineColors.BACKGROUND_RED}{r}{CommandlineColors.ENDC}", 1)
+                if len(results) > 0:
+                    for result in results:
+                        print(f"* Issue: {result}")
+                        issues.append(result)
+                        self.attack_logger.vprint(f"{CommandlineColors.BACKGROUND_RED}{result}{CommandlineColors.ENDC}", 1)
         return issues
 
     # TODO: Add verify command to verify all plugins (or a specific one)

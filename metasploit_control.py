@@ -59,7 +59,7 @@ if __name__ == "__main__":
     # TODO get meterpreter session
     # TODO simple command to test
 
-    metasploit = Metasploit(PASSWORD, attacker=attacker, username=USER)
+    metasploit = Metasploit(PASSWORD, attack_logger=attack_logger, attacker=attacker, username=USER)
     metasploit.start_exploit_stub_for_external_payload(payload=PAYLOAD_TYPE)
     print(metasploit.meterpreter_execute(["getuid"], 0))
     # client = MsfRpcClient('yourpassword', ssl=True)

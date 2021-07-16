@@ -41,12 +41,12 @@ class BasePlugin():
         """ Set the attack logger for this machine """
         self.attack_logger = attack_logger
 
-    def process_templates(self):
+    def process_templates(self):  # pylint: disable=no-self-use
         """ A method you can optionally implement to transfer your jinja2 templates into the files yo want to send to the target. See 'required_files' """
 
         return
 
-    def copy_to_attacker_and_defender(self):
+    def copy_to_attacker_and_defender(self):  # pylint: disable=no-self-use
         """ Copy attacker/defender specific files to the machines """
 
         return
@@ -71,7 +71,7 @@ class BasePlugin():
 
         self.machine_plugin = machine_plugin
 
-    def set_sysconf(self, config):
+    def set_sysconf(self, config):   # pylint:disable=unused-argument
         """ Set system config
 
         @param config: A dict with system configuration relevant for all plugins
@@ -104,7 +104,7 @@ class BasePlugin():
         """ Get a file from the machine """
         self.machine_plugin.get(src, dst)  # nosec
 
-    def run_cmd(self, command, warn=True, disown=False):
+    def run_cmd(self, command, disown=False):
         """ Execute a command on the vm using the connection
 
          @param command: Command to execute
@@ -137,7 +137,7 @@ class BasePlugin():
         for i in self.alternative_names:
             res.add(i)
 
-        if len(res):
+        if len(res) > 0:
             return list(res)
 
         raise NotImplementedError
@@ -190,7 +190,7 @@ class BasePlugin():
 
         return self.get_name()
 
-    def main_path(self):
+    def main_path(self):  # pylint:disable=no-self-use
         """ Returns the main path of the Purple Dome installation """
         app_dir = os.path.dirname(app.exceptions.__file__)
 

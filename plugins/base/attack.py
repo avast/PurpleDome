@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """ Base class for Kali plugins """
 
+import os
 from plugins.base.plugin_base import BasePlugin
 from app.exceptions import PluginError, ConfigurationError
 from app.calderacontrol import CalderaControl
 # from app.metasploit import MSFVenom, Metasploit
-import os
 
 
 class AttackPlugin(BasePlugin):
@@ -50,7 +50,7 @@ class AttackPlugin(BasePlugin):
         """ Cleanup afterwards """
         pass  # pylint: disable=unnecessary-pass
 
-    def attacker_run_cmd(self, command, warn=True, disown=False):
+    def attacker_run_cmd(self, command, disown=False):
         """ Execute a command on the attacker
 
          @param command: Command to execute
@@ -65,7 +65,7 @@ class AttackPlugin(BasePlugin):
         res = self.attacker_machine_plugin.__call_remote_run__(command, disown=disown)
         return res
 
-    def targets_run_cmd(self, command, warn=True, disown=False):
+    def targets_run_cmd(self, command, disown=False):
         """ Execute a command on the target
 
          @param command: Command to execute
@@ -136,7 +136,7 @@ class AttackPlugin(BasePlugin):
         """
         raise NotImplementedError
 
-    def install(self):
+    def install(self):  # pylint: disable=no-self-use
         """ Install and setup requirements for the attack
         """
 
@@ -179,12 +179,12 @@ class AttackPlugin(BasePlugin):
         @returns: the machine
         """
 
-        for t in self.targets:
-            if t.get_name() == name:
-                return t
+        for target in self.targets:
+            if target.get_name() == name:
+                return target
 
-        for t in self.targets:
-            if name in t.get_nicknames():
-                return t
+        for target in self.targets:
+            if name in target.get_nicknames():
+                return target
 
         raise ConfigurationError(f"No matching machine in experiment config for {name}")

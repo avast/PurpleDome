@@ -11,11 +11,11 @@ from datetime import datetime
 from app.attack_log import AttackLog
 from app.config import ExperimentConfig
 from app.interface_sfx import CommandlineColors
+from app.exceptions import ServerError
+from app.pluginmanager import PluginManager
 from caldera_control import CalderaControl
 from machine_control import Machine
-from app.exceptions import ServerError
 from plugins.base.attack import AttackPlugin
-from app.pluginmanager import PluginManager
 
 
 # TODO: Multi threading at least when starting machines
