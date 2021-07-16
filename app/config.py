@@ -7,7 +7,6 @@ import yaml
 from app.exceptions import ConfigurationError
 
 
-# TODO: Add attack scripts (that will be CACAO in the future !) and plugin config
 # So the config being read is distributed into several files and they will have different formats (yaml, CACAO)
 # Currently it is a single file and YAML only.
 # We want to be independent from file structure or number of config files
@@ -209,18 +208,18 @@ class ExperimentConfig():
             raise ConfigurationError("results missing in configuration")
         try:
             res = self.raw_config["results"]["loot_dir"]
-        except KeyError:
-            raise ConfigurationError("results/loot_dir not properly set in configuration")
+        except KeyError as error:
+            raise ConfigurationError("results/loot_dir not properly set in configuration") from error
         return res
 
-    def kali_conf(self, attack):
+    def attack_conf(self, attack):
         """ Get kali config for a specific kali attack
 
         @param attack: Name of the attack to look up config for
         """
 
         try:
-            res = self.raw_config["kali_conf"][attack]
+            res = self.raw_config["attack_conf"][attack]
         except KeyError:
             res = {}
         if res is None:
@@ -246,17 +245,17 @@ class ExperimentConfig():
             return "4/8"
         return res
 
-    def get_kali_attacks(self, for_os):
+    def get_plugin_based_attacks(self, for_os):
         """ Get the configured kali attacks to run for a specific OS
 
         @param for_os: The os to query the registered attacks for
         """
 
-        if "kali_attacks" not in self.raw_config:
+        if "plugin_based_attacks" not in self.raw_config:
             return []
-        if for_os not in self.raw_config["kali_attacks"]:
+        if for_os not in self.raw_config["plugin_based_attacks"]:
             return []
-        res = self.raw_config["kali_attacks"][for_os]
+        res = self.raw_config["plugin_based_attacks"][for_os]
         if res is None:
             return []
         return res

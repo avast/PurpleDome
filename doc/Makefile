@@ -22,3 +22,7 @@ help:
 all: html epub latexpdf text man
 	# I want to check the pdf into GIT. Copying it here so I will move it with the usb stick (as the build dir is not moved)
 	cp build/latex/purpledome.pdf .
+
+zip: html
+	cd build; zip -r documentation.zip html/
+	cp build/documentation.zip .

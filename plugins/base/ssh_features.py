@@ -1,27 +1,33 @@
 #!/usr/bin/env python3
 """ A class you can use to add SSH features to you plugin. Useful for vm_controller/machinery classes """
 import os.path
+import socket
+import time
+import paramiko
 
 from fabric import Connection
-from app.exceptions import NetworkError
 from invoke.exceptions import UnexpectedExit
-import paramiko
-import time
-import socket
+from app.exceptions import NetworkError
 from plugins.base.plugin_base import BasePlugin
 
 
 class SSHFeatures(BasePlugin):
+    """ A Mixin class to add SSH features to all kind of VM machinery """
 
     def __init__(self):
+        self.config = None
         super().__init__()
-        self.c = None
+        self.connection = None
+
+    def get_ip(self):
+        """ Get the IP of a machine, must be overwritten in the machinery class """
+        raise NotImplementedError
 
     def connect(self):
         """ Connect to a machine """
 
-        if self.c:
-            return self.c
+        if self.connection is not None:
+            return self.connection
 
         retries = 10
         retry_sleep = 10
@@ -31,7 +37,7 @@ class SSHFeatures(BasePlugin):
                 if self.config.os() == "linux":
                     uhp = self.get_ip()
                     self.vprint(f"Connecting to {uhp}", 3)
-                    self.c = Connection(uhp, connect_timeout=timeout)
+                    self.connection = Connection(uhp, connect_timeout=timeout)
 
                 if self.config.os() == "windows":
                     args = {}
@@ -43,15 +49,15 @@ class SSHFeatures(BasePlugin):
                     self.vprint(args, 3)
                     uhp = self.get_ip()
                     self.vprint(uhp, 3)
-                    self.c = Connection(uhp, connect_timeout=timeout, user=self.config.ssh_user(), connect_kwargs=args)
+                    self.connection = Connection(uhp, connect_timeout=timeout, user=self.config.ssh_user(), connect_kwargs=args)
             except (paramiko.ssh_exception.SSHException, socket.timeout):
                 self.vprint(f"Failed to connect, will retry {retries} times. Timeout: {timeout}", 0)
                 retries -= 1
                 timeout += 10
                 time.sleep(retry_sleep)
             else:
-                self.vprint(f"Connection: {self.c}", 3)
-                return self.c
+                self.vprint(f"Connection: {self.connection}", 3)
+                return self.connection
 
         self.vprint("SSH network error", 0)
         raise NetworkError
@@ -71,21 +77,21 @@ class SSHFeatures(BasePlugin):
 
         self.vprint("Running SSH remote run: " + cmd, 3)
         self.vprint("Disown: " + str(disown), 3)
+        # self.vprint("Connection: " + self.connection, 1)
         result = None
         retry = 2
         while retry > 0:
             try:
-                result = self.c.run(cmd, disown=disown)
+                result = self.connection.run(cmd, disown=disown)
                 print(result)
                 # paramiko.ssh_exception.SSHException in the next line is needed for windows openssh
-            except (paramiko.ssh_exception.NoValidConnectionsError, UnexpectedExit, paramiko.ssh_exception.SSHException):
+            except (paramiko.ssh_exception.NoValidConnectionsError, UnexpectedExit, paramiko.ssh_exception.SSHException) as error:
                 if retry <= 0:
-                    raise NetworkError
-                else:
-                    self.disconnect()
-                    self.connect()
-                    retry -= 1
-                    self.vprint("Got some SSH errors. Retrying", 2)
+                    raise NetworkError from error
+                self.disconnect()
+                self.connect()
+                retry -= 1
+                self.vprint("Got some SSH errors. Retrying", 2)
             else:
                 break
 
@@ -113,7 +119,7 @@ class SSHFeatures(BasePlugin):
         timeout = 30
         while retries:
             try:
-                res = self.c.put(src, dst)
+                res = self.connection.put(src, dst)
             except (paramiko.ssh_exception.SSHException, socket.timeout, UnexpectedExit):
                 self.vprint(f"PUT Failed to connect, will retry {retries} times. Timeout: {timeout}", 3)
                 retries -= 1
@@ -121,8 +127,8 @@ class SSHFeatures(BasePlugin):
                 time.sleep(retry_sleep)
                 self.disconnect()
                 self.connect()
-            except FileNotFoundError as e:
-                self.vprint(f"File not found: {e}", 0)
+            except FileNotFoundError as error:
+                self.vprint(f"File not found: {error}", 0)
                 break
             else:
                 return res
@@ -144,17 +150,16 @@ class SSHFeatures(BasePlugin):
         retry = 2
         while retry > 0:
             try:
-                res = self.c.get(src, dst)
-            except (paramiko.ssh_exception.NoValidConnectionsError, UnexpectedExit):
+                res = self.connection.get(src, dst)
+            except (paramiko.ssh_exception.NoValidConnectionsError, UnexpectedExit) as error:
                 if retry <= 0:
-                    raise NetworkError
-                else:
-                    self.disconnect()
-                    self.connect()
-                    retry -= 1
-                    self.vprint("Got some SSH errors. Retrying", 2)
-            except FileNotFoundError as e:
-                self.vprint(e, 0)
+                    raise NetworkError from error
+                self.disconnect()
+                self.connect()
+                retry -= 1
+                self.vprint("Got some SSH errors. Retrying", 2)
+            except FileNotFoundError as error:
+                self.vprint(error, 0)
                 break
             else:
                 break
@@ -163,6 +168,6 @@ class SSHFeatures(BasePlugin):
 
     def disconnect(self):
         """ Disconnect from a machine """
-        if self.c:
-            self.c.close()
-            self.c = None
+        if self.connection:
+            self.connection.close()
+            self.connection = None

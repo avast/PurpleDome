@@ -20,39 +20,31 @@ class SensorPlugin(BasePlugin):
         super().__init__()  # pylint:disable=useless-super-delegation
         self.debugit = False
 
-    def set_sysconf(self, config):
-        """ Set system config
-
-        @param config: A dict with system configuration relevant for all plugins
-        """
-
-        super().set_sysconf(config)
-
-    def prime(self):
+    def prime(self):  # pylint: disable=no-self-use
         """ prime sets hard core configs in the target. You can use it to call everything that permanently alters the OS by settings.
         If your prime function returns True the machine will be rebooted after prime-ing it. This is very likely what you want. Only use prime if install is not sufficient.
         """
 
         return False
 
-    def install(self):
+    def install(self):  # pylint: disable=no-self-use
         """ Install the sensor. Executed on the target. Take the sensor from the share and (maybe) copy it to its destination. Do some setup
         """
 
-        raise NotImplementedError
+        return True
 
-    def start(self, disown=None):
+    def start(self, disown=None):  # pylint: disable=unused-argument, no-self-use
         """ Start the sensor. The connection to the client is disowned here. = Sent to background. This keeps the process running.
 
         @param disown: Send async into background
         """
 
-        raise NotImplementedError
+        return True
 
-    def stop(self):
+    def stop(self):  # pylint: disable=no-self-use
         """ Stop the sensor """
 
-        raise NotImplementedError
+        return True
 
     def __call_collect__(self, machine_path):
         """ Generate the data collect command

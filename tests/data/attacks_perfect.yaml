@@ -118,8 +118,8 @@ caldera_attacks:
     - "bar"
 
 ###
-# Kali tool based attacks. Will result in kali commandline tools to be called. Currently supported are: "hydra"
-kali_attacks:
+# Plugin based attacks. Will result in plugins being called
+plugin_based_attacks:
   ###
   # Linux specific attacks, a list
   linux:
@@ -132,8 +132,8 @@ kali_attacks:
     - skylla
 
 ###
-# Configuration for the kali attack tools
-kali_conf:
+# Configuration for the plugin based attack tools
+attack_conf:
   ###
   # Hydra configuration
   hydra:
