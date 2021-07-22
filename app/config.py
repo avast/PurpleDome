@@ -67,7 +67,7 @@ class MachineConfig():
         try:
             return self.raw_config["vm_controller"]["ip"]
         except KeyError:
-            return None
+            return self.vmname()
 
     def os(self):  # pylint: disable=invalid-name
         """ returns the os. lowercase """

@@ -589,7 +589,7 @@ class CalderaControl():
 
     #  ######## All inclusive methods
 
-    def attack(self, paw="kickme", ability_id="bd527b63-9f9e-46e0-9816-b8434d2b8989", group="red", target_platform=None, parameters=None):
+    def attack(self, paw="kickme", ability_id="bd527b63-9f9e-46e0-9816-b8434d2b8989", group="red", target_platform=None, parameters=None, **kwargs):
         """ Attacks a system and returns results
 
         @param paw: Paw to attack
@@ -633,7 +633,8 @@ class CalderaControl():
                                                 name=self.get_ability(ability_id)[0]["name"],
                                                 description=self.get_ability(ability_id)[0]["description"],
                                                 obfuscator=obfuscator,
-                                                jitter=jitter
+                                                jitter=jitter,
+                                                **kwargs
                                                 )
 
         #  ##### Create / Run Operation

