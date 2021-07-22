@@ -128,7 +128,7 @@ class SSHFeatures(BasePlugin):
             try:
                 res = self.connection.put(src, dst)
             except (paramiko.ssh_exception.SSHException, socket.timeout, UnexpectedExit):
-                self.vprint(f"PUT Failed to connect", 1)
+                self.vprint("PUT Failed to connect", 1)
                 do_retry = True
             except paramiko.ssh_exception.NoValidConnectionsError as error:
                 self.vprint(f"No valid connection. Errors: {error.errors}", 1)

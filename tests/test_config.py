@@ -187,14 +187,15 @@ class TestMachineConfig(unittest.TestCase):
 
     def test_missing_vmip(self):
         """ Testing if missing vm ip is handled"""
+        vm_name = "target1"
         mc = MachineConfig({"root": "systems/attacker1",
                             "os": "linux",
                             "vm_controller": {
                                 "type": "vagrant",
                                 "vagrantfilepath": "systems",
                             },
-                            "vm_name": "target1"})
-        self.assertEqual(mc.vm_ip(), None)
+                            "vm_name": vm_name})
+        self.assertEqual(mc.vm_ip(), vm_name)
 
     def test_machinepath(self):
         """ Testing machinepath setting """
