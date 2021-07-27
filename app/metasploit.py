@@ -315,7 +315,7 @@ class MSFVenom():
         if self.attack_logger:
             logid = self.attack_logger.start_file_write("", self.target.get_name(), payload_name)
         playground = self.target.get_playground()
-        print(f"Putting to playground {playground}")
+        print(f"Putting to {self.target.get_name() }/ {playground}")
         self.target.put(src, playground)
         if self.attack_logger:
             self.attack_logger.stop_file_write("", self.target.get_name(), payload_name, logid=logid)
