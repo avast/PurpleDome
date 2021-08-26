@@ -212,7 +212,7 @@ class Machine():
             plugin.install()
             self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Installed sensor: {name}{CommandlineColors.ENDC}", 2)
 
-    def get_sensors(self) -> [SensorPlugin]:
+    def get_sensors(self) -> list[SensorPlugin]:
         """ Returns a list of running sensors """
         return self.sensors
 
@@ -307,7 +307,7 @@ class Machine():
             plugin.install(self.vm_manager)
             # self.vulnerabilities.append(plugin)
 
-    def get_vulnerabilities(self) -> [VulnerabilityPlugin]:
+    def get_vulnerabilities(self) -> list[VulnerabilityPlugin]:
         """ Returns a list of installed vulnerabilities """
         return self.vulnerabilities
 

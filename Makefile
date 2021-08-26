@@ -17,3 +17,6 @@ shipit: test
 # More detailed pylint tests.
 pylint:
 	pylint --rcfile=pylint.rc  *.py app/*.py plugins/base/*.py
+
+mypy:
+	mypy app/

@@ -147,7 +147,7 @@ class Metasploit():
             retries -= 1
         raise MetasploitError(f"Could not find session for {target.get_ip()} Name resolution worked: {name_resolution_worked}")
 
-    def meterpreter_execute(self, cmds: [str], session_number: int, delay=0) -> str:
+    def meterpreter_execute(self, cmds: list[str], session_number: int, delay=0) -> list[str]:
         """ Executes commands on the meterpreter, returns results read from shell
 
         @param cmds: commands to execute, a list
@@ -164,7 +164,7 @@ class Metasploit():
             res.append(shell.read())
         return res
 
-    def meterpreter_execute_on(self, cmds: [str], target, delay=0) -> str:
+    def meterpreter_execute_on(self, cmds: list[str], target, delay=0) -> list[str]:
         """ Executes commands on the meterpreter, returns results read from shell
 
         @param cmds: commands to execute, a list

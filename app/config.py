@@ -178,12 +178,12 @@ class ExperimentConfig():
         for attacker in self.raw_config["attackers"]:
             self._attackers.append(MachineConfig(self.raw_config["attackers"][attacker]))
 
-    def targets(self) -> [MachineConfig]:
+    def targets(self) -> list[MachineConfig]:
         """ Return config for targets as MachineConfig objects """
 
         return self._targets
 
-    def attackers(self) -> [MachineConfig]:
+    def attackers(self) -> list[MachineConfig]:
         """ Return config for attackers as MachineConfig objects """
 
         return self._attackers
