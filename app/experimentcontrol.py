@@ -67,7 +67,8 @@ class Experiment():
                 pass
             target_1.install_caldera_service()
             target_1.up()
-            needs_reboot = target_1.prime_sensors()
+            needs_reboot = target_1.prime_vulnerabilities()
+            needs_reboot |= target_1.prime_sensors()
             if needs_reboot:
                 target_1.reboot()
             self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Target is up: {tname}  {CommandlineColors.ENDC}", 1)
