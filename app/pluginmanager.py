@@ -35,7 +35,7 @@ class PluginManager():
         self.base = "plugins/**/*.py"
         self.attack_logger = attack_logger
 
-    def get_plugins(self, subclass, name_filter=None) -> [BasePlugin]:
+    def get_plugins(self, subclass, name_filter=None) -> list[BasePlugin]:
         """ Returns a list plugins matching specified criteria
 
 
@@ -46,7 +46,7 @@ class PluginManager():
 
         res = []
 
-        def get_handlers(a_plugin) -> [subclass]:
+        def get_handlers(a_plugin):
             return a_plugin.produce()
 
         plugin_dirs = set()

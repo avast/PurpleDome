@@ -212,7 +212,7 @@ class Machine():
             plugin.install()
             self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Installed sensor: {name}{CommandlineColors.ENDC}", 2)
 
-    def get_sensors(self) -> [SensorPlugin]:
+    def get_sensors(self) -> list[SensorPlugin]:
         """ Returns a list of running sensors """
         return self.sensors
 
@@ -262,6 +262,31 @@ class Machine():
 
     ############
 
+    def prime_vulnerabilities(self):
+        """ Prime vulnerabilities from plugins (hard core installs that could require a reboot)
+
+        A machine can have several vulnerabilities. Those are defined in a list in the config.
+
+        """
+
+        reboot = False
+
+        for plugin in self.plugin_manager.get_plugins(VulnerabilityPlugin, self.config.vulnerabilities()):
+            name = plugin.get_name()
+
+            self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Priming vulnerability: {name}{CommandlineColors.ENDC}", 2)
+            syscon = {"abs_machinepath_internal": self.abs_machinepath_internal,
+                      "abs_machinepath_external": self.abs_machinepath_external,
+                      }
+            plugin.set_sysconf(syscon)
+            plugin.set_machine_plugin(self.vm_manager)
+            plugin.process_config({})    # plugin specific configuration
+            plugin.setup()
+            reboot |= plugin.prime()
+            self.vulnerabilities.append(plugin)
+            self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Primed vulnerability: {name}{CommandlineColors.ENDC}", 2)
+        return reboot
+
     def install_vulnerabilities(self):
         """ Install vulnerabilities from plugins: The machine is not yet modified ! For that call start_vulnerabilities next
 
@@ -280,9 +305,9 @@ class Machine():
             plugin.set_machine_plugin(self.vm_manager)
             plugin.setup()
             plugin.install(self.vm_manager)
-            self.vulnerabilities.append(plugin)
+            # self.vulnerabilities.append(plugin)
 
-    def get_vulnerabilities(self) -> [VulnerabilityPlugin]:
+    def get_vulnerabilities(self) -> list[VulnerabilityPlugin]:
         """ Returns a list of installed vulnerabilities """
         return self.vulnerabilities
 

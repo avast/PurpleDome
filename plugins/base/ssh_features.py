@@ -48,7 +48,7 @@ class SSHFeatures(BasePlugin):
                         args["password"] = self.config.ssh_password()
                     self.vprint(args, 3)
                     uhp = self.get_ip()
-                    self.vprint(uhp, 3)
+                    self.vprint(f"IP to connect to: {uhp}", 3)
                     self.connection = Connection(uhp, connect_timeout=timeout, user=self.config.ssh_user(), connect_kwargs=args)
             except (paramiko.ssh_exception.SSHException, socket.timeout):
                 self.vprint(f"Failed to connect, will retry {retries} times. Timeout: {timeout}", 0)
@@ -81,6 +81,7 @@ class SSHFeatures(BasePlugin):
         result = None
         retry = 2
         while retry > 0:
+            do_retry = False
             try:
                 result = self.connection.run(cmd, disown=disown)
                 print(result)
@@ -88,6 +89,11 @@ class SSHFeatures(BasePlugin):
             except (paramiko.ssh_exception.NoValidConnectionsError, UnexpectedExit, paramiko.ssh_exception.SSHException) as error:
                 if retry <= 0:
                     raise NetworkError from error
+                do_retry = True
+            except paramiko.ssh_exception.NoValidConnectionsError as error:
+                self.vprint(f"No valid connection. Errors: {error.errors}", 1)
+                do_retry = True
+            if do_retry:
                 self.disconnect()
                 self.connect()
                 retry -= 1
@@ -117,19 +123,26 @@ class SSHFeatures(BasePlugin):
         retries = 10
         retry_sleep = 10
         timeout = 30
-        while retries:
+        while retries > 0:
+            do_retry = False
             try:
                 res = self.connection.put(src, dst)
             except (paramiko.ssh_exception.SSHException, socket.timeout, UnexpectedExit):
-                self.vprint(f"PUT Failed to connect, will retry {retries} times. Timeout: {timeout}", 3)
+                self.vprint("PUT Failed to connect", 1)
+                do_retry = True
+            except paramiko.ssh_exception.NoValidConnectionsError as error:
+                self.vprint(f"No valid connection. Errors: {error.errors}", 1)
+                do_retry = True
+            except FileNotFoundError as error:
+                self.vprint(f"File not found: {error}", 0)
+                break
+            if do_retry:
+                self.vprint(f"Will retry {retries} times. Timeout: {timeout}", 3)
                 retries -= 1
                 timeout += 10
                 time.sleep(retry_sleep)
                 self.disconnect()
                 self.connect()
-            except FileNotFoundError as error:
-                self.vprint(f"File not found: {error}", 0)
-                break
             else:
                 return res
         self.vprint("SSH network error on PUT command", 0)
@@ -149,18 +162,24 @@ class SSHFeatures(BasePlugin):
 
         retry = 2
         while retry > 0:
+            do_retry = False
             try:
                 res = self.connection.get(src, dst)
             except (paramiko.ssh_exception.NoValidConnectionsError, UnexpectedExit) as error:
                 if retry <= 0:
                     raise NetworkError from error
+                do_retry = True
+            except paramiko.ssh_exception.NoValidConnectionsError as error:
+                self.vprint(f"No valid connection. Errors: {error.errors}", 1)
+                do_retry = True
+            except FileNotFoundError as error:
+                self.vprint(error, 0)
+                break
+            if do_retry:
                 self.disconnect()
                 self.connect()
                 retry -= 1
                 self.vprint("Got some SSH errors. Retrying", 2)
-            except FileNotFoundError as error:
-                self.vprint(error, 0)
-                break
             else:
                 break
 
