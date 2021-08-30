@@ -31,8 +31,11 @@ if __name__ == "__main__":
     # generate("loot/2021_07_19___16_28_45/attack.json", "tools/human_readable_documentation/contents.rst")  # Working example for a short run
     # generate("loot/2021_07_20___08_26_33/attack.json", "tools/human_readable_documentation/contents.rst")  # FIN 7 #1
     # generate("loot/2021_07_20___10_07_36/attack.json", "tools/human_readable_documentation/contents.rst")  # FIN 7 #2 The one Fabrizio got
-    generate("loot/2021_07_28___12_09_00/attack.json",
-             "tools/human_readable_documentation/contents.rst")  # FIN 7 The last minute locally generated thing
+    #generate("loot/2021_07_28___12_09_00/attack.json",
+    #         "tools/human_readable_documentation/contents.rst")  # FIN 7 The last minute locally generated thing
+
+    generate("loot/2021_08_30___14_40_23/attack.json",
+             "tools/human_readable_documentation/contents.rst")  # FIN 7 With genereated files added
 
     # generate("loot/2021_07_19___15_10_45/attack.json", "tools/human_readable_documentation/contents.rst")
     # generate("removeme.json", "tools/human_readable_documentation/contents.rst")

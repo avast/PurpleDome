@@ -344,6 +344,63 @@ class AttackLog():
         self.__add_to_log__(data)
         return logid
 
+    def start_build(self, **kwargs):
+        """ Mark the start of a tool building/compilation process
+
+        @param source: source of the attack. Attack IP
+        @param target: Target machine of the attack
+        @param attack_name: Name of the attack. From plugin
+        @param ttp: TTP of the attack. From plugin
+        """
+
+        timestamp = self.__get_timestamp__()
+        logid = timestamp + "_" + str(randint(1, 100000))
+
+        data = {"timestamp": timestamp,
+                "timestamp_end": None,
+                "event": "start",
+                "type": "build",
+                # "sub_type": "",
+                "logid": logid,
+                "dl_uri": kwargs.get("dl_uri", None),
+                "dl_uris": kwargs.get("dl_uris", None),
+                "payload": kwargs.get("payload", None),
+                "platform": kwargs.get("platform", None),
+                "architecture": kwargs.get("architecture", None),
+                "lhost": kwargs.get("lhost", None),
+                "lport": kwargs.get("lport", None),
+                "filename": kwargs.get("filename", None),
+                "encoding": kwargs.get("encoding", None),
+                "encoded_filename": kwargs.get("encoded_filename", None),
+                "sRDI_conversion": kwargs.get("sRDI_conversion", False),
+                "for_step": kwargs.get("for_step", None),
+                "comment": kwargs.get("comment", None),
+                }
+        self.__add_to_log__(data)
+
+        return logid
+
+    # TODO: Add parameter
+    # TODO: Add config
+    # TODO: Add results
+
+    def stop_build(self, **kwargs):
+        """ Mark the end of a tool building/compilation process
+
+        @param source: source of the attack. Attack IP
+        @param target: Target machine of the attack
+        @param attack_name: Name of the attack. From plugin
+        @param ttp: TTP of the attack. From plugin
+        """
+
+        data = {"timestamp": self.__get_timestamp__(),
+                "event": "stop",
+                "type": "build",
+                # "sub_type": "",
+                "logid": kwargs.get("logid", None)
+                }
+        self.__add_to_log__(data)
+
     def start_metasploit_attack(self, source, target, metasploit_command, ttp=None, **kwargs):
         """ Mark the start of a Metasploit based attack
 

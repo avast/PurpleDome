@@ -183,6 +183,7 @@ class Experiment():
             target_1.halt()
         self.__stop_attacker()
 
+        self.attack_logger.post_process()
         self.attack_logger.write_json(os.path.join(self.lootdir, "attack.json"))
         self.zip_loot(zip_this)
 
