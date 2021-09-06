@@ -91,6 +91,7 @@ class Experiment():
             target_1.start_caldera_client()
             self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Initial start of caldera client: {tname}  {CommandlineColors.ENDC}", 1)
         time.sleep(20)   # Wait for all the clients to contact the caldera server
+        # TODO: Smarter wait
 
         self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Contacting caldera agents on all targets ....{CommandlineColors.ENDC}", 1)
         # Wait until all targets are registered as Caldera targets
