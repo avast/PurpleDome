@@ -9,8 +9,10 @@ from plugins.base.attack import AttackPlugin
 from plugins.base.machinery import MachineryPlugin
 from plugins.base.sensor import SensorPlugin
 from plugins.base.vulnerability_plugin import VulnerabilityPlugin
-import straight.plugin
+import straight.plugin  # type: ignore
 from app.interface_sfx import CommandlineColors
+from app.attack_log import AttackLog
+
 # from app.interface_sfx import CommandlineColors
 
 sections = [{"name": "Vulnerabilities",
@@ -27,7 +29,7 @@ sections = [{"name": "Vulnerabilities",
 class PluginManager():
     """ Manage plugins """
 
-    def __init__(self, attack_logger):
+    def __init__(self, attack_logger: AttackLog):
         """
 
         @param attack_logger: The attack logger to use

@@ -4,24 +4,25 @@
 import os
 import yaml
 # from shutil import copy
-from app.exceptions import PluginError
-import app.exceptions
+from app.exceptions import PluginError  # type: ignore
+import app.exceptions  # type: ignore
+from typing import Optional
 
 
 class BasePlugin():
     """ Base class for plugins """
 
-    required_files = None   # a list of files shipped with the plugin to be installed
-    name = None  # The name of the plugin
-    alternative_names = []  # The is an optional list of alternative names
-    description = None  # The description of this plugin
+    required_files: list[str] = []   # a list of files shipped with the plugin to be installed
+    name: str = ""  # The name of the plugin
+    alternative_names: list[str] = []  # The is an optional list of alternative names
+    description: Optional[str] = None  # The description of this plugin
 
-    def __init__(self):
+    def __init__(self) -> None:
         # self.machine = None
         self.plugin_path = None
         self.machine_plugin = None
-        self.sysconf = {}
-        self.conf = {}
+        # self.sysconf = {}
+        self.conf: dict = {}
         self.attack_logger = None
 
         self.default_config_name = "default_config.yaml"
@@ -126,7 +127,7 @@ class BasePlugin():
 
         raise NotImplementedError
 
-    def get_names(self) -> []:
+    def get_names(self) -> list[str]:
         """ Adds the name of the plugin to the alternative names and returns the list """
 
         res = set()
@@ -183,20 +184,20 @@ class BasePlugin():
             if self.conf is None:
                 self.conf = {}
 
-    def get_config_section_name(self):
+    def get_config_section_name(self) -> str:
         """ Returns the name for the config sub-section to use for this plugin.
 
         Defaults to the name of the plugin. This method should be overwritten if it gets more complicated """
 
         return self.get_name()
 
-    def main_path(self):  # pylint:disable=no-self-use
+    def main_path(self) -> str:  # pylint:disable=no-self-use
         """ Returns the main path of the Purple Dome installation """
         app_dir = os.path.dirname(app.exceptions.__file__)
 
         return os.path.split(app_dir)[0]
 
-    def vprint(self, text, verbosity):
+    def vprint(self, text: str, verbosity: int):
         """ verbosity based stdout printing
 
         0: Errors only
@@ -207,5 +208,5 @@ class BasePlugin():
         @param text: The text to print
         @param verbosity: the verbosity level the text has.
         """
-
-        self.attack_logger.vprint(text, verbosity)
+        if self.attack_logger is not None:
+            self.attack_logger.vprint(text, verbosity)

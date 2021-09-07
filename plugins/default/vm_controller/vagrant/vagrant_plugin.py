@@ -31,7 +31,7 @@ class VagrantPlugin(SSHFeatures, MachineryPlugin):
         self.connection = None
         self.vagrantfilepath = None
         self.vagrantfile = None
-        self.sysconf = {}
+        # self.sysconf = {}
 
     def process_config(self, config):
         """ Machine specific processing of configuration """
