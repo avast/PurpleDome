@@ -24,7 +24,7 @@ class CalderaPlugin(BasePlugin):
     def __init__(self):
         super().__init__()
         self.conf = {}     # Plugin specific configuration
-        self.sysconf = {}  # System configuration. common for all plugins
+        # self.sysconf = {}  # System configuration. common for all plugins
 
     def teardown(self):
         """ Cleanup afterwards """

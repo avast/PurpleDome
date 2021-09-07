@@ -26,7 +26,7 @@ class AttackPlugin(BasePlugin):
     def __init__(self):
         super().__init__()
         self.conf = {}     # Plugin specific configuration
-        self.sysconf = {}  # System configuration. common for all plugins
+        # self.sysconf = {}  # System configuration. common for all plugins
         self.attacker_machine_plugin = None  # The machine plugin referencing the attacker. The Kali machine should be the perfect candidate
         self.target_machine_plugin = None  # The machine plugin referencing the target
         self.caldera = None  # The Caldera connection object
