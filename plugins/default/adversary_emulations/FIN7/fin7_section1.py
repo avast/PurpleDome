@@ -44,9 +44,7 @@ class FIN7Plugin(AttackPlugin):
 
     def step1(self):
         self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Step 1 (target hotelmanager): Initial Breach{CommandlineColors.ENDC}", 1)
-
-        self.attack_logger.start_narration(
-            "Step 1 (target hotelmanager): Initial Breach\n----------------------------")
+        self.attack_logger.start_attack_step("Step 1 (target hotelmanager): Initial Breach")
         self.attack_logger.start_narration("""
 NOT IMPLEMENTED YET
 
@@ -73,8 +71,7 @@ This is the initial attack step that requires user interaction. Maybe it is bett
 
     def step2(self):
         self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Step 2 (target hotelmanager): Delayed Malware Execution{CommandlineColors.ENDC}", 1)
-        self.attack_logger.start_narration(
-            "Step 2 (target hotelmanager): Delayed Malware Execution\n----------------------------")
+        self.attack_logger.start_attack_step("Step 2 (target hotelmanager): Delayed Malware Execution")
         self.attack_logger.start_narration("""
 NOT IMPLEMENTED YET
 
@@ -97,7 +94,7 @@ In this simulation sql-rat.js communication will be replaced by Caldera communic
     def step3(self):
         self.attack_logger.vprint(
             f"{CommandlineColors.OKBLUE}Step 3 (target hotelmanager): Target Assessment{CommandlineColors.ENDC}", 1)
-        self.attack_logger.start_narration("Step 3 (target hotelmanager): Target Assessment\n----------------------------")
+        self.attack_logger.start_attack_step("Step 3 (target hotelmanager): Target Assessment")
 
         # TODO: Make sure logging is nice and complete
 
@@ -254,8 +251,7 @@ In this simulation sql-rat.js communication will be replaced by Caldera communic
         """
         self.attack_logger.vprint(
             f"{CommandlineColors.OKBLUE}Step 4 (target hotelmanager): Staging Interactive Toolkit{CommandlineColors.ENDC}", 1)
-        self.attack_logger.start_narration(
-            "Step 4 (target hotelmanager): Staging Interactive Toolkit\n----------------------------")
+        self.attack_logger.start_attack_step("Step 4 (target hotelmanager): Staging Interactive Toolkit")
         self.attack_logger.start_narration("""
 In the original attack Babymetal payload is a dll. Currently we are using a simplification here (directly calling a exe). The original steps are:
 * Target already runs adb156.exe. This one gets the shellcode over the network connection and decodes it.
@@ -305,8 +301,7 @@ In the original attack Babymetal payload is a dll. Currently we are using a simp
     def step5(self):
         self.attack_logger.vprint(
             f"{CommandlineColors.OKBLUE}Step 5 (target hotelmanager): Escalate Privileges{CommandlineColors.ENDC}", 1)
-        self.attack_logger.start_narration(
-            "Step 5 (target hotelmanager): Escalate Privileges\n----------------------------")
+        self.attack_logger.start_attack_step("Step 5 (target hotelmanager): Escalate Privileges")
 
         hotelmanager = self.get_target_by_name("hotelmanager")
 
@@ -388,12 +383,14 @@ In the original attack Babymetal payload is a dll. Currently we are using a simp
                                                                situation_description="Executing Mimikatz through UAC bypassing powershell",
                                                                countermeasure="Behaviour detection"
                                                                )
-            print(metasploit.meterpreter_execute_on([execute_samcats], hotelmanager, delay=20))
+            result = metasploit.meterpreter_execute_on([execute_samcats], hotelmanager, delay=20)
+            print(result)
             self.attack_logger.stop_metasploit_attack(source=self.attacker_machine_plugin.get_ip(),
                                                       target=hotelmanager.get_ip(),
                                                       metasploit_command=execute_samcats,
                                                       ttp="T1003",
-                                                      logid=logid)
+                                                      logid=logid,
+                                                      result=result)
 
         # samcat.exe: reads local credentials https://attack.mitre.org/techniques/T1003/001/
 
@@ -481,8 +478,7 @@ In the original attack Babymetal payload is a dll. Currently we are using a simp
     def step6(self):
         self.attack_logger.vprint(
             f"{CommandlineColors.OKBLUE}Step 6 (target hotelmanager -> itadmin): Expand Access{CommandlineColors.ENDC}", 1)
-        self.attack_logger.start_narration(
-            "Step 6 (target hotelmanager and itadmin): Expand Access\n----------------------------")
+        self.attack_logger.start_attack_step("Step 6 (target hotelmanager and itadmin): Expand Access")
         self.attack_logger.start_narration("""
 NOT IMPLEMENTED YET. NEEDS A SECOND MACHINE FOR LATERAL MOVEMENT
 * powershell download: paexec.exe and hollow.exe https://attack.mitre.org/techniques/T1105/
@@ -543,8 +539,7 @@ NOT IMPLEMENTED YET. NEEDS A SECOND MACHINE FOR LATERAL MOVEMENT
     def step7(self):
         self.attack_logger.vprint(
             f"{CommandlineColors.OKBLUE}Step 7 on itadmin: Setup User Monitoring{CommandlineColors.ENDC}", 1)
-        self.attack_logger.start_narration(
-            "Step 7 (target itadmin): Setup User Monitoring\n----------------------------")
+        self.attack_logger.start_attack_step("Step 7 (target itadmin): Setup User Monitoring")
         self.attack_logger.start_narration("""
 NOT IMPLEMENTED YET. A REPLACEMENT FOR THE ALOHA COMMAND CENTER IS NEEDED
 
@@ -579,8 +574,7 @@ NOT IMPLEMENTED YET. A REPLACEMENT FOR THE ALOHA COMMAND CENTER IS NEEDED
     def step8(self):
         self.attack_logger.vprint(
             f"{CommandlineColors.OKBLUE}Step 8 (target: itadmin as domain_admin): User Monitoring{CommandlineColors.ENDC}", 1)
-        self.attack_logger.start_narration(
-            "Step 8 (target itadmin): User Monitoring\n----------------------------")
+        self.attack_logger.start_attack_step("Step 8 (target itadmin): User Monitoring")
         self.attack_logger.start_narration("""
 NOT IMPLEMENTED YET. MAYBE DO THIS PARTIAL. KEYLOGGING NEEDS USER INTERACTION.
 (Screen spying and keylogging are already implemented as standalone metasploit attacks. Use them)
@@ -700,8 +694,7 @@ NOT IMPLEMENTED YET. MAYBE DO THIS PARTIAL. KEYLOGGING NEEDS USER INTERACTION.
     def step9(self):
         self.attack_logger.vprint(
             f"{CommandlineColors.OKBLUE}Step 9 (target: accounting): Setup Shim Persistence{CommandlineColors.ENDC}", 1)
-        self.attack_logger.start_narration(
-            "Step 9 (target accounting): Setup Shim Persistence\n----------------------------")
+        self.attack_logger.start_attack_step("Step 9 (target accounting): Setup Shim Persistence")
         self.attack_logger.start_narration("""
 NOT IMPLEMENTED YET
 
@@ -791,8 +784,7 @@ NOT IMPLEMENTED YET
 
         self.attack_logger.vprint(
             f"{CommandlineColors.OKBLUE}Step 10 (target: accounting): Steal Payment Data{CommandlineColors.ENDC}", 1)
-        self.attack_logger.start_narration(
-            "Step 10 (target accounting): Steal Payment Data\n----------------------------")
+        self.attack_logger.start_attack_step("Step 10 (target accounting): Steal Payment Data")
         self.attack_logger.start_narration("""
 NOT IMPLEMENTED YET. NEEDS TARGET REBOOTING: NO IDEA IF ATTACKX CAN SUPPORT THAT
 

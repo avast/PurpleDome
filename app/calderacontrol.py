@@ -625,7 +625,7 @@ class CalderaControl():
         self.add_adversary(adversary_name, ability_id)
         adid = self.get_adversary(adversary_name)["adversary_id"]
 
-        self.attack_logger.start_caldera_attack(source=self.url,
+        logid = self.attack_logger.start_caldera_attack(source=self.url,
                                                 paw=paw,
                                                 group=group,
                                                 ability_id=ability_id,
@@ -682,9 +682,11 @@ class CalderaControl():
             except CalderaError:
                 pass
 
+        outp=""
+
         if output is None:
-            output = str(self.get_operation_by_id(opid))
-            self.attack_logger.vprint(f"{CommandlineColors.FAIL}Failed getting operation data. We just have: {output} from get_operation_by_id{CommandlineColors.ENDC}", 0)
+            outp = str(self.get_operation_by_id(opid))
+            self.attack_logger.vprint(f"{CommandlineColors.FAIL}Failed getting operation data. We just have: {outp} from get_operation_by_id{CommandlineColors.ENDC}", 0)
         else:
             outp = str(output)
             self.attack_logger.vprint(f"{CommandlineColors.BACKGROUND_GREEN} Output: {outp} {CommandlineColors.ENDC}", 2)
@@ -704,7 +706,9 @@ class CalderaControl():
                                                name=self.get_ability(ability_id)[0]["name"],
                                                description=self.get_ability(ability_id)[0]["description"],
                                                obfuscator=obfuscator,
-                                               jitter=jitter
+                                               jitter=jitter,
+                                               logid=logid,
+                                               result=[outp]
                                                )
         return True
 

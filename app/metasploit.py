@@ -438,7 +438,8 @@ class MetasploitInstant(Metasploit):
                                                   target=target.get_ip(),
                                                   metasploit_command=command,
                                                   ttp=ttp,
-                                                  logid=logid)
+                                                  logid=logid,
+                                                  result=res)
         return res
 
     def migrate(self, target, user=None, name=None, arch=None):
@@ -472,7 +473,8 @@ class MetasploitInstant(Metasploit):
         self.attack_logger.stop_metasploit_attack(source=self.attacker.get_ip(),
                                                   target=target.get_ip(),
                                                   metasploit_command=command,
-                                                  ttp=ttp)
+                                                  ttp=ttp,
+                                                  result=res)
         return res
 
     def arp_network_discovery(self, target, **kwargs):
@@ -505,7 +507,8 @@ class MetasploitInstant(Metasploit):
                                                   target=target.get_ip(),
                                                   metasploit_command=command,
                                                   ttp=ttp,
-                                                  logid=logid)
+                                                  logid=logid,
+                                                  result=res)
         return res
 
     def nslookup(self, target, target2, **kwargs):
@@ -542,7 +545,8 @@ class MetasploitInstant(Metasploit):
                                                   target=target.get_ip(),
                                                   metasploit_command=command,
                                                   ttp=ttp,
-                                                  logid=logid)
+                                                  logid=logid,
+                                                  result=res)
         return res
 
     def getsystem(self, target, **kwargs):
@@ -580,7 +584,8 @@ Elevate privileges from local administrator to SYSTEM. Three ways to do that wil
                                                   target=target.get_ip(),
                                                   metasploit_command=command,
                                                   ttp=ttp,
-                                                  logid=logid)
+                                                  logid=logid,
+                                                  result=res)
         return res
 
     def clearev(self, target):
@@ -601,7 +606,8 @@ Elevate privileges from local administrator to SYSTEM. Three ways to do that wil
         self.attack_logger.stop_metasploit_attack(source=self.attacker.get_ip(),
                                                   target=target.get_ip(),
                                                   metasploit_command=command,
-                                                  ttp=ttp)
+                                                  ttp=ttp,
+                                                  result=res)
         return res
 
     def screengrab(self, target):
@@ -628,7 +634,8 @@ Elevate privileges from local administrator to SYSTEM. Three ways to do that wil
         self.attack_logger.stop_metasploit_attack(source=self.attacker.get_ip(),
                                                   target=target.get_ip(),
                                                   metasploit_command=command,
-                                                  ttp=ttp)
+                                                  ttp=ttp,
+                                                  result=res)
         return res
 
     def keylogging(self, target, monitoring_time):
@@ -660,7 +667,8 @@ Elevate privileges from local administrator to SYSTEM. Three ways to do that wil
         self.attack_logger.stop_metasploit_attack(source=self.attacker.get_ip(),
                                                   target=target.get_ip(),
                                                   metasploit_command=command,
-                                                  ttp=ttp)
+                                                  ttp=ttp,
+                                                  result=res)
         return res
 
     def getuid(self, target):
@@ -683,7 +691,8 @@ Elevate privileges from local administrator to SYSTEM. Three ways to do that wil
         self.attack_logger.stop_metasploit_attack(source=self.attacker.get_ip(),
                                                   target=target.get_ip(),
                                                   metasploit_command=command,
-                                                  ttp=ttp)
+                                                  ttp=ttp,
+                                                  result=res)
         return res[0]
 
     def sysinfo(self, target):
@@ -706,7 +715,8 @@ Elevate privileges from local administrator to SYSTEM. Three ways to do that wil
         self.attack_logger.stop_metasploit_attack(source=self.attacker.get_ip(),
                                                   target=target.get_ip(),
                                                   metasploit_command=command,
-                                                  ttp=ttp)
+                                                  ttp=ttp,
+                                                  result=res)
         return res[0]
 
     def upload(self, target, src, dst, **kwargs):
@@ -745,5 +755,6 @@ Uploading new files to the target. Can be config files, tools, implants, ...
                                                   target=target.get_ip(),
                                                   metasploit_command=command,
                                                   ttp=ttp,
-                                                  logid=logid)
+                                                  logid=logid,
+                                                  result=res)
         return res

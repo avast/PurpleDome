@@ -13,6 +13,7 @@
 # import os
 # import sys
 
+master_doc = 'contents'
 
 # -- Project information -----------------------------------------------------
 
