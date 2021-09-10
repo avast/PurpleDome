@@ -626,16 +626,16 @@ class CalderaControl():
         adid = self.get_adversary(adversary_name)["adversary_id"]
 
         logid = self.attack_logger.start_caldera_attack(source=self.url,
-                                                paw=paw,
-                                                group=group,
-                                                ability_id=ability_id,
-                                                ttp=self.get_ability(ability_id)[0]["technique_id"],
-                                                name=self.get_ability(ability_id)[0]["name"],
-                                                description=self.get_ability(ability_id)[0]["description"],
-                                                obfuscator=obfuscator,
-                                                jitter=jitter,
-                                                **kwargs
-                                                )
+                                                        paw=paw,
+                                                        group=group,
+                                                        ability_id=ability_id,
+                                                        ttp=self.get_ability(ability_id)[0]["technique_id"],
+                                                        name=self.get_ability(ability_id)[0]["name"],
+                                                        description=self.get_ability(ability_id)[0]["description"],
+                                                        obfuscator=obfuscator,
+                                                        jitter=jitter,
+                                                        **kwargs
+                                                        )
 
         #  ##### Create / Run Operation
 
@@ -682,7 +682,7 @@ class CalderaControl():
             except CalderaError:
                 pass
 
-        outp=""
+        outp = ""
 
         if output is None:
             outp = str(self.get_operation_by_id(opid))

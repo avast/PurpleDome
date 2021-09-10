@@ -35,11 +35,10 @@ if __name__ == "__main__":
 
     #  generate("loot/2021_08_30___14_40_23/attack.json",
     #          "tools/human_readable_documentation/contents.rst")  # FIN 7 With genereated files added
-    #  generate("removeme/loot/2021_09_07___08_59_42/attack.json",
-    #         "tools/human_readable_documentation/source/contents.rst")  # FIN 7 first run on environment
-    generate("loot/2021_09_07___16_20_48/attack.json",
-             "tools/human_readable_documentation/source/contents.rst")  # FIN 7 locally with extended data  (older: loot/2021_09_07___14_38_14)
-
+    generate("removeme/loot/2021_09_08___07_41_35/attack.json",
+             "tools/human_readable_documentation/source/contents.rst")  # FIN 7 first run on environment
+    # generate("loot/2021_09_07___16_20_48/attack.json",
+    #        "tools/human_readable_documentation/source/contents.rst")  # FIN 7 locally with extended data  (older: loot/2021_09_07___14_38_14)
 
     # generate("loot/2021_07_19___15_10_45/attack.json", "tools/human_readable_documentation/contents.rst")
     # generate("removeme.json", "tools/human_readable_documentation/contents.rst")

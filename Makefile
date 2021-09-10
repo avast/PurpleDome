@@ -19,4 +19,4 @@ pylint:
 	pylint --rcfile=pylint.rc  *.py app/*.py plugins/base/*.py
 
 mypy:
-	mypy app/
+	mypy --strict-optional app/

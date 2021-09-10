@@ -572,7 +572,6 @@ class AttackLog():
                         if "result" in entry:
                             replace_entry["result"] = entry["result"]
 
-
     def get_dict(self):
         """ Return logged data in dict format """
 
