@@ -13,9 +13,11 @@ from app.config import ExperimentConfig
 from app.interface_sfx import CommandlineColors
 from app.exceptions import ServerError
 from app.pluginmanager import PluginManager
+from app.doc_generator import DocGenerator
 from caldera_control import CalderaControl
 from machine_control import Machine
 from plugins.base.attack import AttackPlugin
+
 
 
 # TODO: Multi threading at least when starting machines
@@ -185,7 +187,12 @@ class Experiment():
         self.__stop_attacker()
 
         self.attack_logger.post_process()
-        self.attack_logger.write_json(os.path.join(self.lootdir, "attack.json"))
+        attack_log_file_path = os.path.join(self.lootdir, "attack.json")
+        self.attack_logger.write_json(attack_log_file_path)
+        dg = DocGenerator()
+        dg.generate(attack_log_file_path)
+        dg.compile_documentation()
+        zip_this += dg.get_outfile_paths()
         self.zip_loot(zip_this)
 
     def attack(self, target, attack):

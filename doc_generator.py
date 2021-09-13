@@ -1,44 +1,28 @@
 #!/usr/bin/env python3
 
-# A standalon document generator. Takes an attack log and generates a doc using templates. Functionality will later be merged into PurpleDome
+# A standalone document generator. Takes an attack log and generates a doc using templates. Functionality will later be merged into PurpleDome
 
 import json
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 # from pprint import pprint
+import argparse
+from app.doc_generator import DocGenerator
+
+default_attack_log = "removeme/loot/2021_09_08___07_41_35/attack.json"  # FIN 7 first run on environment
 
 
-def generate(jfile, outfile):
-    env = Environment(
-        loader=FileSystemLoader("templates", encoding='utf-8', followlinks=False),
-        autoescape=select_autoescape(),
-        trim_blocks=True,
-        # lstrip_blocks=True
-    )
-    template = env.get_template("attack_description.rst")
+def create_parser():
+    """ Creates the parser for the command line arguments"""
+    parser = argparse.ArgumentParser("Controls an experiment on the configured systems")
 
-    with open(jfile) as fh:
-        events = json.load(fh)
+    parser.add_argument("--attack_log", default=default_attack_log, help="The attack log the document is based on")
+    parser.add_argument("--outfile", default="tools/human_readable_documentation/source/contents.rst", help="The default output file")
 
-    rendered = template.render(events=events)
-    print(rendered)
-
-    with open(outfile, "wt") as fh:
-        fh.write(rendered)
+    return parser
 
 
 if __name__ == "__main__":
-    # generate("loot/2021_07_19___16_28_45/attack.json", "tools/human_readable_documentation/contents.rst")  # Working example for a short run
-    # generate("loot/2021_07_20___08_26_33/attack.json", "tools/human_readable_documentation/contents.rst")  # FIN 7 #1
-    # generate("loot/2021_07_20___10_07_36/attack.json", "tools/human_readable_documentation/contents.rst")  # FIN 7 #2 The one Fabrizio got
-    # generate("loot/2021_07_28___12_09_00/attack.json",
-    #         "tools/human_readable_documentation/contents.rst")  # FIN 7 The last minute locally generated thing
+    arguments = create_parser().parse_args()
 
-    #  generate("loot/2021_08_30___14_40_23/attack.json",
-    #          "tools/human_readable_documentation/contents.rst")  # FIN 7 With genereated files added
-    generate("removeme/loot/2021_09_08___07_41_35/attack.json",
-             "tools/human_readable_documentation/source/contents.rst")  # FIN 7 first run on environment
-    # generate("loot/2021_09_07___16_20_48/attack.json",
-    #        "tools/human_readable_documentation/source/contents.rst")  # FIN 7 locally with extended data  (older: loot/2021_09_07___14_38_14)
-
-    # generate("loot/2021_07_19___15_10_45/attack.json", "tools/human_readable_documentation/contents.rst")
-    # generate("removeme.json", "tools/human_readable_documentation/contents.rst")
+    dg = DocGenerator()
+    dg.generate(arguments.attack_log, arguments.outfile)
