@@ -6,6 +6,7 @@ import json
 import os
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+
 class DocGenerator():
     """ Generates human readable docs from attack logs """
 

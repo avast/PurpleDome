@@ -2,9 +2,6 @@
 
 # A standalone document generator. Takes an attack log and generates a doc using templates. Functionality will later be merged into PurpleDome
 
-import json
-from jinja2 import Environment, FileSystemLoader, select_autoescape
-# from pprint import pprint
 import argparse
 from app.doc_generator import DocGenerator
 

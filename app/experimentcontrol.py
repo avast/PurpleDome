@@ -19,7 +19,6 @@ from machine_control import Machine
 from plugins.base.attack import AttackPlugin
 
 
-
 # TODO: Multi threading at least when starting machines
 
 class Experiment():
