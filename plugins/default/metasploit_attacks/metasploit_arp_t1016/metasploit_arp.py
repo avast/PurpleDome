@@ -36,7 +36,10 @@ class MetasploitArpPlugin(AttackPlugin):
                                        attacker=self.attacker_machine_plugin,
                                        username=self.metasploit_user)
 
-        metasploit.smart_infect(target, payload_type, payload_name, )
+        metasploit.smart_infect(target,
+                                payload=payload_type,
+                                payload_name=payload_name,
+                                architecture="x64")
 
         metasploit.arp_network_discovery(target)
 
