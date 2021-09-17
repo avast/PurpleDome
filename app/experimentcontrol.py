@@ -205,9 +205,10 @@ class Experiment():
         for plugin in self.plugin_manager.get_plugins(AttackPlugin, [attack]):
             name = plugin.get_name()
 
-            self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Running Kali plugin {name}{CommandlineColors.ENDC}", 2)
+            self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Running Attack plugin {name}{CommandlineColors.ENDC}", 2)
             plugin.process_config(self.experiment_config.attack_conf(plugin.get_config_section_name()))
             plugin.set_attacker_machine(self.attacker_1)
+            plugin.set_sysconf({})
             plugin.set_logger(self.attack_logger)
             plugin.set_caldera(self.caldera_control)
             plugin.install()
