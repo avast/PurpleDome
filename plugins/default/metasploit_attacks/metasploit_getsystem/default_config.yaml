@@ -1,0 +1,8 @@
+###
+# The getsystem variant to use.
+# See: https://docs.rapid7.com/metasploit/meterpreter-getsystem/
+# 0: auto
+# 1: Named Pipe Impersonation (In Memory/Admin)
+# 2: Named Pipe Impersonation (Dropper/Admin)
+# 3: Token Duplication (In Memory/Admin)
+variant: 0
