@@ -7,6 +7,7 @@ import os
 from app.config import MachineConfig
 from app.interface_sfx import CommandlineColors
 from plugins.base.plugin_base import BasePlugin
+from typing import Optional
 
 
 class MachineStates(Enum):
@@ -26,9 +27,9 @@ class MachineryPlugin(BasePlugin):
     """ Class to control virtual machines, vagrant, .... """
 
     # Boilerplate
-    name = None
+    name: Optional[str] = None
 
-    required_files = []
+    required_files: list[str] = []
 
     ###############
     # This is stuff you might want to implement
@@ -38,7 +39,7 @@ class MachineryPlugin(BasePlugin):
         self.connection = None  # Connection
         self.config = None
 
-    def create(self, reboot=True):
+    def create(self, reboot: bool = True):
         """ Create a machine
 
         @param reboot: Optionally reboot the machine after creation
@@ -61,7 +62,7 @@ class MachineryPlugin(BasePlugin):
         """ Connect to a machine """
         raise NotImplementedError
 
-    def remote_run(self, cmd, disown=False):
+    def remote_run(self, cmd: str, disown: bool = False):
         """ Connects to the machine and runs a command there
 
 
@@ -75,7 +76,7 @@ class MachineryPlugin(BasePlugin):
         """ Disconnect from a machine """
         raise NotImplementedError
 
-    def put(self, src, dst):
+    def put(self, src: str, dst: str):
         """ Send a file to a machine
 
         @param src: source dir
@@ -83,7 +84,7 @@ class MachineryPlugin(BasePlugin):
         """
         raise NotImplementedError
 
-    def get(self, src, dst):
+    def get(self, src: str, dst: str):
         """ Get a file to a machine
 
         @param src: source dir
@@ -108,8 +109,11 @@ class MachineryPlugin(BasePlugin):
 
         return self.config.get_playground()
 
-    def get_vm_name(self):
-        """ Get the specific name of the machine """
+    def get_vm_name(self) -> str:
+        """ Get the specific name of the machine
+
+        @returns: the machine name
+        """
 
         return self.config.vmname()
 
@@ -140,7 +144,7 @@ class MachineryPlugin(BasePlugin):
         self.config = config
         self.process_config(config.raw_config)
 
-    def __call_remote_run__(self, cmd, disown=False):
+    def __call_remote_run__(self, cmd: str, disown: bool = False):
         """ Simplifies connect and run
 
         @param cmd: Command to run as shell command
@@ -164,7 +168,7 @@ class MachineryPlugin(BasePlugin):
 
         self.up()
 
-    def __call_create__(self, reboot=True):
+    def __call_create__(self, reboot: bool = True):
         """ Create a VM
 
         @param reboot: Reboot the VM during installation. Required if you want to install software

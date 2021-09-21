@@ -6,34 +6,36 @@ from plugins.base.plugin_base import BasePlugin
 from app.exceptions import PluginError, ConfigurationError
 from app.calderacontrol import CalderaControl
 # from app.metasploit import MSFVenom, Metasploit
+from typing import Optional
+from machinery import MachineryPlugin
 
 
 class AttackPlugin(BasePlugin):
     """ Class to execute a command on a kali system targeting another system """
 
     # Boilerplate
-    name = None
-    description = None
-    ttp = None
+    name: Optional[str] = None
+    description: Optional[str] = None
+    ttp: Optional[str] = None
     references = None
 
-    required_files = []  # Better use the other required_files features
-    required_files_attacker = []  # a list of files to automatically install to the attacker
-    required_files_target = []    # a list of files to automatically copy to the targets
+    required_files: list[str] = []  # Better use the other required_files features
+    required_files_attacker: list[str] = []  # a list of files to automatically install to the attacker
+    required_files_target: list[str] = []    # a list of files to automatically copy to the targets
 
     # TODO: parse results
 
     def __init__(self):
         super().__init__()
-        self.conf = {}     # Plugin specific configuration
+        self.conf: dict = {}     # Plugin specific configuration
         # self.sysconf = {}  # System configuration. common for all plugins
         self.attacker_machine_plugin = None  # The machine plugin referencing the attacker. The Kali machine should be the perfect candidate
         self.target_machine_plugin = None  # The machine plugin referencing the target
         self.caldera = None  # The Caldera connection object
         self.targets = None
 
-        self.metasploit_password = "password"
-        self.metasploit_user = "user"
+        self.metasploit_password: str = "password"
+        self.metasploit_user: str = "user"
         self.metasploit = None
 
     def copy_to_attacker_and_defender(self):
@@ -50,7 +52,7 @@ class AttackPlugin(BasePlugin):
         """ Cleanup afterwards """
         pass  # pylint: disable=unnecessary-pass
 
-    def attacker_run_cmd(self, command, disown=False):
+    def attacker_run_cmd(self, command: str, disown: bool = False) -> str:
         """ Execute a command on the attacker
 
          @param command: Command to execute
@@ -65,7 +67,7 @@ class AttackPlugin(BasePlugin):
         res = self.attacker_machine_plugin.__call_remote_run__(command, disown=disown)
         return res
 
-    def targets_run_cmd(self, command, disown=False):
+    def targets_run_cmd(self, command: str, disown: bool = False) -> str:
         """ Execute a command on the target
 
          @param command: Command to execute
@@ -80,7 +82,7 @@ class AttackPlugin(BasePlugin):
         res = self.target_machine_plugin.__call_remote_run__(command, disown=disown)
         return res
 
-    def set_target_machines(self, machine):
+    def set_target_machines(self, machine: MachineryPlugin):
         """ Set the machine to target
 
         @param machine: Machine plugin to communicate with
@@ -88,7 +90,7 @@ class AttackPlugin(BasePlugin):
 
         self.target_machine_plugin = machine.vm_manager
 
-    def set_attacker_machine(self, machine):
+    def set_attacker_machine(self, machine: MachineryPlugin):
         """ Set the machine plugin class to target
 
         @param machine: Machine to communicate with
@@ -103,11 +105,11 @@ class AttackPlugin(BasePlugin):
          """
         self.caldera = caldera
 
-    def caldera_attack(self, target, ability_id, parameters=None, **kwargs):
+    def caldera_attack(self, target: MachineryPlugin, ability_id: str, parameters=None, **kwargs):
         """ Attack a single target using caldera
 
         @param target: Target machine object
-        @param ability_id: Ability if od caldera ability to run
+        @param ability_id: Ability or caldera ability to run
         @param parameters: parameters to pass to the ability
         """
 
@@ -130,7 +132,7 @@ class AttackPlugin(BasePlugin):
 
         return self.attacker_machine_plugin.get_playground()
 
-    def run(self, targets):
+    def run(self, targets: list[str]):
         """ Run the command
 
         @param targets: A list of targets, ip addresses will do
@@ -172,7 +174,7 @@ class AttackPlugin(BasePlugin):
 
         raise NotImplementedError
 
-    def get_target_by_name(self, name):
+    def get_target_by_name(self, name: str):
         """ Returns a target machine out of the target pool by matching the name
         If there is no matching name it will look into the "nicknames" list of the machine config
 

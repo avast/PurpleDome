@@ -19,3 +19,4 @@ mypy
 types-PyYAML
 types-requests
 types-simplejson
+types-paramiko

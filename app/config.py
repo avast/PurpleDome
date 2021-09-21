@@ -17,7 +17,7 @@ from app.exceptions import ConfigurationError
 class MachineConfig():
     """ Sub config for a specific machine"""
 
-    def __init__(self, machinedata):
+    def __init__(self, machinedata: dict):
         """ Init machine control config
 
         @param machinedata: dict containing machine data
@@ -147,21 +147,21 @@ class MachineConfig():
 class ExperimentConfig():
     """ Configuration class for a whole experiments """
 
-    def __init__(self, configfile):
+    def __init__(self, configfile: str):
         """ Init the config, process the file
 
         @param configfile: The configuration file to process
         """
 
         self.raw_config = None
-        self._targets = []
-        self._attackers = []
+        self._targets: list[MachineConfig] = []
+        self._attackers: list[MachineConfig] = []
         self.load(configfile)
 
         # Test essential data that is a hard requirement. Should throw errors if anything is wrong
         self.loot_dir()
 
-    def load(self, configfile):
+    def load(self, configfile: str):
         """ Loads the configuration file
 
         @param configfile: The configuration file to process
@@ -170,11 +170,18 @@ class ExperimentConfig():
         with open(configfile) as fh:
             self.raw_config = yaml.safe_load(fh)
 
+        if self.raw_config is None:
+            raise ConfigurationError("Config file is empty")
+
         # Process targets
+        if self.raw_config["targets"] is None:
+            raise ConfigurationError("Config file does not specify targets")
         for target in self.raw_config["targets"]:
             self._targets.append(MachineConfig(self.raw_config["targets"][target]))
 
         # Process attackers
+        if self.raw_config["attackers"] is None:
+            raise ConfigurationError("Config file does not specify attackers")
         for attacker in self.raw_config["attackers"]:
             self._attackers.append(MachineConfig(self.raw_config["attackers"][attacker]))
 
@@ -188,7 +195,7 @@ class ExperimentConfig():
 
         return self._attackers
 
-    def attacker(self, mid) -> MachineConfig:
+    def attacker(self, mid: int) -> MachineConfig:
         """ Return config for attacker as MachineConfig objects
 
         @param mid: id of the attacker, 0 is main attacker
@@ -212,12 +219,16 @@ class ExperimentConfig():
             raise ConfigurationError("results/loot_dir not properly set in configuration") from error
         return res
 
-    def attack_conf(self, attack):
+    def attack_conf(self, attack: str):
         """ Get kali config for a specific kali attack
 
         @param attack: Name of the attack to look up config for
         """
 
+        if self.raw_config is None:
+            raise ConfigurationError("Config file is empty")
+        if self.raw_config["attack_conf"] is None:
+            raise ConfigurationError("Config file missing attacks")
         try:
             res = self.raw_config["attack_conf"][attack]
         except KeyError:
@@ -245,12 +256,14 @@ class ExperimentConfig():
             return "4/8"
         return res
 
-    def get_plugin_based_attacks(self, for_os):
+    def get_plugin_based_attacks(self, for_os: str):
         """ Get the configured kali attacks to run for a specific OS
 
         @param for_os: The os to query the registered attacks for
         """
 
+        if self.raw_config is None:
+            raise ConfigurationError("Config file is empty")
         if "plugin_based_attacks" not in self.raw_config:
             return []
         if for_os not in self.raw_config["plugin_based_attacks"]:
@@ -260,12 +273,14 @@ class ExperimentConfig():
             return []
         return res
 
-    def get_caldera_attacks(self, for_os):
+    def get_caldera_attacks(self, for_os: str):
         """ Get the configured caldera attacks to run for a specific OS
 
         @param for_os: The os to query the registered attacks for
         """
 
+        if self.raw_config is None:
+            raise ConfigurationError("Config file is empty")
         if "caldera_attacks" not in self.raw_config:
             return []
         if for_os not in self.raw_config["caldera_attacks"]:
@@ -283,11 +298,14 @@ class ExperimentConfig():
         except KeyError:
             return 0
 
-    def get_sensor_config(self, name):
+    def get_sensor_config(self, name: str):
         """ Return the config for a specific sensor
 
         @param name: name of the sensor
         """
+
+        if self.raw_config is None:
+            raise ConfigurationError("Config file is empty")
         if "sensors" not in self.raw_config:
             return {}
         if self.raw_config["sensors"] is None:  # Better for unit tests that way.

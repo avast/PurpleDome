@@ -6,38 +6,39 @@ You only gotta write a plugin if you want some special features
 """
 
 from plugins.base.plugin_base import BasePlugin
+from typing import Optional
 
 
 class CalderaPlugin(BasePlugin):
     """ Class to execute a command on a caldera system targeting another system """
 
     # Boilerplate
-    name = None
-    description = None
-    ttp = None
+    name: Optional[str] = None
+    description: Optional[str] = None
+    ttp: Optional[str] = None
     references = None
 
-    required_files = []
+    required_files: list[str] = []
 
     # TODO: parse results
 
     def __init__(self):
         super().__init__()
-        self.conf = {}     # Plugin specific configuration
+        self.conf: dict = {}     # Plugin specific configuration
         # self.sysconf = {}  # System configuration. common for all plugins
 
     def teardown(self):
         """ Cleanup afterwards """
         pass  # pylint: disable=unnecessary-pass
 
-    def run(self, targets):
+    def run(self, targets: list[str]):
         """ Run the command
 
         @param targets: A list of targets, ip addresses will do
         """
         raise NotImplementedError
 
-    def __execute__(self, targets):
+    def __execute__(self, targets: list[str]) -> str:
         """ Execute the plugin. This is called by the code
 
         @param targets: A list of targets, ip addresses will do

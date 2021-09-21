@@ -19,7 +19,7 @@ class BasePlugin():
 
     def __init__(self) -> None:
         # self.machine = None
-        self.plugin_path = None
+        self.plugin_path: Optional[str] = None
         self.machine_plugin = None
         # self.sysconf = {}
         self.conf: dict = {}
@@ -82,7 +82,7 @@ class BasePlugin():
         # self.sysconf["abs_machinepath_external"] = config["abs_machinepath_external"]
         self.load_default_config()
 
-    def process_config(self, config):
+    def process_config(self, config: dict):
         """ process config and use defaults if stuff is missing
 
         @param config: The config dict
@@ -92,7 +92,7 @@ class BasePlugin():
 
         self.conf = {**self.conf, **config}
 
-    def copy_to_machine(self, filename):
+    def copy_to_machine(self, filename: str):
         """ Copies a file shipped with the plugin to the machine share folder
 
         @param filename: File from the plugin folder to copy to the machine share.
@@ -100,12 +100,17 @@ class BasePlugin():
 
         if self.machine_plugin is not None:
             self.machine_plugin.put(filename, self.machine_plugin.get_playground())
+        else:
+            raise PluginError("Missing machine")
 
-    def get_from_machine(self, src, dst):
+    def get_from_machine(self, src: str, dst: str):
         """ Get a file from the machine """
-        self.machine_plugin.get(src, dst)  # nosec
+        if self.machine_plugin is not None:
+            self.machine_plugin.get(src, dst)  # nosec
+        else:
+            raise PluginError("Missing machine")
 
-    def run_cmd(self, command, disown=False):
+    def run_cmd(self, command: str, disown: bool = False):
         """ Execute a command on the vm using the connection
 
          @param command: Command to execute

@@ -62,7 +62,7 @@ class SSHFeatures(BasePlugin):
         self.vprint("SSH network error", 0)
         raise NetworkError
 
-    def remote_run(self, cmd, disown=False):
+    def remote_run(self, cmd: str, disown: bool = False):
         """ Connects to the machine and runs a command there
 
         @param cmd: The command to execute
@@ -109,7 +109,7 @@ class SSHFeatures(BasePlugin):
 
         return ""
 
-    def put(self, src, dst):
+    def put(self, src: str, dst: str):
         """ Send a file to a machine
 
         @param src: source dir
@@ -148,7 +148,7 @@ class SSHFeatures(BasePlugin):
         self.vprint("SSH network error on PUT command", 0)
         raise NetworkError
 
-    def get(self, src, dst):
+    def get(self, src: str, dst: str):
         """ Get a file to a machine
 
         @param src: source dir
