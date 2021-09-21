@@ -7,7 +7,7 @@ from app.exceptions import PluginError, ConfigurationError
 from app.calderacontrol import CalderaControl
 # from app.metasploit import MSFVenom, Metasploit
 from typing import Optional
-from machinery import MachineryPlugin
+from plugins.base.machinery import MachineryPlugin
 
 
 class AttackPlugin(BasePlugin):
