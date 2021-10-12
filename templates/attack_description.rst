@@ -1,8 +1,38 @@
 Attack
 ======
 
-Target systems
---------------
+Boilerplate
+-----------
+
+PurpleDome, attack-log version: {{ boilerplate.log_format_major_version }}.{{ boilerplate.log_format_minor_version }}
+
+Systems
+-------
+
+{% for s in systems %}
+{{ s.role }}:{{ s.name }}
+~~~~~~~~~~~~
+IP: {{ s.ip }}
+
+OS: {{ s.os }}
+
+Paw: {{ s.paw }}
+
+Group: {{ s.group }}
+
+Sensors:
+
+{% for sensor in s.sensors %}
+* {{ sensor }}
+{% endfor %}  {# sensors #}
+
+Vulnerabilities:
+
+{% for vulnerability in s.vulnerabilities %}
+* {{ vulnerability }}
+{% endfor %}  {# vulnerabilities #}
+
+{% endfor %}  {# systems #}
 
 Attack steps
 ------------

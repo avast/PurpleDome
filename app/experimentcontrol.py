@@ -6,6 +6,7 @@ import os
 import subprocess
 import time
 import zipfile
+import shutil
 from datetime import datetime
 
 from app.attack_log import AttackLog
@@ -108,6 +109,16 @@ class Experiment():
                 running_agents = self.caldera_control.list_paws_of_running_agents()
         self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Caldera agents reached{CommandlineColors.ENDC}", 1)
 
+        # Add running machines to log
+        for t in self.targets:
+            i = t.get_machine_info()
+            i["role"] = "target"
+            self.attack_logger.add_machine_info(i)
+
+        i = self.attacker_1.get_machine_info()
+        i["role"] = "attacker"
+        self.attack_logger.add_machine_info(i)
+
         # Attack them
         self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Running Caldera attacks{CommandlineColors.ENDC}", 1)
         for target_1 in self.targets:
@@ -153,7 +164,7 @@ class Experiment():
 
         self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Finished Caldera attacks{CommandlineColors.ENDC}", 1)
 
-        # Run Kali attacks
+        # Run plugin based attacks
         self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Running attack plugins{CommandlineColors.ENDC}", 1)
         for target_1 in self.targets:
             plugin_based_attacks = self.experiment_config.get_plugin_based_attacks(target_1.get_os())
@@ -230,6 +241,10 @@ class Experiment():
                     zfh.write(a_file)
 
             zfh.write(os.path.join(self.lootdir, "attack.json"))
+
+        # For automation purpose we copy the file into a standard file name
+        defaultname = os.path.join(self.lootdir, "..", "most_recent.zip")
+        shutil.copyfile(filename, defaultname)
 
     @staticmethod
     def __get_results_files(root):

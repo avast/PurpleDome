@@ -29,6 +29,7 @@ class AttackLog():
         @param verbosity: verbosity setting from 0 to 3 for stdout printing
         """
         self.log: list[dict] = []
+        self.machines: dict = []
         self.verbosity = verbosity
 
         # TODO. As soon as someone wants custom timestamps, make the format variable
@@ -575,7 +576,18 @@ class AttackLog():
     def get_dict(self):
         """ Return logged data in dict format """
 
-        return self.log
+        res = {"boilerplate": {"log_format_major_version": 1,  # Changes on changes that breaks readers (items are modified or deleted)
+                               "log_format_minor_version": 1   # Changes even if just new data is added
+                               },
+               "system_overview": self.machines,
+               "attack_log": self.log
+               }
+
+        return res
+
+    def add_machine_info(self, machine_info):
+        """ Adds a dict with machine info. One machine per call of this method """
+        self.machines.append(machine_info)
 
     # TODO: doc_start_environment
 

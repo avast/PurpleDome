@@ -26,9 +26,9 @@ class DocGenerator():
         template = env.get_template("attack_description.rst")
 
         with open(jfile) as fh:
-            events = json.load(fh)
+            attack = json.load(fh)
 
-        rendered = template.render(events=events)
+        rendered = template.render(events=attack["attack_log"], systems=attack["system_overview"], boilerplate=attack["boilerplate"])
         print(rendered)
 
         with open(outfile, "wt") as fh:
