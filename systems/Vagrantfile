@@ -143,6 +143,11 @@ Vagrant.configure("2") do |config|
 
 	  target3.vm.synced_folder ".", "/vagrant"
 
+	  target3.vm.provider "virtualbox" do |v|
+	    v.memory = 2048
+	    v.cpus = 4
+    end
+
 
 	  # Disable automatic box update checking. If you disable this, then
 	  # boxes will only be checked for updates when the user runs
