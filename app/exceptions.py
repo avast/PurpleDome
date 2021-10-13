@@ -24,3 +24,7 @@ class NetworkError(Exception):
 
 class MetasploitError(Exception):
     """ Metasploit had an error """
+
+
+class RequirementError(Exception):
+    """ Plugin requirements not fulfilled """
