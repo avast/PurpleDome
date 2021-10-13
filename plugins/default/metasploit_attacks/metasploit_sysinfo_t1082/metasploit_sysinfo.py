@@ -38,8 +38,9 @@ class MetasploitSysinfoPlugin(AttackPlugin):
 
         metasploit.smart_infect(target,
                                 payload=payload_type,
-                                payload_name=payload_name,
-                                architecture="x86")
+                                outfile=payload_name,
+                                format="exe",
+                                architecture="x64")
 
         si = metasploit.sysinfo(target)
         print(f"Sysinfo: {si}")

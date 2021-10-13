@@ -38,7 +38,8 @@ class MetasploitClearevPlugin(AttackPlugin):
 
         metasploit.smart_infect(target,
                                 payload=payload_type,
-                                payload_name=payload_name,
+                                outfile=payload_name,
+                                format="exe",
                                 architecture="x64")
 
         metasploit.clearev(target)

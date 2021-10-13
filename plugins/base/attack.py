@@ -3,11 +3,19 @@
 
 import os
 from plugins.base.plugin_base import BasePlugin
-from app.exceptions import PluginError, ConfigurationError
+from app.exceptions import PluginError, ConfigurationError, RequirementError
 from app.calderacontrol import CalderaControl
 # from app.metasploit import MSFVenom, Metasploit
 from typing import Optional
 from plugins.base.machinery import MachineryPlugin
+from app.metasploit import MetasploitInstant
+from enum import Enum
+
+
+class Requirement(Enum):
+    """ Requirements for this plugin """
+    METASPLOIT = 1
+    CALDERA = 2
 
 
 class AttackPlugin(BasePlugin):
@@ -23,6 +31,8 @@ class AttackPlugin(BasePlugin):
     required_files_attacker: list[str] = []  # a list of files to automatically install to the attacker
     required_files_target: list[str] = []    # a list of files to automatically copy to the targets
 
+    requirements: Optional[list[Requirement]] = []  # Requirements to run this plugin
+
     # TODO: parse results
 
     def __init__(self):
@@ -37,6 +47,25 @@ class AttackPlugin(BasePlugin):
         self.metasploit_password: str = "password"
         self.metasploit_user: str = "user"
         self.metasploit = None
+
+    def needs_caldera(self) -> bool:
+        """ Returns True if this plugin has Caldera in the requirements """
+        if Requirement.CALDERA in self.requirements:
+            return True
+        return False
+
+    def needs_metasploit(self) -> bool:
+        """ Returns True if this plugin has Metasploit in the requirements """
+        if Requirement.METASPLOIT in self.requirements:
+            return True
+        return False
+
+    def connect_metasploit(self):
+        """ Inits metasploit """
+
+        if self.needs_metasploit():
+            self.metasploit = MetasploitInstant(self.metasploit_password, attack_logger=self.attack_logger, attacker=self.attacker_machine_plugin, username=self.metasploit_user)
+        # If metasploit requirements are not set, self.metasploit stay None and using metasploit from a plugin not having the requirements will trigger an exception
 
     def copy_to_attacker_and_defender(self):
         """ Copy attacker/defender specific files to the machines. Called by setup, do not call it yourself. template processing happens before """
@@ -103,7 +132,9 @@ class AttackPlugin(BasePlugin):
 
          @param caldera: The caldera object to connect through
          """
-        self.caldera = caldera
+
+        if self.needs_caldera():
+            self.caldera = caldera
 
     def caldera_attack(self, target: MachineryPlugin, ability_id: str, parameters=None, **kwargs):
         """ Attack a single target using caldera
@@ -112,6 +143,9 @@ class AttackPlugin(BasePlugin):
         @param ability_id: Ability or caldera ability to run
         @param parameters: parameters to pass to the ability
         """
+
+        if not self.needs_caldera():
+            raise RequirementError("Caldera not in requirements")
 
         self.caldera.attack(paw=target.get_paw(),
                             ability_id=ability_id,

