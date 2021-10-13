@@ -12,6 +12,7 @@ Systems
 {% for s in systems %}
 {{ s.role }}:{{ s.name }}
 ~~~~~~~~~~~~
+
 IP: {{ s.ip }}
 
 OS: {{ s.os }}
@@ -36,6 +37,7 @@ Vulnerabilities:
 
 Attack steps
 ------------
+
 {% for e in events %}
 {% if e.event is eq("start") %}
 {% if e.type is eq("attack_step") %}
@@ -47,14 +49,16 @@ Attack steps
 {% if e.type is eq("dropping_file") %}
 
 Dropping file to target
-_______________________
+~~~~~~~~~~~~~~~~~~~~~~~
+
 At {{ e.timestamp }}
 The file {{ e.file_name }} is dropped to the target {{ e.target }}.
 {% endif %}
 {% if e.type is eq("execute_payload") %}
 
 Executing payload on target
-___________________________
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 At {{ e.timestamp }}
 The command {{ e.command }} is used to start a file on the target {{ e.target }}.
 {% endif %}
@@ -64,7 +68,8 @@ The command {{ e.command }} is used to start a file on the target {{ e.target }}
 {% if e.sub_type is eq("metasploit") %}
 
 Metasploit attack {{ e.name }}
-______________________________
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 + Tactics: {{ e.tactics }}
 + Tactics ID: {{ e.tactics_id }}
 + Hunting Tag: {{ e.hunting_tag}}
@@ -95,7 +100,8 @@ Attack result::
 {% if e.sub_type is eq("kali") %}
 
 Kali attack {{ e.name }}
-________________________
+~~~~~~~~~~~~~~~~~~~~~~~~
+
 + Tactics: {{ e.tactics }}
 + Tactics ID: {{ e.tactics_id }}
 + Hunting Tag: {{ e.hunting_tag}}
@@ -126,7 +132,8 @@ Attack result::
 {% if e.sub_type is eq("caldera") %}
 
 Caldera attack {{ e.name }}
-___________________________
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 + Tactics: {{ e.tactics }}
 + Tactics ID: {{ e.tactics_id }}
 + Hunting Tag: {{ e.hunting_tag}}
@@ -157,11 +164,14 @@ Attack result::
 
 Tools
 -----
+
 {% for e in events %}
 {% if e.event is eq("start") %}
 {% if e.type is eq("build") %}
+
 Building tool {{ e.filename }}
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 The file {{ e.filename }} is built
 {% if e.for_step %}
 It will be used in Step {{ e.for_step }}
