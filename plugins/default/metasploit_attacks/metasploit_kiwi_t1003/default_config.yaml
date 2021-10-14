@@ -1,0 +1,5 @@
+###
+# The kiwi command to use.
+# See: https://www.hackers-arise.com/post/2018/11/26/metasploit-basics-part-21-post-exploitation-with-mimikatz
+# Some options: creds_all, creds_kerberos, creds msv, creds_ssp, creds_tspkg, creds_wdigest, wifi_list, wifi_list_shared
+variant: creds_all

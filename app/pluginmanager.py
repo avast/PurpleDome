@@ -3,14 +3,16 @@
 
 from glob import glob
 import os
+import straight.plugin  # type: ignore
 
 from plugins.base.plugin_base import BasePlugin
 from plugins.base.attack import AttackPlugin
 from plugins.base.machinery import MachineryPlugin
 from plugins.base.sensor import SensorPlugin
 from plugins.base.vulnerability_plugin import VulnerabilityPlugin
-import straight.plugin
 from app.interface_sfx import CommandlineColors
+from app.attack_log import AttackLog
+
 # from app.interface_sfx import CommandlineColors
 
 sections = [{"name": "Vulnerabilities",
@@ -27,7 +29,7 @@ sections = [{"name": "Vulnerabilities",
 class PluginManager():
     """ Manage plugins """
 
-    def __init__(self, attack_logger):
+    def __init__(self, attack_logger: AttackLog):
         """
 
         @param attack_logger: The attack logger to use
@@ -67,6 +69,34 @@ class PluginManager():
                     intersection = names.intersection(name_filter)
                     if len(intersection):
                         res.append(plugin)
+        return res
+
+    def count_caldera_requirements(self, subclass, name_filter=None) -> int:
+        """ Count the plugins matching the filter that have caldera requirements """
+
+        # So far it only supports attack plugins. Maybe this will be extended to other plugin types later.
+        assert subclass == AttackPlugin
+
+        plugins = self.get_plugins(subclass, name_filter)
+        res = 0
+        for plugin in plugins:
+            if plugin.needs_caldera():
+                res += 1
+
+        return res
+
+    def count_metasploit_requirements(self, subclass, name_filter=None) -> int:
+        """ Count the plugins matching the filter that have metasploit requirements """
+
+        # So far it only supports attack plugins. Maybe this will be extended to other plugin types later.
+        assert subclass == AttackPlugin
+
+        plugins = self.get_plugins(subclass, name_filter)
+        res = 0
+        for plugin in plugins:
+            if plugin.needs_metasploit():
+                res += 1
+
         return res
 
     def print_list(self):

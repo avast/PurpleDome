@@ -5,9 +5,10 @@
 import json
 import datetime
 from random import randint
+from typing import Optional
 
 
-def __mitre_fix_ttp__(ttp):
+def __mitre_fix_ttp__(ttp: Optional[str]) -> str:
     """ enforce some systematic naming scheme for MITRE TTPs """
 
     if ttp is None:
@@ -22,12 +23,13 @@ def __mitre_fix_ttp__(ttp):
 class AttackLog():
     """ A specific logger class to log the progress of the attack steps """
 
-    def __init__(self, verbosity=0):
+    def __init__(self, verbosity: int = 0):
         """
 
         @param verbosity: verbosity setting from 0 to 3 for stdout printing
         """
-        self.log = []
+        self.log: list[dict] = []
+        self.machines: dict = []
         self.verbosity = verbosity
 
         # TODO. As soon as someone wants custom timestamps, make the format variable
@@ -41,12 +43,12 @@ class AttackLog():
 
         self.log.append(item)
 
-    def __get_timestamp__(self):
+    def __get_timestamp__(self) -> str:
         """ Get the timestamp to add to the log entries. Currently not configurable """
 
         return datetime.datetime.now().strftime(self.datetime_format)
 
-    def get_caldera_default_name(self, ability_id):
+    def get_caldera_default_name(self, ability_id: str):
         """ Returns the default name for this ability based on a db """
         data = {"bd527b63-9f9e-46e0-9816-b8434d2b8989": "whoami"}
         if ability_id not in data:
@@ -54,7 +56,7 @@ class AttackLog():
 
         return data[ability_id]
 
-    def get_caldera_default_description(self, ability_id):
+    def get_caldera_default_description(self, ability_id: str):
         """ Returns the default description for this ability based on a db """
 
         data = {"bd527b63-9f9e-46e0-9816-b8434d2b8989": "Obtain user from current session"}
@@ -63,16 +65,16 @@ class AttackLog():
 
         return data[ability_id]
 
-    def get_caldera_default_tactics(self, ability_id):
+    def get_caldera_default_tactics(self, ability_id: str):
         """ Returns the default tactics for this ability based on a db """
 
-        data = {"bd527b63-9f9e-46e0-9816-b8434d2b8989": " System Owner/User Discovery"}
+        data = {"bd527b63-9f9e-46e0-9816-b8434d2b8989": "System Owner/User Discovery"}
         if ability_id not in data:
             return None
 
         return data[ability_id]
 
-    def get_caldera_default_tactics_id(self, ability_id):
+    def get_caldera_default_tactics_id(self, ability_id: str):
         """ Returns the default name for this ability based on a db """
 
         data = {"bd527b63-9f9e-46e0-9816-b8434d2b8989": "T1033"}
@@ -81,7 +83,7 @@ class AttackLog():
 
         return data[ability_id]
 
-    def get_caldera_default_situation_description(self, ability_id):
+    def get_caldera_default_situation_description(self, ability_id: str):
         """ Returns the default situation description for this ability based on a db """
 
         data = {"bd527b63-9f9e-46e0-9816-b8434d2b8989": None}
@@ -90,7 +92,7 @@ class AttackLog():
 
         return data[ability_id]
 
-    def get_caldera_default_countermeasure(self, ability_id):
+    def get_caldera_default_countermeasure(self, ability_id: str):
         """ Returns the default countermeasure for this ability based on a db """
 
         data = {"bd527b63-9f9e-46e0-9816-b8434d2b8989": None}
@@ -99,7 +101,7 @@ class AttackLog():
 
         return data[ability_id]
 
-    def start_caldera_attack(self, source, paw, group, ability_id, ttp=None, **kwargs):
+    def start_caldera_attack(self, source: str, paw: str, group: str, ability_id: str, ttp: str = None, **kwargs):
         """ Mark the start of a caldera attack
 
         @param source: source of the attack. Attack IP
@@ -131,6 +133,7 @@ class AttackLog():
                 "countermeasure": kwargs.get("countermeasure", self.get_caldera_default_countermeasure(ability_id)),  # Set by the attack
                 "obfuscator": kwargs.get("obfuscator", "default"),
                 "jitter": kwargs.get("jitter", "default"),
+                "result": None,
                 }
 
         self.__add_to_log__(data)
@@ -141,7 +144,7 @@ class AttackLog():
     # TODO: Add config
     # TODO: Add results
 
-    def stop_caldera_attack(self, source, paw, group, ability_id, ttp=None, **kwargs):
+    def stop_caldera_attack(self, source: str, paw: str, group: str, ability_id: str, ttp: str = None, **kwargs):
         """ Mark the end of a caldera attack
 
         @param source: source of the attack. Attack IP
@@ -168,11 +171,12 @@ class AttackLog():
                 "description": kwargs.get("description", ""),
                 "obfuscator": kwargs.get("obfuscator", "default"),
                 "jitter": kwargs.get("jitter", "default"),
-                "logid": kwargs.get("logid", None)
+                "logid": kwargs.get("logid", None),
+                "result": kwargs.get("result", None),
                 }
         self.__add_to_log__(data)
 
-    def start_file_write(self, source, target, file_name):
+    def start_file_write(self, source: str, target: str, file_name: str):
         """ Mark the start of a file being written to the target (payload !)
 
         @param source: source of the attack. Attack IP (empty if written from controller)
@@ -196,7 +200,7 @@ class AttackLog():
         self.__add_to_log__(data)
         return logid
 
-    def stop_file_write(self, source, target, file_name, **kwargs):
+    def stop_file_write(self, source: str, target: str, file_name: str, **kwargs):
         """ Mark the stop of a file being written to the target (payload !)
 
         @param source: source of the attack. Attack IP (empty if written from controller)
@@ -220,12 +224,12 @@ class AttackLog():
 
         self.__add_to_log__(data)
 
-    def start_execute_payload(self, source, target, command):
+    def start_execute_payload(self, source: str, target: str, command: str):
         """ Mark the start of a payload being executed
 
         @param source: source of the attack. Attack IP (empty if written from controller)
         @param target: Target machine of the attack
-        @param command: Name of the file being written
+        @param command:
         """
 
         timestamp = self.__get_timestamp__()
@@ -245,7 +249,7 @@ class AttackLog():
 
         return logid
 
-    def stop_execute_payload(self, source, target, command, **kwargs):
+    def stop_execute_payload(self, source: str, target: str, command: str, **kwargs):
         """ Mark the stop of a payload being executed
 
         @param source: source of the attack. Attack IP (empty if written from controller)
@@ -266,7 +270,7 @@ class AttackLog():
                 }
         self.__add_to_log__(data)
 
-    def start_kali_attack(self, source, target, attack_name, ttp=None, **kwargs):
+    def start_kali_attack(self, source: str, target: str, attack_name: str, ttp: str = None, **kwargs):
         """ Mark the start of a Kali based attack
 
         @param source: source of the attack. Attack IP
@@ -295,6 +299,7 @@ class AttackLog():
                 "description": kwargs.get("description", None),  # Generic description for this attack. Set by the attack
                 "situation_description": kwargs.get("situation_description", None),  # Description for the situation this attack was run in. Set by the plugin or attacker emulation
                 "countermeasure": kwargs.get("countermeasure", None),  # Set by the attack
+                "result": None,
                 }
         self.__add_to_log__(data)
 
@@ -304,7 +309,7 @@ class AttackLog():
     # TODO: Add config
     # TODO: Add results
 
-    def stop_kali_attack(self, source, target, attack_name, ttp=None, **kwargs):
+    def stop_kali_attack(self, source: str, target: str, attack_name: str, ttp: str = None, **kwargs):
         """ Mark the end of a Kali based attack
 
         @param source: source of the attack. Attack IP
@@ -321,11 +326,12 @@ class AttackLog():
                 "target": target,
                 "kali_name": attack_name,
                 "hunting_tag": __mitre_fix_ttp__(ttp),
-                "logid": kwargs.get("logid", None)
+                "logid": kwargs.get("logid", None),
+                "result": kwargs.get("result", None),
                 }
         self.__add_to_log__(data)
 
-    def start_narration(self, text):
+    def start_narration(self, text: str):
         """ Add some user defined narration. Can be used in plugins to describe the situation before and after the attack, ...
         At the moment there is no stop narration command. I do not think we need one. But I want to stick to the structure
 
@@ -343,6 +349,42 @@ class AttackLog():
                 }
         self.__add_to_log__(data)
         return logid
+
+    def start_attack_step(self, text: str):
+        """ Mark the start of an attack step (several attacks in a chunk)
+
+        @param text: description of the attack step being started
+        """
+
+        timestamp = self.__get_timestamp__()
+        logid = timestamp + "_" + str(randint(1, 100000))
+
+        data = {"timestamp": timestamp,
+                "timestamp_end": None,
+                "event": "start",
+                "type": "attack_step",
+                "sub_type": "user defined attack step",
+                "text": text,
+                "logid": logid,
+                }
+        self.__add_to_log__(data)
+
+        return logid
+
+    def stop_attack_step(self, text: str, **kwargs):
+        """ Mark the end of an attack step (several attacks in a chunk)
+
+        @param text: description of the attack step being stopped
+        """
+
+        data = {"timestamp": self.__get_timestamp__(),
+                "event": "stop",
+                "type": "attack_step",
+                "sub_type": "user defined attack step",
+                "text": text,
+                "logid": kwargs.get("logid", None)
+                }
+        self.__add_to_log__(data)
 
     def start_build(self, **kwargs):
         """ Mark the start of a tool building/compilation process
@@ -401,7 +443,7 @@ class AttackLog():
                 }
         self.__add_to_log__(data)
 
-    def start_metasploit_attack(self, source, target, metasploit_command, ttp=None, **kwargs):
+    def start_metasploit_attack(self, source: str, target: str, metasploit_command: str, ttp: str = None, **kwargs):
         """ Mark the start of a Metasploit based attack
 
         @param source: source of the attack. Attack IP
@@ -429,12 +471,13 @@ class AttackLog():
                 "description": kwargs.get("description", None),  # Generic description for this attack. Set by the attack
                 "situation_description": kwargs.get("situation_description", None),  # Description for the situation this attack was run in. Set by the plugin or attacker emulation
                 "countermeasure": kwargs.get("countermeasure", None),  # Set by the attack
+                "result": None
                 }
         self.__add_to_log__(data)
 
         return logid
 
-    def stop_metasploit_attack(self, source, target, metasploit_command, ttp=None, **kwargs):
+    def stop_metasploit_attack(self, source: str, target: str, metasploit_command: str, ttp: str = None, **kwargs):
         """ Mark the start of a Metasploit based attack
 
         @param source: source of the attack. Attack IP
@@ -451,11 +494,12 @@ class AttackLog():
                 "target": target,
                 "metasploit_command": metasploit_command,
                 "hunting_tag": __mitre_fix_ttp__(ttp),
-                "logid": kwargs.get("logid", None)
+                "logid": kwargs.get("logid", None),
+                "result": kwargs.get("result", None)
                 }
         self.__add_to_log__(data)
 
-    def start_attack_plugin(self, source, target, plugin_name, ttp=None):
+    def start_attack_plugin(self, source: str, target: str, plugin_name: str, ttp: str = None):
         """ Mark the start of an attack plugin
 
         @param source: source of the attack. Attack IP
@@ -485,7 +529,7 @@ class AttackLog():
     # TODO: Add config
     # TODO: Add results
 
-    def stop_attack_plugin(self, source, target, plugin_name, **kwargs):
+    def stop_attack_plugin(self, source: str, target: str, plugin_name: str, **kwargs):
         """ Mark the end of an attack plugin
 
         @param source: source of the attack. Attack IP
@@ -507,7 +551,7 @@ class AttackLog():
                 }
         self.__add_to_log__(data)
 
-    def write_json(self, filename):
+    def write_json(self, filename: str):
         """ Write the json data for this log
 
         @param filename: Name of the json file
@@ -526,11 +570,24 @@ class AttackLog():
                     if replace_entry["event"] == "start" and "logid" in replace_entry and replace_entry["logid"] == logid:
                         # Found matching start event. Updating it
                         replace_entry["timestamp_end"] = entry["timestamp"]
+                        if "result" in entry:
+                            replace_entry["result"] = entry["result"]
 
     def get_dict(self):
         """ Return logged data in dict format """
 
-        return self.log
+        res = {"boilerplate": {"log_format_major_version": 1,  # Changes on changes that breaks readers (items are modified or deleted)
+                               "log_format_minor_version": 1   # Changes even if just new data is added
+                               },
+               "system_overview": self.machines,
+               "attack_log": self.log
+               }
+
+        return res
+
+    def add_machine_info(self, machine_info):
+        """ Adds a dict with machine info. One machine per call of this method """
+        self.machines.append(machine_info)
 
     # TODO: doc_start_environment
 
@@ -540,7 +597,7 @@ class AttackLog():
 
     # TODO: Return full doc
 
-    def vprint(self, text, verbosity):
+    def vprint(self, text: str, verbosity: int):
         """ verbosity based stdout printing
 
         0: Errors only

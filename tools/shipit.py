@@ -64,7 +64,11 @@ globs = ["TODO.md",
          "pylint.rc",
          "shipit_log.txt",
          "all_caldera_attacks_unique.txt",
-         "caldera_subset.txt"]
+         "caldera_subset.txt",
+         "templates/*.rst",
+         "tools/human_readable_documentation/source/conf.py",
+         "tools/human_readable_documentation/Makefile",
+         ]
 
 try:
     os.remove(filename)

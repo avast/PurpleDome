@@ -3,6 +3,7 @@
 """ (Virtual) machine handling. Start, stop, create and destroy. Starting remote commands on them. """
 
 import os
+import socket
 import time
 
 import requests
@@ -371,6 +372,23 @@ class Machine():
         """ Get a file from a machine """
 
         return self.vm_manager.get(src, dst)
+
+    def get_machine_info(self) -> dict:
+        """ Returns a dict containing machine info """
+
+        return {"name": self.get_name(),
+                "nicknames": self.get_nicknames(),
+                "playground": self.get_playground(),
+                "net_id": self.get_ip(),
+                "ip": socket.gethostbyname(self.get_ip()),
+                "os": self.get_os(),
+                "paw": self.get_paw(),
+                "group": self.get_group(),
+                "sensors": [s.name for s in self.get_sensors()],
+                "vulnerabilities": [v.name for v in self.get_vulnerabilities()]
+                }
+        # TODO: Caldera implant
+        # TODO: Metasploit implant
 
     def install_caldera_server(self, cleanup=False, version="2.8.1"):
         """ Installs the caldera server on the VM

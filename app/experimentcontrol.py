@@ -6,6 +6,7 @@ import os
 import subprocess
 import time
 import zipfile
+import shutil
 from datetime import datetime
 
 from app.attack_log import AttackLog
@@ -13,6 +14,7 @@ from app.config import ExperimentConfig
 from app.interface_sfx import CommandlineColors
 from app.exceptions import ServerError
 from app.pluginmanager import PluginManager
+from app.doc_generator import DocGenerator
 from caldera_control import CalderaControl
 from machine_control import Machine
 from plugins.base.attack import AttackPlugin
@@ -65,11 +67,14 @@ class Experiment():
             except subprocess.CalledProcessError:
                 # Maybe the machine just does not exist yet
                 pass
-            target_1.install_caldera_service()
+            if self.machine_needs_caldera(target_1, caldera_attacks):
+                target_1.install_caldera_service()
             target_1.up()
             needs_reboot = target_1.prime_vulnerabilities()
             needs_reboot |= target_1.prime_sensors()
             if needs_reboot:
+                self.attack_logger.vprint(
+                    f"{CommandlineColors.OKBLUE}rebooting target {tname} ....{CommandlineColors.ENDC}", 1)
                 target_1.reboot()
             self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Target is up: {tname}  {CommandlineColors.ENDC}", 1)
             self.targets.append(target_1)
@@ -87,10 +92,16 @@ class Experiment():
             a_target.start_sensors()
 
         # First start of caldera implants
+        at_least_one_caldera_started = False
         for target_1 in self.targets:
-            target_1.start_caldera_client()
-            self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Initial start of caldera client: {tname}  {CommandlineColors.ENDC}", 1)
-        time.sleep(20)   # Wait for all the clients to contact the caldera server
+            if self.machine_needs_caldera(target_1, caldera_attacks):
+                target_1.start_caldera_client()
+                self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Initial start of caldera client: {tname}  {CommandlineColors.ENDC}", 1)
+            else:
+                at_least_one_caldera_started = True
+        if at_least_one_caldera_started:
+            time.sleep(20)   # Wait for all the clients to contact the caldera server
+        # TODO: Smarter wait
 
         self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Contacting caldera agents on all targets ....{CommandlineColors.ENDC}", 1)
         # Wait until all targets are registered as Caldera targets
@@ -98,22 +109,37 @@ class Experiment():
             running_agents = self.caldera_control.list_paws_of_running_agents()
             self.attack_logger.vprint(f"Agents currently running: {running_agents}", 2)
             while target_1.get_paw() not in running_agents:
+                if self.machine_needs_caldera(target_1, caldera_attacks) == 0:
+                    self.attack_logger.vprint(f"No caldera agent needed for: {target_1.get_paw()} ", 3)
+                    break
                 self.attack_logger.vprint(f"Connecting to caldera {caldera_url}, running agents are: {running_agents}", 3)
                 self.attack_logger.vprint(f"Missing agent: {target_1.get_paw()} ...", 3)
                 target_1.start_caldera_client()
-                self.attack_logger.vprint(f"Restarted caldera agent: {target_1.get_paw()} ...", )
+                self.attack_logger.vprint(f"Restarted caldera agent: {target_1.get_paw()} ...", 3)
                 time.sleep(120)    # Was 30, but maybe there are timing issues
                 running_agents = self.caldera_control.list_paws_of_running_agents()
         self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Caldera agents reached{CommandlineColors.ENDC}", 1)
+
+        # Add running machines to log
+        for target in self.targets:
+            i = target.get_machine_info()
+            i["role"] = "target"
+            self.attack_logger.add_machine_info(i)
+
+        i = self.attacker_1.get_machine_info()
+        i["role"] = "attacker"
+        self.attack_logger.add_machine_info(i)
 
         # Attack them
         self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Running Caldera attacks{CommandlineColors.ENDC}", 1)
         for target_1 in self.targets:
             if caldera_attacks is None:
                 # Run caldera attacks
-                caldera_attacks = self.experiment_config.get_caldera_attacks(target_1.get_os())
-            if caldera_attacks:
-                for attack in caldera_attacks:
+                new_caldera_attacks = self.experiment_config.get_caldera_attacks(target_1.get_os())
+            else:
+                new_caldera_attacks = caldera_attacks
+            if new_caldera_attacks:
+                for attack in new_caldera_attacks:
                     # TODO: Work with snapshots
                     # TODO: If we have several targets in the same group, it is nonsense to attack each one separately. Make this smarter
                     self.attack_logger.vprint(f"Attacking machine with PAW: {target_1.get_paw()} with {attack}", 2)
@@ -137,6 +163,9 @@ class Experiment():
                         time.sleep(self.experiment_config.get_nap_time())
                         retries = 100
                         for target_system in self.targets:
+                            if self.machine_needs_caldera(target_system, caldera_attacks) == 0:
+                                self.attack_logger.vprint(f"No caldera agent needed for: {target_system.get_paw()} ", 3)
+                                continue
                             running_agents = self.caldera_control.list_paws_of_running_agents()
                             self.attack_logger.vprint(f"Agents currently connected to the server: {running_agents}", 2)
                             while target_system.get_paw() not in running_agents:
@@ -151,10 +180,12 @@ class Experiment():
 
         self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Finished Caldera attacks{CommandlineColors.ENDC}", 1)
 
-        # Run Kali attacks
+        # Run plugin based attacks
         self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Running attack plugins{CommandlineColors.ENDC}", 1)
         for target_1 in self.targets:
             plugin_based_attacks = self.experiment_config.get_plugin_based_attacks(target_1.get_os())
+            metasploit_plugins = self.plugin_manager.count_caldera_requirements(AttackPlugin, plugin_based_attacks)
+            print(f"Plugins needing metasploit for {target_1.get_paw()} : {metasploit_plugins}")
             for attack in plugin_based_attacks:
                 # TODO: Work with snapshots
                 self.attack_logger.vprint(f"Attacking machine with PAW: {target_1.get_paw()} with attack: {attack}", 1)
@@ -184,8 +215,27 @@ class Experiment():
         self.__stop_attacker()
 
         self.attack_logger.post_process()
-        self.attack_logger.write_json(os.path.join(self.lootdir, "attack.json"))
+        attack_log_file_path = os.path.join(self.lootdir, "attack.json")
+        self.attack_logger.write_json(attack_log_file_path)
+        document_generator = DocGenerator()
+        document_generator.generate(attack_log_file_path)
+        document_generator.compile_documentation()
+        zip_this += document_generator.get_outfile_paths()
         self.zip_loot(zip_this)
+
+    def machine_needs_caldera(self, target, caldera_conf):
+        """ Counts the attacks and plugins needing caldera that are registered for this machine """
+
+        c_cmdline = 0
+        if caldera_conf is not None:
+            c_cmdline = len(caldera_conf)
+        c_conffile = len(self.experiment_config.get_caldera_attacks(target.get_os()))
+        plugin_based_attacks = self.experiment_config.get_plugin_based_attacks(target.get_os())
+        c_plugins = self.plugin_manager.count_caldera_requirements(AttackPlugin, plugin_based_attacks)
+
+        print(f"Caldera count: From cmdline: {c_cmdline}, From conf: {c_conffile} from plugins: {c_plugins}")
+
+        return c_cmdline + c_conffile + c_plugins
 
     def attack(self, target, attack):
         """ Pick an attack and run it
@@ -198,11 +248,13 @@ class Experiment():
         for plugin in self.plugin_manager.get_plugins(AttackPlugin, [attack]):
             name = plugin.get_name()
 
-            self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Running Kali plugin {name}{CommandlineColors.ENDC}", 2)
+            self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Running Attack plugin {name}{CommandlineColors.ENDC}", 2)
             plugin.process_config(self.experiment_config.attack_conf(plugin.get_config_section_name()))
             plugin.set_attacker_machine(self.attacker_1)
+            plugin.set_sysconf({})
             plugin.set_logger(self.attack_logger)
             plugin.set_caldera(self.caldera_control)
+            plugin.connect_metasploit()
             plugin.install()
 
             # plugin.__set_logger__(self.attack_logger)
@@ -223,6 +275,10 @@ class Experiment():
 
             zfh.write(os.path.join(self.lootdir, "attack.json"))
 
+        # For automation purpose we copy the file into a standard file name
+        defaultname = os.path.join(self.lootdir, "..", "most_recent.zip")
+        shutil.copyfile(filename, defaultname)
+
     @staticmethod
     def __get_results_files(root):
         """ Yields a list of potential result files
@@ -236,29 +292,29 @@ class Experiment():
             if os.path.exists(a_file):
                 yield a_file
 
-    def __clean_result_files(self, root):
-        """ Deletes result files
+    # def __clean_result_files(self, root):
+    #     """ Deletes result files
 
-        @param root: Root dir of the machine to collect data from
-        """
+    #     @param root: Root dir of the machine to collect data from
+    #     """
 
         # TODO: Properly implement. Get proper root parameter
 
-        for a_file in self.__get_results_files(root):
-            os.remove(a_file)
+    #     for a_file in self.__get_results_files(root):
+    #         os.remove(a_file)
 
-    def __collect_loot(self, root):
-        """ Collect results into loot dir
+    # def __collect_loot(self, root):
+    #     """ Collect results into loot dir
 
-        @param root: Root dir of the machine to collect data from
-        """
+    #     @param root: Root dir of the machine to collect data from
+    #     """
 
-        try:
-            os.makedirs(os.path.abspath(self.experiment_config.loot_dir()))
-        except FileExistsError:
-            pass
-        for a_file in self.__get_results_files(root):
-            self.attack_logger.vprint("Copy {} {}".format(a_file, os.path.abspath(self.experiment_config.loot_dir())), 3)
+    #     try:
+    #         os.makedirs(os.path.abspath(self.experiment_config.loot_dir()))
+    #     except FileExistsError:
+    #         pass
+    #     for a_file in self.__get_results_files(root):
+    #        self.attack_logger.vprint("Copy {} {}".format(a_file, os.path.abspath(self.experiment_config.loot_dir())), 3)
 
     def __start_attacker(self):
         """ Start the attacking VM """

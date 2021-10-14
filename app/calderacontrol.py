@@ -7,11 +7,14 @@ import os
 import time
 
 from pprint import pprint, pformat
+from typing import Optional
 import requests
 import simplejson
 
 from app.exceptions import CalderaError
 from app.interface_sfx import CommandlineColors
+
+
 
 
 # TODO: Ability deserves an own class.
@@ -20,7 +23,7 @@ from app.interface_sfx import CommandlineColors
 class CalderaControl():
     """ Remote control Caldera through REST api """
 
-    def __init__(self, server, attack_logger, config=None, apikey=None):
+    def __init__(self, server: str, attack_logger, config=None, apikey=None):
         """
 
         @param server: Caldera server url/ip
@@ -38,7 +41,7 @@ class CalderaControl():
         else:
             self.apikey = apikey
 
-    def fetch_client(self, platform="windows", file="sandcat.go", target_dir=".", extension=""):
+    def fetch_client(self, platform: str = "windows", file: str = "sandcat.go", target_dir: str = ".", extension: str = ""):
         """ Downloads the appropriate Caldera client
 
         @param platform: Platform to download the agent for
@@ -56,7 +59,7 @@ class CalderaControl():
         # print(r.headers)
         return filename
 
-    def __contact_server__(self, payload, rest_path="api/rest", method="post"):
+    def __contact_server__(self, payload, rest_path: str = "api/rest", method: str = "post"):
         """
 
         @param payload: payload as dict to send to the server
@@ -78,7 +81,7 @@ class CalderaControl():
             raise ValueError
         try:
             res = request.json()
-        except simplejson.errors.JSONDecodeError as exception:
+        except simplejson.errors.JSONDecodeError as exception:  # type: ignore
             print("!!! Error !!!!")
             print(payload)
             print(request.text)
@@ -88,7 +91,7 @@ class CalderaControl():
         return res
 
     #  ############## List
-    def list_links(self, opid):
+    def list_links(self, opid: str):
         """ List links associated with an operation
 
         @param opid: operation id to list links for
@@ -98,7 +101,7 @@ class CalderaControl():
                    "op_id": opid}
         return self.__contact_server__(payload)
 
-    def list_results(self, linkid):
+    def list_results(self, linkid: str):
         """ List results for a link
 
         @param linkid: ID of the link
@@ -143,7 +146,7 @@ class CalderaControl():
         facts = self.__contact_server__(payload)
         return facts
 
-    def list_sources_for_name(self, name):
+    def list_sources_for_name(self, name: str):
         """ List facts in a source pool with a specific name """
 
         for i in self.list_sources():
@@ -151,7 +154,7 @@ class CalderaControl():
                 return i
         return None
 
-    def list_facts_for_name(self, name):
+    def list_facts_for_name(self, name: str):
         """ Pretty format for facts
 
         @param name: Name of the source ot look into
@@ -188,7 +191,7 @@ class CalderaControl():
 
     #  ######### Get one specific item
 
-    def get_operation(self, name):
+    def get_operation(self, name: str):
         """ Gets an operation by name
 
         @param name: Name of the operation to look for
@@ -199,7 +202,7 @@ class CalderaControl():
                 return operation
         return None
 
-    def get_adversary(self, name):
+    def get_adversary(self, name: str):
         """ Gets a specific adversary by name
 
         @param name: Name to look for
@@ -209,7 +212,7 @@ class CalderaControl():
                 return adversary
         return None
 
-    def get_objective(self, name):
+    def get_objective(self, name: str):
         """ Returns an objective with a given name
 
         @param name: Name to filter for
@@ -221,7 +224,7 @@ class CalderaControl():
 
     #  ######### Get by id
 
-    def get_source(self, source_name):
+    def get_source(self, source_name: str):
         """ Retrieves data source and detailed  facts
 
         @param: The name of the source
@@ -231,7 +234,7 @@ class CalderaControl():
                    "name": source_name}
         return self.__contact_server__(payload)
 
-    def get_ability(self, abid):
+    def get_ability(self, abid: str):
         """" Return an ability by id
 
         @param abid: Ability id
@@ -258,7 +261,7 @@ class CalderaControl():
                 return True
         return False
 
-    def get_operation_by_id(self, op_id):
+    def get_operation_by_id(self, op_id: str):
         """ Get operation by id
 
         @param op_id: Operation id
@@ -267,7 +270,7 @@ class CalderaControl():
                    "id": op_id}
         return self.__contact_server__(payload)
 
-    def get_result_by_id(self, linkid):
+    def get_result_by_id(self, linkid: str):
         """ Get the result from a link id
 
         @param linkid: link id
@@ -276,7 +279,7 @@ class CalderaControl():
                    "link_id": linkid}
         return self.__contact_server__(payload)
 
-    def get_linkid(self, op_id, paw, ability_id):
+    def get_linkid(self, op_id: str, paw: str, ability_id: str):
         """ Get the id of a link identified by paw and ability_id
 
         @param op_id: Operation id
@@ -296,7 +299,7 @@ class CalderaControl():
 
     #  ######### View
 
-    def view_operation_report(self, opid):
+    def view_operation_report(self, opid: str):
         """ views the operation report
 
         @param opid: Operation id to look for
@@ -310,7 +313,7 @@ class CalderaControl():
                    }
         return self.__contact_server__(payload)
 
-    def view_operation_output(self, opid, paw, ability_id):
+    def view_operation_output(self, opid: str, paw: str, ability_id: str):
         """ Gets the output of an executed ability
 
         @param opid: Id of the operation to look for
@@ -336,7 +339,7 @@ class CalderaControl():
 
     #  ######### Add
 
-    def add_sources(self, name, parameters):
+    def add_sources(self, name: str, parameters):
         """ Adds a data source and seeds it with facts """
 
         payload = {"index": "sources",
@@ -350,12 +353,14 @@ class CalderaControl():
         if parameters is not None:
             for key, value in parameters.items():
                 facts.append({"trait": key, "value": value})
-        payload["facts"] = facts
+
+        # TODO: We need something better than a dict here as payload to have strong typing
+        payload["facts"] = facts  # type: ignore
 
         print(payload)
         return self.__contact_server__(payload, method="put")
 
-    def add_operation(self, name, advid, group="red", state="running", obfuscator="plain-text", jitter='4/8', parameters=None):
+    def add_operation(self, name: str, advid: str, group: str = "red", state: str = "running", obfuscator: str = "plain-text", jitter: str = '4/8', parameters=None):
         """ Adds a new operation
 
         @param name: Name of the operation
@@ -393,7 +398,7 @@ class CalderaControl():
 
         return self.__contact_server__(payload, method="put")
 
-    def add_adversary(self, name, ability, description="created automatically"):
+    def add_adversary(self, name: str, ability: str, description: str = "created automatically"):
         """ Adds a new adversary
 
         @param name: Name of the adversary
@@ -421,7 +426,7 @@ class CalderaControl():
 
     # TODO View the abilities a given agent could execute. curl -H "key:$API_KEY" -X POST localhost:8888/plugin/access/abilities -d '{"paw":"$PAW"}'
 
-    def execute_ability(self, paw, ability_id, obfuscator="plain-text", parameters=None):
+    def execute_ability(self, paw: str, ability_id: str, obfuscator: str = "plain-text", parameters=None):
         """ Executes an ability on a target. This happens outside of the scop of an operation. You will get no result of the ability back
 
         @param paw: Paw of the target
@@ -441,13 +446,15 @@ class CalderaControl():
         if parameters is not None:
             for key, value in parameters.items():
                 facts.append({"trait": key, "value": value})
-        payload["facts"] = facts
 
-        print(payload)
+        # TODO. We need something better than a dict here for strong typing
+        payload["facts"] = facts  # type: ignore
+
+        # print(payload)
 
         return self.__contact_server__(payload, rest_path="plugin/access/exploit_ex")
 
-    def execute_operation(self, operation_id, state="running"):
+    def execute_operation(self, operation_id: str, state: str = "running"):
         """ Executes an operation on a server
 
         @param operation_id: The operation to modify
@@ -468,7 +475,7 @@ class CalderaControl():
     #  ######### Delete
 
     # curl -X DELETE http://localhost:8888/api/rest -d '{"index":"operations","id":"$operation_id"}'
-    def delete_operation(self, opid):
+    def delete_operation(self, opid: str):
         """ Delete operation by id
 
         @param opid: Operation id
@@ -477,7 +484,7 @@ class CalderaControl():
                    "id": opid}
         return self.__contact_server__(payload, method="delete")
 
-    def delete_adversary(self, adid):
+    def delete_adversary(self, adid: str):
         """ Delete adversary by id
 
         @param adid: Adversary id
@@ -486,7 +493,7 @@ class CalderaControl():
                    "adversary_id": [{"adversary_id": adid}]}
         return self.__contact_server__(payload, method="delete")
 
-    def delete_agent(self, paw):
+    def delete_agent(self, paw: str):
         """ Delete a specific agent from the kali db. implant may still be running and reconnect
 
         @param paw: The Id of the agent to delete
@@ -495,7 +502,7 @@ class CalderaControl():
                    "paw": paw}
         return self.__contact_server__(payload, method="delete")
 
-    def kill_agent(self, paw):
+    def kill_agent(self, paw: str):
         """ Send a message to an agent to kill itself
 
         @param paw: The Id of the agent to delete
@@ -529,7 +536,7 @@ class CalderaControl():
 
     #  Link, chain and stuff
 
-    def is_operation_finished(self, opid, debug=False):
+    def is_operation_finished(self, opid: str, debug: bool = False):
         """ Checks if an operation finished - finished is not necessary successful !
 
         @param opid: Operation id to check
@@ -559,7 +566,7 @@ class CalderaControl():
 
         return False
 
-    def is_operation_finished_multi(self, opid):
+    def is_operation_finished_multi(self, opid: str):
         """ Checks if an operation finished - finished is not necessary successful ! On several targets.
 
         All links (~ abilities) on all targets must have the status 0 for this to be True.
@@ -589,7 +596,8 @@ class CalderaControl():
 
     #  ######## All inclusive methods
 
-    def attack(self, paw="kickme", ability_id="bd527b63-9f9e-46e0-9816-b8434d2b8989", group="red", target_platform=None, parameters=None, **kwargs):
+    def attack(self, paw: str = "kickme", ability_id: str = "bd527b63-9f9e-46e0-9816-b8434d2b8989",
+               group: str = "red", target_platform: Optional[str] = None, parameters: Optional[str] = None, **kwargs):
         """ Attacks a system and returns results
 
         @param paw: Paw to attack
@@ -625,17 +633,17 @@ class CalderaControl():
         self.add_adversary(adversary_name, ability_id)
         adid = self.get_adversary(adversary_name)["adversary_id"]
 
-        self.attack_logger.start_caldera_attack(source=self.url,
-                                                paw=paw,
-                                                group=group,
-                                                ability_id=ability_id,
-                                                ttp=self.get_ability(ability_id)[0]["technique_id"],
-                                                name=self.get_ability(ability_id)[0]["name"],
-                                                description=self.get_ability(ability_id)[0]["description"],
-                                                obfuscator=obfuscator,
-                                                jitter=jitter,
-                                                **kwargs
-                                                )
+        logid = self.attack_logger.start_caldera_attack(source=self.url,
+                                                        paw=paw,
+                                                        group=group,
+                                                        ability_id=ability_id,
+                                                        ttp=self.get_ability(ability_id)[0]["technique_id"],
+                                                        name=self.get_ability(ability_id)[0]["name"],
+                                                        description=self.get_ability(ability_id)[0]["description"],
+                                                        obfuscator=obfuscator,
+                                                        jitter=jitter,
+                                                        **kwargs
+                                                        )
 
         #  ##### Create / Run Operation
 
@@ -682,9 +690,11 @@ class CalderaControl():
             except CalderaError:
                 pass
 
+        outp = ""
+
         if output is None:
-            output = str(self.get_operation_by_id(opid))
-            self.attack_logger.vprint(f"{CommandlineColors.FAIL}Failed getting operation data. We just have: {output} from get_operation_by_id{CommandlineColors.ENDC}", 0)
+            outp = str(self.get_operation_by_id(opid))
+            self.attack_logger.vprint(f"{CommandlineColors.FAIL}Failed getting operation data. We just have: {outp} from get_operation_by_id{CommandlineColors.ENDC}", 0)
         else:
             outp = str(output)
             self.attack_logger.vprint(f"{CommandlineColors.BACKGROUND_GREEN} Output: {outp} {CommandlineColors.ENDC}", 2)
@@ -704,7 +714,9 @@ class CalderaControl():
                                                name=self.get_ability(ability_id)[0]["name"],
                                                description=self.get_ability(ability_id)[0]["description"],
                                                obfuscator=obfuscator,
-                                               jitter=jitter
+                                               jitter=jitter,
+                                               logid=logid,
+                                               result=[outp]
                                                )
         return True
 

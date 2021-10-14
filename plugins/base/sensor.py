@@ -2,7 +2,9 @@
 """ A base plugin class for sensors. Anything installed on the target to collect system information and identify the attack """
 
 import os
+from typing import Optional
 from plugins.base.plugin_base import BasePlugin
+
 
 
 class SensorPlugin(BasePlugin):
@@ -12,28 +14,28 @@ class SensorPlugin(BasePlugin):
     """
 
     # Boilerplate
-    name = None
+    name: Optional[str] = None
 
-    required_files = []
+    required_files: list[str] = []
 
     def __init__(self):
         super().__init__()  # pylint:disable=useless-super-delegation
         self.debugit = False
 
-    def prime(self):  # pylint: disable=no-self-use
+    def prime(self) -> bool:  # pylint: disable=no-self-use
         """ prime sets hard core configs in the target. You can use it to call everything that permanently alters the OS by settings.
         If your prime function returns True the machine will be rebooted after prime-ing it. This is very likely what you want. Only use prime if install is not sufficient.
         """
 
         return False
 
-    def install(self):  # pylint: disable=no-self-use
+    def install(self) -> bool:  # pylint: disable=no-self-use
         """ Install the sensor. Executed on the target. Take the sensor from the share and (maybe) copy it to its destination. Do some setup
         """
 
         return True
 
-    def start(self, disown=None):  # pylint: disable=unused-argument, no-self-use
+    def start(self, disown=None) -> bool:  # pylint: disable=unused-argument, no-self-use
         """ Start the sensor. The connection to the client is disowned here. = Sent to background. This keeps the process running.
 
         @param disown: Send async into background
@@ -41,22 +43,22 @@ class SensorPlugin(BasePlugin):
 
         return True
 
-    def stop(self):  # pylint: disable=no-self-use
+    def stop(self) -> bool:  # pylint: disable=no-self-use
         """ Stop the sensor """
 
         return True
 
-    def __call_collect__(self, machine_path):
+    def __call_collect__(self, machine_path: str):
         """ Generate the data collect command
 
         @param machine_path: Machine specific path to collect data into
         """
 
-        path = os.path.join(machine_path, "sensors", self.name)
+        path = os.path.join(machine_path, "sensors", self.name)  # type: ignore
         os.makedirs(path)
         return self.collect(path)
 
-    def collect(self, path) -> []:
+    def collect(self, path: str) -> list[str]:
         """ Collect data from sensor. Copy it from sensor collection dir on target OS to the share
 
         @param path: The path to copy the data into

