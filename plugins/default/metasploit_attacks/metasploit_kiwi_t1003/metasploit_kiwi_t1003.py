@@ -3,7 +3,6 @@
 # A plugin to nmap targets slow motion, to evade sensors
 
 from plugins.base.attack import AttackPlugin, Requirement
-from app.metasploit import MetasploitInstant
 import socket
 
 
@@ -34,7 +33,6 @@ class MetasploitKiwiPlugin(AttackPlugin):
         payload_type = "windows/x64/meterpreter/reverse_https"
         payload_name = "babymetal.exe"
         target = self.targets[0]
-
 
         ip = socket.gethostbyname(self.attacker_machine_plugin.get_ip())
 

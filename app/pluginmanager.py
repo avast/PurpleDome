@@ -3,13 +3,13 @@
 
 from glob import glob
 import os
+import straight.plugin  # type: ignore
 
 from plugins.base.plugin_base import BasePlugin
 from plugins.base.attack import AttackPlugin
 from plugins.base.machinery import MachineryPlugin
 from plugins.base.sensor import SensorPlugin
 from plugins.base.vulnerability_plugin import VulnerabilityPlugin
-import straight.plugin  # type: ignore
 from app.interface_sfx import CommandlineColors
 from app.attack_log import AttackLog
 

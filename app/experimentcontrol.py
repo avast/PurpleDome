@@ -115,14 +115,14 @@ class Experiment():
                 self.attack_logger.vprint(f"Connecting to caldera {caldera_url}, running agents are: {running_agents}", 3)
                 self.attack_logger.vprint(f"Missing agent: {target_1.get_paw()} ...", 3)
                 target_1.start_caldera_client()
-                self.attack_logger.vprint(f"Restarted caldera agent: {target_1.get_paw()} ...", )
+                self.attack_logger.vprint(f"Restarted caldera agent: {target_1.get_paw()} ...", 3)
                 time.sleep(120)    # Was 30, but maybe there are timing issues
                 running_agents = self.caldera_control.list_paws_of_running_agents()
         self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Caldera agents reached{CommandlineColors.ENDC}", 1)
 
         # Add running machines to log
-        for t in self.targets:
-            i = t.get_machine_info()
+        for target in self.targets:
+            i = target.get_machine_info()
             i["role"] = "target"
             self.attack_logger.add_machine_info(i)
 
@@ -217,10 +217,10 @@ class Experiment():
         self.attack_logger.post_process()
         attack_log_file_path = os.path.join(self.lootdir, "attack.json")
         self.attack_logger.write_json(attack_log_file_path)
-        dg = DocGenerator()
-        dg.generate(attack_log_file_path)
-        dg.compile_documentation()
-        zip_this += dg.get_outfile_paths()
+        document_generator = DocGenerator()
+        document_generator.generate(attack_log_file_path)
+        document_generator.compile_documentation()
+        zip_this += document_generator.get_outfile_paths()
         self.zip_loot(zip_this)
 
     def machine_needs_caldera(self, target, caldera_conf):
@@ -236,7 +236,6 @@ class Experiment():
         print(f"Caldera count: From cmdline: {c_cmdline}, From conf: {c_conffile} from plugins: {c_plugins}")
 
         return c_cmdline + c_conffile + c_plugins
-
 
     def attack(self, target, attack):
         """ Pick an attack and run it
@@ -293,29 +292,29 @@ class Experiment():
             if os.path.exists(a_file):
                 yield a_file
 
-    def __clean_result_files(self, root):
-        """ Deletes result files
+    # def __clean_result_files(self, root):
+    #     """ Deletes result files
 
-        @param root: Root dir of the machine to collect data from
-        """
+    #     @param root: Root dir of the machine to collect data from
+    #     """
 
         # TODO: Properly implement. Get proper root parameter
 
-        for a_file in self.__get_results_files(root):
-            os.remove(a_file)
+    #     for a_file in self.__get_results_files(root):
+    #         os.remove(a_file)
 
-    def __collect_loot(self, root):
-        """ Collect results into loot dir
+    # def __collect_loot(self, root):
+    #     """ Collect results into loot dir
 
-        @param root: Root dir of the machine to collect data from
-        """
+    #     @param root: Root dir of the machine to collect data from
+    #     """
 
-        try:
-            os.makedirs(os.path.abspath(self.experiment_config.loot_dir()))
-        except FileExistsError:
-            pass
-        for a_file in self.__get_results_files(root):
-            self.attack_logger.vprint("Copy {} {}".format(a_file, os.path.abspath(self.experiment_config.loot_dir())), 3)
+    #     try:
+    #         os.makedirs(os.path.abspath(self.experiment_config.loot_dir()))
+    #     except FileExistsError:
+    #         pass
+    #     for a_file in self.__get_results_files(root):
+    #        self.attack_logger.vprint("Copy {} {}".format(a_file, os.path.abspath(self.experiment_config.loot_dir())), 3)
 
     def __start_attacker(self):
         """ Start the attacking VM """

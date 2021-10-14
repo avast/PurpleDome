@@ -5,8 +5,8 @@ Special for this plugin class: If there is no plugin matching a specified attack
 You only gotta write a plugin if you want some special features
 """
 
-from plugins.base.plugin_base import BasePlugin
 from typing import Optional
+from plugins.base.plugin_base import BasePlugin
 
 
 class CalderaPlugin(BasePlugin):

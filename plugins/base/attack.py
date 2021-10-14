@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """ Base class for Kali plugins """
 
-import os
-from plugins.base.plugin_base import BasePlugin
-from app.exceptions import PluginError, ConfigurationError, RequirementError
-from app.calderacontrol import CalderaControl
-# from app.metasploit import MSFVenom, Metasploit
-from typing import Optional
-from plugins.base.machinery import MachineryPlugin
-from app.metasploit import MetasploitInstant
 from enum import Enum
+import os
+from typing import Optional
+
+from app.calderacontrol import CalderaControl
+from app.exceptions import PluginError, ConfigurationError, RequirementError
+from app.metasploit import MetasploitInstant
+from plugins.base.machinery import MachineryPlugin
+from plugins.base.plugin_base import BasePlugin
 
 
 class Requirement(Enum):

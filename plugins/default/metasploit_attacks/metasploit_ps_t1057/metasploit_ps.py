@@ -3,7 +3,6 @@
 # A plugin to nmap targets slow motion, to evade sensors
 
 from plugins.base.attack import AttackPlugin, Requirement
-from app.metasploit import MetasploitInstant
 
 
 class MetasploitPsPlugin(AttackPlugin):
@@ -34,10 +33,10 @@ class MetasploitPsPlugin(AttackPlugin):
         target = self.targets[0]
 
         self.metasploit.smart_infect(target,
-                                payload=payload_type,
-                                outfile=payload_name,
-                                format="exe",
-                                architecture="x64")
+                                     payload=payload_type,
+                                     outfile=payload_name,
+                                     format="exe",
+                                     architecture="x64")
 
         self.metasploit.ps_process_discovery(target)
 

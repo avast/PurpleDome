@@ -2,11 +2,11 @@
 """ Base class for all plugin types """
 
 import os
+from typing import Optional
 import yaml
-# from shutil import copy
 from app.exceptions import PluginError  # type: ignore
 import app.exceptions  # type: ignore
-from typing import Optional
+
 
 
 class BasePlugin():

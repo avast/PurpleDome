@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# A document generator module.
+""" Generate human readable document describing the attack based on an attack log """
 
 import json
 import os

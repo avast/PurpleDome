@@ -4,10 +4,10 @@
 
 from enum import Enum
 import os
+from typing import Optional
 from app.config import MachineConfig
 from app.interface_sfx import CommandlineColors
 from plugins.base.plugin_base import BasePlugin
-from typing import Optional
 
 
 class MachineStates(Enum):

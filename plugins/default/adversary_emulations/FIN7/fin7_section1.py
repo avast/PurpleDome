@@ -5,7 +5,7 @@ import socket
 
 from plugins.base.attack import AttackPlugin, Requirement
 from app.interface_sfx import CommandlineColors
-from app.metasploit import MSFVenom, MetasploitInstant
+from app.metasploit import MSFVenom
 import os
 import time
 

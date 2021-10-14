@@ -3,7 +3,6 @@
 # A plugin to nmap targets slow motion, to evade sensors
 
 from plugins.base.attack import AttackPlugin, Requirement
-from app.metasploit import MetasploitInstant
 
 
 class MetasploitSysinfoPlugin(AttackPlugin):

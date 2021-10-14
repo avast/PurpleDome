@@ -2,8 +2,9 @@
 """ A base plugin class for sensors. Anything installed on the target to collect system information and identify the attack """
 
 import os
-from plugins.base.plugin_base import BasePlugin
 from typing import Optional
+from plugins.base.plugin_base import BasePlugin
+
 
 
 class SensorPlugin(BasePlugin):

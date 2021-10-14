@@ -2,10 +2,10 @@
 
 """ Configuration loader for PurpleDome """
 
+from typing import Optional
 import yaml
 
 from app.exceptions import ConfigurationError
-from typing import Optional
 
 
 # So the config being read is distributed into several files and they will have different formats (yaml, CACAO)
