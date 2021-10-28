@@ -6,7 +6,6 @@ from typing import Optional
 from plugins.base.plugin_base import BasePlugin
 
 
-
 class SensorPlugin(BasePlugin):
     """ A sensor will be running on the target machine and monitor attacks. To remote control those sensors
     there are sensor plugins. This is the base class for them
