@@ -1,0 +1,42 @@
+###
+# Configuration for autostart experiments
+
+### Registry key to set
+# 0: "HKCU\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Run",
+# 1: "HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Run",
+# 2: HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\RunOnceEx\\\\0001\\\\Depend
+regkey_variant: 2
+
+### Data to set
+# 0: c:\\windows\\system32\\calc.exe
+# 1: c:\temp\evil.dll
+# 2: c:\dummy.dll
+data_options: 0
+
+###
+# Run getsystem first ?
+getsystem: True
+
+###
+# Name of the registry key to add
+value: purpledome3_new2
+
+###
+# meterpreter commands to execute before  migrating to a new process
+# Can be used to start processes to hide in
+
+# start_commands:
+#   - execute -f calc.exe
+
+### Upload files (those could be autostarted !)
+#
+upload:
+  - dummy.dll
+
+###
+# Migrate to a new process before modifying the registry
+migrate: No
+
+###
+# Process to migrate to
+migrate_target: svchost.exe
