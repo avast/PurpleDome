@@ -13,6 +13,7 @@ sphinxcontrib.asciinema==0.3.2
 paramiko==2.7.2
 pymetasploit3==1.0.3
 pylint
+flask
 
 # Mypy stuff
 mypy
