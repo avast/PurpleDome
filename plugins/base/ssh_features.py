@@ -128,16 +128,21 @@ class SSHFeatures(BasePlugin):
             try:
                 res = self.connection.put(src, dst)
             except (paramiko.ssh_exception.SSHException, socket.timeout, UnexpectedExit):
-                self.vprint("PUT Failed to connect", 1)
+                self.vprint("SSH PUT: Failed to connect", 1)
                 do_retry = True
             except paramiko.ssh_exception.NoValidConnectionsError as error:
-                self.vprint(f"No valid connection. Errors: {error.errors}", 1)
+                self.vprint(f"SSH PUT: No valid connection. Errors: {error.errors}", 1)
                 do_retry = True
+            except OSError:
+                self.vprint("SSH PUT: Obscure OSError, ignoring (file should have been copied)", 1)
+                pass
+                # do_retry = True
+                # breakpoint()
             except FileNotFoundError as error:
-                self.vprint(f"File not found: {error}", 0)
+                self.vprint(f"SSH PUT: File not found: {error}", 0)
                 break
             if do_retry:
-                self.vprint(f"Will retry {retries} times. Timeout: {timeout}", 3)
+                self.vprint(f"SSH PUT: Will retry {retries} times. Timeout: {timeout}", 3)
                 retries -= 1
                 timeout += 10
                 time.sleep(retry_sleep)
@@ -170,8 +175,12 @@ class SSHFeatures(BasePlugin):
                     raise NetworkError from error
                 do_retry = True
             except paramiko.ssh_exception.NoValidConnectionsError as error:
-                self.vprint(f"No valid connection. Errors: {error.errors}", 1)
+                self.vprint(f"SSH GET: No valid connection. Errors: {error.errors}", 1)
                 do_retry = True
+            except OSError:
+                self.vprint("SSH GET: Obscure OSError, ignoring (file should have been copied)", 1)
+                pass
+                # do_retry = True
             except FileNotFoundError as error:
                 self.vprint(error, 0)
                 break
