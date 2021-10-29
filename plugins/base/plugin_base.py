@@ -8,7 +8,6 @@ from app.exceptions import PluginError  # type: ignore
 import app.exceptions  # type: ignore
 
 
-
 class BasePlugin():
     """ Base class for plugins """
 

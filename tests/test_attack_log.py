@@ -408,22 +408,22 @@ class TestMachineConfig(unittest.TestCase):
     def test_get_caldera_default_tactics_missing(self):
         """ Testing getting the caldera default tactics """
         al = AttackLog()
-        self.assertEqual(al.get_caldera_default_tactics("missing"), None)
+        self.assertEqual(al.get_caldera_default_tactics("missing", None), None)
 
     def test_get_caldera_default_tactics(self):
         """ Testing getting the caldera default tactics """
         al = AttackLog()
-        self.assertEqual(al.get_caldera_default_tactics("bd527b63-9f9e-46e0-9816-b8434d2b8989"), "System Owner/User Discovery")
+        self.assertEqual(al.get_caldera_default_tactics("bd527b63-9f9e-46e0-9816-b8434d2b8989", None), "System Owner/User Discovery")
 
     def test_get_caldera_default_tactics_id_missing(self):
         """ Testing getting the caldera default tactics_id """
         al = AttackLog()
-        self.assertEqual(al.get_caldera_default_tactics_id("missing"), None)
+        self.assertEqual(al.get_caldera_default_tactics_id("missing", None), None)
 
     def test_get_caldera_default_tactics_id(self):
         """ Testing getting the caldera default tactics_id """
         al = AttackLog()
-        self.assertEqual(al.get_caldera_default_tactics_id("bd527b63-9f9e-46e0-9816-b8434d2b8989"), "T1033")
+        self.assertEqual(al.get_caldera_default_tactics_id("bd527b63-9f9e-46e0-9816-b8434d2b8989", None), "T1033")
 
     def test_get_caldera_default_situation_description_missing(self):
         """ Testing getting the caldera default situation_description """

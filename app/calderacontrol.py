@@ -15,8 +15,6 @@ from app.exceptions import CalderaError
 from app.interface_sfx import CommandlineColors
 
 
-
-
 # TODO: Ability deserves an own class.
 # TODO: Support all Caldera agents: "Sandcat (GoLang)","Elasticat (Blue Python/ Elasticsearch)","Manx (Reverse Shell TCP)","Ragdoll (Python/HTML)"
 
@@ -242,8 +240,13 @@ class CalderaControl():
 
         res = []
 
+        print(f"Number of abilities: {len(self.list_abilities())}")
+
+        with open("debug_removeme.txt", "wt") as fh:
+            fh.write(pformat(self.list_abilities()))
+
         for ability in self.list_abilities():
-            if ability["ability_id"] == abid:
+            if ability.get("ability_id", None) == abid or ability.get("auto_generated_guid", None) == abid:
                 res.append(ability)
         return res
 
@@ -256,9 +259,16 @@ class CalderaControl():
 
         # caldera knows the os-es "windows", "linux" and "darwin"
 
-        for ability in self.get_ability(abid):
+        abilities = self.get_ability(abid)
+
+        for ability in abilities:
             if ability["platform"] == platform:
                 return True
+            if platform in ability.get("supported_platforms", []):
+                return True
+            if platform in ability.get("platforms", []):
+                return True
+        print(self.get_ability(abid))
         return False
 
     def get_operation_by_id(self, op_id: str):

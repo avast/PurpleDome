@@ -59,34 +59,76 @@ class AttackLog():
     def get_caldera_default_description(self, ability_id: str):
         """ Returns the default description for this ability based on a db """
 
-        data = {"bd527b63-9f9e-46e0-9816-b8434d2b8989": "Obtain user from current session"}
+        data = {"bd527b63-9f9e-46e0-9816-b8434d2b8989": "Obtain user from current session",
+                "697e8a432031075e47cccba24417013d": "Copy a VBS file to several startup folders",
+                "f39161b2fa5d692ebe3972e0680a8f97": "Copy a BAT file to several startup folders",
+                "16e6823c4656f5cd155051f5f1e5d6ad": "Copy a JSE file to several startup folders",
+                "443b853ac50a79fc4a85354cb2c90fa2": "Set Regky RunOnce\\0001\\Depend to run a dll",
+                "2bfafbee8e3edb25974a5d1aa3d9f431": "Set Regky RunOnce\\0001\\Depend , download a bat",
+                "163b023f43aba758d36f524d146cb8ea": "Set Regkey CurrentVersion\\Run to start a exe"}
         if ability_id not in data:
             return None
 
         return data[ability_id]
 
-    def get_caldera_default_tactics(self, ability_id: str):
+    def get_caldera_default_tactics(self, ability_id: str, ttp: Optional[str]):
         """ Returns the default tactics for this ability based on a db """
 
-        data = {"bd527b63-9f9e-46e0-9816-b8434d2b8989": "System Owner/User Discovery"}
-        if ability_id not in data:
-            return None
+        data = {"bd527b63-9f9e-46e0-9816-b8434d2b8989": "System Owner/User Discovery",
+                "697e8a432031075e47cccba24417013d": "Persistence",
+                "f39161b2fa5d692ebe3972e0680a8f97": "Persistence",
+                "16e6823c4656f5cd155051f5f1e5d6ad": "Persistence",
+                "443b853ac50a79fc4a85354cb2c90fa2": "Persistence",
+                "2bfafbee8e3edb25974a5d1aa3d9f431": "Persistence",
+                "163b023f43aba758d36f524d146cb8ea": "Persistence",
+                "697e8a432031075e47cccba24417013d": "Persistence"}
 
-        return data[ability_id]
+        ttp_data = {"t1547": "Persistence",
+                    "t1547.001": "Persistence"}
 
-    def get_caldera_default_tactics_id(self, ability_id: str):
+        if ability_id in data:
+            return data[ability_id]
+
+        if ttp is not None:
+            if ttp.lower() in ttp_data:
+                return ttp_data[ttp.lower()]
+
+        return None
+
+    def get_caldera_default_tactics_id(self, ability_id: str, ttp: Optional[str]):
         """ Returns the default name for this ability based on a db """
 
-        data = {"bd527b63-9f9e-46e0-9816-b8434d2b8989": "T1033"}
-        if ability_id not in data:
-            return None
+        data = {"bd527b63-9f9e-46e0-9816-b8434d2b8989": "T1033",
+                "697e8a432031075e47cccba24417013d": "TA0003",
+                "f39161b2fa5d692ebe3972e0680a8f97": "TA0003",
+                "16e6823c4656f5cd155051f5f1e5d6ad": "TA0003",
+                "443b853ac50a79fc4a85354cb2c90fa2": "TA0003",
+                "2bfafbee8e3edb25974a5d1aa3d9f431": "TA0003",
+                "163b023f43aba758d36f524d146cb8ea": "TA0003",
+                "697e8a432031075e47cccba24417013d": "TA0003"}
 
-        return data[ability_id]
+        ttp_data = {"t1547": "TA0003",
+                    "t1547.001": "TA0003"}
+
+        if ability_id in data:
+            return data[ability_id]
+
+        if ttp is not None:
+            if ttp.lower() in ttp_data:
+                return ttp_data[ttp.lower()]
+
+        return None
 
     def get_caldera_default_situation_description(self, ability_id: str):
         """ Returns the default situation description for this ability based on a db """
 
-        data = {"bd527b63-9f9e-46e0-9816-b8434d2b8989": None}
+        data = {"bd527b63-9f9e-46e0-9816-b8434d2b8989": None,
+                "697e8a432031075e47cccba24417013d": None,
+                "f39161b2fa5d692ebe3972e0680a8f97": None,
+                "16e6823c4656f5cd155051f5f1e5d6ad": None,
+                "443b853ac50a79fc4a85354cb2c90fa2": None,
+                "2bfafbee8e3edb25974a5d1aa3d9f431": None,
+                "163b023f43aba758d36f524d146cb8ea": None}
         if ability_id not in data:
             return None
 
@@ -95,7 +137,13 @@ class AttackLog():
     def get_caldera_default_countermeasure(self, ability_id: str):
         """ Returns the default countermeasure for this ability based on a db """
 
-        data = {"bd527b63-9f9e-46e0-9816-b8434d2b8989": None}
+        data = {"bd527b63-9f9e-46e0-9816-b8434d2b8989": None,
+                "697e8a432031075e47cccba24417013d": None,
+                "f39161b2fa5d692ebe3972e0680a8f97": None,
+                "16e6823c4656f5cd155051f5f1e5d6ad": None,
+                "443b853ac50a79fc4a85354cb2c90fa2": None,
+                "2bfafbee8e3edb25974a5d1aa3d9f431": None,
+                "163b023f43aba758d36f524d146cb8ea": None}
         if ability_id not in data:
             return None
 
@@ -127,8 +175,8 @@ class AttackLog():
                 "logid": logid,
                 "name": kwargs.get("name", self.get_caldera_default_name(ability_id)),
                 "description": kwargs.get("description", self.get_caldera_default_description(ability_id)),
-                "tactics": kwargs.get("tactics", self.get_caldera_default_tactics(ability_id)),
-                "tactics_id": kwargs.get("tactics_id", self.get_caldera_default_tactics_id(ability_id)),
+                "tactics": kwargs.get("tactics", self.get_caldera_default_tactics(ability_id, ttp)),
+                "tactics_id": kwargs.get("tactics_id", self.get_caldera_default_tactics_id(ability_id, ttp)),
                 "situation_description": kwargs.get("situation_description", self.get_caldera_default_situation_description(ability_id)),  # Description for the situation this attack was run in. Set by the plugin or attacker emulation
                 "countermeasure": kwargs.get("countermeasure", self.get_caldera_default_countermeasure(ability_id)),  # Set by the attack
                 "obfuscator": kwargs.get("obfuscator", "default"),

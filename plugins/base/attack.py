@@ -64,7 +64,10 @@ class AttackPlugin(BasePlugin):
         """ Inits metasploit """
 
         if self.needs_metasploit():
-            self.metasploit = MetasploitInstant(self.metasploit_password, attack_logger=self.attack_logger, attacker=self.attacker_machine_plugin, username=self.metasploit_user)
+            self.metasploit = MetasploitInstant(self.metasploit_password,
+                                                attack_logger=self.attack_logger,
+                                                attacker=self.attacker_machine_plugin,
+                                                username=self.metasploit_user)
         # If metasploit requirements are not set, self.metasploit stay None and using metasploit from a plugin not having the requirements will trigger an exception
 
     def copy_to_attacker_and_defender(self):
