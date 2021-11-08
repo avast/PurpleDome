@@ -512,6 +512,86 @@ class TestExperimentConfig(unittest.TestCase):
         self.assertEqual(ex.raw_config["caldera"]["apikey"], "ADMIN123")
         self.assertEqual(ex.caldera_apikey(), "ADMIN123")
 
+    def test_broken_apikey(self):
+        """ Test with broken config file """
+
+        e = ExperimentConfig("tests/data/basic.yaml")
+        e.raw_config = None
+        with self.assertRaises(ConfigurationError):
+            e.caldera_apikey()
+
+    def test_broken_lootdir(self):
+        """ Test with partially empty config file """
+
+        e = ExperimentConfig("tests/data/basic.yaml")
+        e.raw_config = None
+        with self.assertRaises(ConfigurationError):
+            e.loot_dir()
+
+    def test_broken_attack_conf(self):
+        """ Test with partially empty config file """
+
+        e = ExperimentConfig("tests/data/basic.yaml")
+        e.raw_config = None
+        with self.assertRaises(ConfigurationError):
+            e.attack_conf("hydra")
+
+    def test_broken_attack_conf_2(self):
+        """ Test with partially empty config file """
+
+        e = ExperimentConfig("tests/data/basic.yaml")
+        e.raw_config["attack_conf"] = None
+        with self.assertRaises(ConfigurationError):
+            e.attack_conf("hydra")
+
+    def test_broken_caldera_obfuscator_conf(self):
+        """ Test with partially empty config file """
+
+        e = ExperimentConfig("tests/data/basic.yaml")
+        e.raw_config = None
+        with self.assertRaises(ConfigurationError):
+            e.get_caldera_obfuscator()
+
+    def test_broken_caldera_jitter_conf(self):
+        """ Test with partially empty config file """
+
+        e = ExperimentConfig("tests/data/basic.yaml")
+        e.raw_config = None
+        with self.assertRaises(ConfigurationError):
+            e.get_caldera_jitter()
+
+    def test_broken_plugin_based_attacks(self):
+        """ Test with partially empty config file """
+
+        e = ExperimentConfig("tests/data/basic.yaml")
+        e.raw_config = None
+        with self.assertRaises(ConfigurationError):
+            e.get_plugin_based_attacks("windows")
+
+    def test_broken_caldera_attacks(self):
+        """ Test with partially empty config file """
+
+        e = ExperimentConfig("tests/data/basic.yaml")
+        e.raw_config = None
+        with self.assertRaises(ConfigurationError):
+            e.get_caldera_attacks("windows")
+
+    def test_broken_nap_time(self):
+        """ Test with partially empty config file """
+
+        e = ExperimentConfig("tests/data/basic.yaml")
+        e.raw_config = None
+        with self.assertRaises(ConfigurationError):
+            e.get_nap_time()
+
+    def test_broken_sensor_config(self):
+        """ Test with partially empty config file """
+
+        e = ExperimentConfig("tests/data/basic.yaml")
+        e.raw_config = None
+        with self.assertRaises(ConfigurationError):
+            e.get_sensor_config("doesntmatter")
+
     def test_loot_dir(self):
         """ Test with existing loot dir """
 
@@ -523,6 +603,24 @@ class TestExperimentConfig(unittest.TestCase):
 
         with self.assertRaises(ConfigurationError):
             ExperimentConfig("tests/data/basic_loot_missing.yaml")
+
+    def test_empty_config(self):
+        """ Test with empty config file """
+
+        with self.assertRaises(ConfigurationError):
+            ExperimentConfig("tests/data/empty.yaml")
+
+    def test_empty_targets(self):
+        """ Test with empty targets in file """
+
+        with self.assertRaises(ConfigurationError):
+            ExperimentConfig("tests/data/empty_targets.yaml")
+
+    def test_empty_attackers(self):
+        """ Test with empty attackers in file """
+
+        with self.assertRaises(ConfigurationError):
+            ExperimentConfig("tests/data/empty_attackers.yaml")
 
     def test_missing_results(self):
         """ Test with missing results """
