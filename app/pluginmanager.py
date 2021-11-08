@@ -4,11 +4,14 @@
 from glob import glob
 import os
 import straight.plugin  # type: ignore
+from typing import Optional
 
 from plugins.base.plugin_base import BasePlugin
 from plugins.base.attack import AttackPlugin
 from plugins.base.machinery import MachineryPlugin
+from plugins.base.ssh_features import SSHFeatures
 from plugins.base.sensor import SensorPlugin
+
 from plugins.base.vulnerability_plugin import VulnerabilityPlugin
 from app.interface_sfx import CommandlineColors
 from app.attack_log import AttackLog
@@ -29,15 +32,19 @@ sections = [{"name": "Vulnerabilities",
 class PluginManager():
     """ Manage plugins """
 
-    def __init__(self, attack_logger: AttackLog):
+    def __init__(self, attack_logger: AttackLog, basedir: Optional[str] = None):
         """
 
         @param attack_logger: The attack logger to use
+        @param basedir: optional base directory for plugins. A glob
         """
-        self.base = "plugins/**/*.py"
+        if basedir is None:
+            self.base = "plugins/**/*.py"
+        else:
+            self.base = basedir
         self.attack_logger = attack_logger
 
-    def get_plugins(self, subclass, name_filter=None) -> list[BasePlugin]:
+    def get_plugins(self, subclass, name_filter: Optional[list[str]] = None) -> list[BasePlugin]:
         """ Returns a list plugins matching specified criteria
 
 
@@ -118,6 +125,8 @@ class PluginManager():
 
         issues = []
 
+        # Base functionality for all plugin types
+
         # Sensors
         if issubclass(type(plugin), SensorPlugin):
             # essential methods: collect
@@ -138,7 +147,7 @@ class PluginManager():
             if plugin.get_state.__func__ is MachineryPlugin.get_state:
                 report = f"Method 'get_state' not implemented in {plugin.get_name()} in {plugin.plugin_path}"
                 issues.append(report)
-            if plugin.get_ip.__func__ is MachineryPlugin.get_ip:
+            if (plugin.get_ip.__func__ is MachineryPlugin.get_ip) or (plugin.get_ip.__func__ is SSHFeatures.get_ip):
                 report = f"Method 'get_ip' not implemented in {plugin.get_name()} in {plugin.plugin_path}"
                 issues.append(report)
             if plugin.up.__func__ is MachineryPlugin.up:

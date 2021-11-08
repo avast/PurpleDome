@@ -23,7 +23,7 @@ def check_plugins(arguments):
     attack_logger = AttackLog(arguments.verbose)
     plugin_manager = PluginManager(attack_logger)
     res = plugin_manager.print_check()
-    if len(res) == 0:
+    if len(res) != 0:
         print("*************************************")
         print("Some issues in plugins were found: ")
         print("\n".join(res))
