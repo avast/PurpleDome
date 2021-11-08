@@ -2,6 +2,7 @@
 
 """ Logger for the attack side. Output must be flexible, because we want to be able to feed it into many different processes. From ML to analysts """
 
+from inspect import currentframe, getsourcefile
 import json
 import datetime
 from random import randint
@@ -84,7 +85,11 @@ class AttackLog():
                 "697e8a432031075e47cccba24417013d": "Persistence"}
 
         ttp_data = {"t1547": "Persistence",
-                    "t1547.001": "Persistence"}
+                    "t1547.001": "Persistence",
+                    "t1547.004": "Persistence",
+                    "t1547.005": "Persistence",
+                    "t1547.009": "Persistence",
+                    "t1547.010": "Persistence"}
 
         if ability_id in data:
             return data[ability_id]
@@ -108,7 +113,11 @@ class AttackLog():
                 "697e8a432031075e47cccba24417013d": "TA0003"}
 
         ttp_data = {"t1547": "TA0003",
-                    "t1547.001": "TA0003"}
+                    "t1547.001": "TA0003",
+                    "t1547.004": "TA0003",
+                    "t1547.005": "TA0003",
+                    "t1547.009": "TA0003",
+                    "t1547.010": "TA0003"}
 
         if ability_id in data:
             return data[ability_id]
@@ -519,7 +528,9 @@ class AttackLog():
                 "description": kwargs.get("description", None),  # Generic description for this attack. Set by the attack
                 "situation_description": kwargs.get("situation_description", None),  # Description for the situation this attack was run in. Set by the plugin or attacker emulation
                 "countermeasure": kwargs.get("countermeasure", None),  # Set by the attack
-                "result": None
+                "result": None,
+                "sourcefile": kwargs.get("sourcefile", getsourcefile(currentframe().f_back)),
+                "sourceline": kwargs.get("sourceline", currentframe().f_back.f_lineno)
                 }
         self.__add_to_log__(data)
 

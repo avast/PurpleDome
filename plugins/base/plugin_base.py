@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """ Base class for all plugin types """
 
+from inspect import currentframe
 import os
 from typing import Optional
 import yaml
@@ -25,6 +26,16 @@ class BasePlugin():
         self.attack_logger = None
 
         self.default_config_name = "default_config.yaml"
+
+    def get_filename(self):
+        """ Returns the current filename.  """
+        cf = currentframe()
+        return cf.f_back.filename
+
+    def get_linenumber(self):
+        """ Returns the current linenumber.  """
+        cf = currentframe()
+        return cf.f_back.f_lineno
 
     def get_playground(self):
         """ Returns the machine specific playground
