@@ -4,8 +4,9 @@
 from glob import glob
 import os
 import re
-import straight.plugin  # type: ignore
 from typing import Optional
+import straight.plugin  # type: ignore
+
 
 from plugins.base.plugin_base import BasePlugin
 from plugins.base.attack import AttackPlugin
@@ -132,11 +133,11 @@ class PluginManager():
             return False
 
         # Unkown: ???
-        if "???" == ttp:
+        if ttp == "???":
             return False
 
         # Multiple TTPs in this attack
-        if "multiple" == ttp:
+        if ttp == "multiple":
             return False
 
         return True

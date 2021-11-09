@@ -76,7 +76,6 @@ class AttackLog():
         """ Returns the default tactics for this ability based on a db """
 
         data = {"bd527b63-9f9e-46e0-9816-b8434d2b8989": "System Owner/User Discovery",
-                "697e8a432031075e47cccba24417013d": "Persistence",
                 "f39161b2fa5d692ebe3972e0680a8f97": "Persistence",
                 "16e6823c4656f5cd155051f5f1e5d6ad": "Persistence",
                 "443b853ac50a79fc4a85354cb2c90fa2": "Persistence",
@@ -104,7 +103,6 @@ class AttackLog():
         """ Returns the default name for this ability based on a db """
 
         data = {"bd527b63-9f9e-46e0-9816-b8434d2b8989": "T1033",
-                "697e8a432031075e47cccba24417013d": "TA0003",
                 "f39161b2fa5d692ebe3972e0680a8f97": "TA0003",
                 "16e6823c4656f5cd155051f5f1e5d6ad": "TA0003",
                 "443b853ac50a79fc4a85354cb2c90fa2": "TA0003",

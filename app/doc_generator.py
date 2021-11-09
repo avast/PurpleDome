@@ -14,6 +14,11 @@ class DocGenerator():
         self.outfile = None
 
     def generate(self, jfile, outfile="tools/human_readable_documentation/source/contents.rst"):
+        """ Generates human readable documentation out of a template.
+
+        @param jfile: json attack log created by PurpleDome as data source
+        @param outfile: rst file to write. Can be compiled into pdf using sphinx
+        """
 
         self.outfile = outfile
 
