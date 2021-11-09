@@ -69,7 +69,7 @@ class TestMachineControl(unittest.TestCase):
         p = PluginManager(self.attack_logger, "tests/plugins/sensor/missing_collect/*.py")
         plugins = p.get_plugins(SensorPlugin)
         c = p.check(plugins[0])
-        self.assertRegexpMatches(c[0], "Method 'collect' not implemented in missing_collect in .*")
+        self.assertRegex(c[0], "Method 'collect' not implemented in missing_collect in .*")
 
     def test_basic_pluginmanager_pick_sensor_plugin_by_name(self):
         """ get a plugin by name """
@@ -143,7 +143,6 @@ class TestMachineControl(unittest.TestCase):
         """ a machinery plugin with missing get_ip should throw an error on check"""
         p = PluginManager(self.attack_logger, "tests/plugins/machinery/no_ip/*.py")
         plugins = p.get_plugins(MachineryPlugin)
-        #  breakpoint()
         c = p.check(plugins[0])
         self.assertEqual(len(c), 1)
         self.assertRegex(c[0], "Method 'get_ip' not implemented in machinery_no_ip in .*")
@@ -152,7 +151,6 @@ class TestMachineControl(unittest.TestCase):
         """ a machinery plugin with missing halt should throw an error on check"""
         p = PluginManager(self.attack_logger, "tests/plugins/machinery/no_halt/*.py")
         plugins = p.get_plugins(MachineryPlugin)
-        #  breakpoint()
         c = p.check(plugins[0])
         self.assertEqual(len(c), 1)
         self.assertRegex(c[0], "Method 'halt' not implemented in machinery_no_halt in .*")
@@ -161,7 +159,6 @@ class TestMachineControl(unittest.TestCase):
         """ a machinery plugin with missing destroy should throw an error on check"""
         p = PluginManager(self.attack_logger, "tests/plugins/machinery/no_destroy/*.py")
         plugins = p.get_plugins(MachineryPlugin)
-        #  breakpoint()
         c = p.check(plugins[0])
         self.assertEqual(len(c), 1)
         self.assertRegex(c[0], "Method 'destroy' not implemented in machinery_no_destroy in .*")
@@ -170,7 +167,68 @@ class TestMachineControl(unittest.TestCase):
         """ a machinery plugin with missing create should throw an error on check"""
         p = PluginManager(self.attack_logger, "tests/plugins/machinery/no_create/*.py")
         plugins = p.get_plugins(MachineryPlugin)
-        #  breakpoint()
         c = p.check(plugins[0])
         self.assertEqual(len(c), 1)
         self.assertRegex(c[0], "Method 'create' not implemented in machinery_no_create in .*")
+
+    def test_basic_pluginmanager_check_basics_plugin_missing_description(self):
+        """ a plugin with missing description should throw an error on check"""
+        p = PluginManager(self.attack_logger, "tests/plugins/basics/no_description/*.py")
+        plugins = p.get_plugins(AttackPlugin)
+        c = p.check(plugins[0])
+        self.assertEqual(len(c), 1)
+        self.assertRegex(c[0], "No description in plugin: metasploit_no_description in .*")
+
+    def test_basic_pluginmanager_check_basics_plugin_missing_name(self):
+        """ a plugin with missing name should throw an error on check"""
+        p = PluginManager(self.attack_logger, "tests/plugins/basics/no_name/*.py")
+        plugins = p.get_plugins(AttackPlugin)
+        c = p.check(plugins[0])
+        self.assertEqual(len(c), 1)
+        self.assertRegex(c[0], "No name for plugin: in .*")
+
+    def test_basic_pluginmanager_check_vul_plugin_missing_ttp(self):
+        """ a vulnerability plugin with missing name should throw an error on check"""
+        p = PluginManager(self.attack_logger, "tests/plugins/basics/vul_no_ttp/*.py")
+        plugins = p.get_plugins(VulnerabilityPlugin)
+        c = p.check(plugins[0])
+        self.assertEqual(len(c), 1)
+        self.assertRegex(c[0], "Vulnerability plugins need a valid ttp number \\(either T1234, T1234.222 or ...\\)  vulnerability_ok uses None in .*")
+
+    def test_basic_pluginmanager_check_ttp_is_none(self):
+        """ ttp check with NONE"""
+        p = PluginManager(self.attack_logger, "tests/plugins/basics/vul_no_ttp/*.py")
+        self.assertEqual(p.is_ttp_wrong(None), True)
+
+    def test_basic_pluginmanager_check_ttp_is_short_ttp(self):
+        """ ttp check with T1234 """
+        p = PluginManager(self.attack_logger, "tests/plugins/basics/vul_no_ttp/*.py")
+        self.assertEqual(p.is_ttp_wrong("T1234"), False)
+
+    def test_basic_pluginmanager_check_ttp_is_detailed_ttp(self):
+        """ ttp check with T1234.123 """
+        p = PluginManager(self.attack_logger, "tests/plugins/basics/vul_no_ttp/*.py")
+        self.assertEqual(p.is_ttp_wrong("T1234.123"), False)
+
+    def test_basic_pluginmanager_check_ttp_is_unknown_ttp(self):
+        """ ttp check with ??? """
+        p = PluginManager(self.attack_logger, "tests/plugins/basics/vul_no_ttp/*.py")
+        self.assertEqual(p.is_ttp_wrong("???"), False)
+
+    def test_basic_pluginmanager_check_ttp_is_multiple(self):
+        """ ttp check with ??? """
+        p = PluginManager(self.attack_logger, "tests/plugins/basics/vul_no_ttp/*.py")
+        self.assertEqual(p.is_ttp_wrong("multiple"), False)
+
+    def test_basic_pluginmanager_check_ttp_is_wrong_ttp(self):
+        """ ttp check with something else """
+        p = PluginManager(self.attack_logger, "tests/plugins/basics/vul_no_ttp/*.py")
+        self.assertEqual(p.is_ttp_wrong("this is not gonna work"), True)
+
+    def test_basic_pluginmanager_check_attack_plugin_missing_ttp(self):
+        """ a attack plugin with missing name should throw an error on check"""
+        p = PluginManager(self.attack_logger, "tests/plugins/basics/attack_no_ttp/*.py")
+        plugins = p.get_plugins(AttackPlugin)
+        c = p.check(plugins[0])
+        self.assertEqual(len(c), 1)
+        self.assertRegex(c[0], "Attack plugins need a valid ttp number \\(either T1234, T1234.222 or ...\\)  no TTP uses None in .*")

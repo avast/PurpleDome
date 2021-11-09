@@ -3,6 +3,7 @@
 
 from glob import glob
 import os
+import re
 import straight.plugin  # type: ignore
 from typing import Optional
 
@@ -117,6 +118,29 @@ class PluginManager():
                 print(f"Description: {plugin.get_description()}")
                 print("\t")
 
+    def is_ttp_wrong(self, ttp):
+        """ Checks if a ttp is a valid ttp """
+        if ttp is None:
+            return True
+
+        # Short: T1234
+        if re.match("^T\\d{4}$", ttp):
+            return False
+
+        # Detailed: T1234.123
+        if re.match("^T\\d{4}\\.\\d{3}$", ttp):
+            return False
+
+        # Unkown: ???
+        if "???" == ttp:
+            return False
+
+        # Multiple TTPs in this attack
+        if "multiple" == ttp:
+            return False
+
+        return True
+
     def check(self, plugin):
         """ Checks a plugin for valid implementation
 
@@ -126,6 +150,14 @@ class PluginManager():
         issues = []
 
         # Base functionality for all plugin types
+
+        if plugin.name is None:
+            report = f"No name for plugin: in {plugin.plugin_path}"
+            issues.append(report)
+
+        if plugin.description is None:
+            report = f"No description in plugin: {plugin.get_name()} in {plugin.plugin_path}"
+            issues.append(report)
 
         # Sensors
         if issubclass(type(plugin), SensorPlugin):
@@ -139,6 +171,9 @@ class PluginManager():
             # essential methods: run
             if plugin.run.__func__ is AttackPlugin.run:
                 report = f"Method 'run' not implemented in {plugin.get_name()} in {plugin.plugin_path}"
+                issues.append(report)
+            if self.is_ttp_wrong(plugin.ttp):
+                report = f"Attack plugins need a valid ttp number (either T1234, T1234.222 or ???)  {plugin.get_name()} uses {plugin.ttp} in {plugin.plugin_path}"
                 issues.append(report)
 
         # Machinery
@@ -171,6 +206,9 @@ class PluginManager():
                 issues.append(report)
             if plugin.stop.__func__ is VulnerabilityPlugin.stop:
                 report = f"Method 'stop' not implemented in {plugin.get_name()} in {plugin.plugin_path}"
+                issues.append(report)
+            if self.is_ttp_wrong(plugin.ttp):
+                report = f"Vulnerability plugins need a valid ttp number (either T1234, T1234.222 or ???)  {plugin.get_name()} uses {plugin.ttp} in {plugin.plugin_path}"
                 issues.append(report)
 
         return issues

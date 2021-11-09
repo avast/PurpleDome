@@ -12,7 +12,7 @@ class MetasploitAutostart1Plugin(AttackPlugin):
     # Boilerplate
     name = "metasploit_registry_autostart_1"
     description = "Modify the registry to autostart"
-    ttp = "T1547_1"
+    ttp = "T1547.001"
     references = ["https://attack.mitre.org/techniques/T1547/001/"]
     tactics = "Persistence"
     tactics_id = "TA0003"
@@ -104,7 +104,9 @@ class MetasploitAutostart1Plugin(AttackPlugin):
                                                            tactics=self.tactics,
                                                            tactics_id=self.tactics_id,
                                                            situation_description="",
-                                                           countermeasure=""
+                                                           countermeasure="",
+                                                           # sourcefile=self.get_filename(),
+                                                           # sourceline=self.get_linenumber()
                                                            )
         res = self.metasploit.meterpreter_execute_on([command_create], target)
         print(res)
