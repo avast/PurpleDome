@@ -142,7 +142,7 @@ class MachineryPlugin(BasePlugin):
 
         # print("===========> Processing config")
         self.config = config
-        self.process_config(config.raw_config)
+        self.process_config(config.raw_config.__dict__)
 
     def __call_remote_run__(self, cmd: str, disown: bool = False):
         """ Simplifies connect and run

@@ -120,20 +120,20 @@ class MachineConfig():
     def vagrantfilepath(self) -> str:
         """ Vagrant specific config: The vagrant file path """
 
-        if "vagrantfilepath" not in self.raw_config["vm_controller"]:
+        if not self.raw_config.vm_controller.has_key("vagrantfilepath"):
             raise ConfigurationError("Vagrantfilepath missing")
-        return self.raw_config["vm_controller"]["vagrantfilepath"]
+        return self.raw_config.vm_controller.vagrantfilepath
 
     def sensors(self) -> list[str]:
         """ Return a list of sensors configured for this machine """
-        if "sensors" in self.raw_config:
-            return self.raw_config["sensors"] or []
+        if self.raw_config.has_key("sensors"):
+            return self.raw_config.sensors or []
         return []
 
     def vulnerabilities(self) -> list[str]:
         """ Return a list of vulnerabilities configured for this machine """
-        if "vulnerabilities" in self.raw_config:
-            return self.raw_config["vulnerabilities"] or []
+        if self.raw_config.has_key("vulnerabilities"):
+            return self.raw_config.vulnerabilities or []
         return []
 
     def is_active(self) -> bool:
@@ -307,7 +307,7 @@ class ExperimentConfig():
             raise ConfigurationError("Config file is empty")
 
         try:
-            return int(self.raw_config["attacks"]["nap_time"])
+            return int(self.raw_config.attacks.nap_time)
         except KeyError:
             return 0
 

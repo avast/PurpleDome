@@ -39,6 +39,11 @@ class VMController:
             return True
         return False
 
+    # def __dict__(self):
+    #     return {"vm_type": self.vm_type,
+    #             "vagrantfilepath": self.vagrantfilepath,
+    #            "ip": self.ip}
+
 
 @dataclass
 class Attacker:
@@ -54,6 +59,11 @@ class Attacker:
         if keyname in self.__dict__.keys():
             return True
         return False
+
+    def get(self, keyname, default=None):
+        if self.has_key(keyname):
+            return self.__dict__[keyname]
+        return default
 
 
 @dataclass
@@ -80,6 +90,11 @@ class Target:
         if keyname in self.__dict__.keys():
             return True
         return False
+
+    def get(self, keyname, default=None):
+        if self.has_key(keyname):
+            return self.__dict__[keyname]
+        return default
 
 
 @dataclass
