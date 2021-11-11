@@ -23,316 +23,316 @@ class TestMachineConfig(unittest.TestCase):
     def test_basic_init(self):
         """ The init is basic and working """
         mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                            "os": "linux",
-                            "vm_controller": {
-                                "vm_type": "vagrant",
-                                "vagrantfilepath": "systems",
-                            },
-                            "vm_name": "target1"}))
+                                   "os": "linux",
+                                   "vm_controller": {
+                                       "vm_type": "vagrant",
+                                       "vagrantfilepath": "systems",
+                                   },
+                                   "vm_name": "target1"}))
         self.assertEqual(mc.raw_config["root"], "systems/attacker1")
         self.assertEqual(mc.raw_config.vm_controller.vm_type, "vagrant")
 
     def test_use_existing_machine_is_true(self):
         """ Testing use_existing:machine setting """
         mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                            "os": "linux",
-                            "vm_controller": {
-                                "vm_type": "vagrant",
-                                "vagrantfilepath": "systems",
-                            },
-                            "vm_name": "target1",
-                            "use_existing_machine": True}))
+                                   "os": "linux",
+                                   "vm_controller": {
+                                       "vm_type": "vagrant",
+                                       "vagrantfilepath": "systems",
+                                   },
+                                   "vm_name": "target1",
+                                   "use_existing_machine": True}))
         self.assertEqual(mc.use_existing_machine(), True)
 
     def test_use_existing_machine_is_false(self):
         """ Testing use_existing:machine setting """
         mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                            "os": "linux",
-                            "vm_controller": {
-                                "vm_type": "vagrant",
-                                "vagrantfilepath": "systems",
-                            },
-                            "vm_name": "target1",
-                            "use_existing_machine": False}))
+                                   "os": "linux",
+                                   "vm_controller": {
+                                       "vm_type": "vagrant",
+                                       "vagrantfilepath": "systems",
+                                   },
+                                   "vm_name": "target1",
+                                   "use_existing_machine": False}))
         self.assertEqual(mc.use_existing_machine(), False)
 
     def test_use_existing_machine_is_default(self):
         """ Testing use_existing:machine setting """
         mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                            "os": "linux",
-                            "vm_controller": {
-                                "vm_type": "vagrant",
-                                "vagrantfilepath": "systems",
-                            },
-                            "vm_name": "target1"}))
+                                   "os": "linux",
+                                   "vm_controller": {
+                                       "vm_type": "vagrant",
+                                       "vagrantfilepath": "systems",
+                                   },
+                                   "vm_name": "target1"}))
         self.assertEqual(mc.use_existing_machine(), False)
 
     def test_windows_is_valid_os(self):
         """ Testing if windows is valid os """
         mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                            "os": "windows",
-                            "vm_controller": {
-                                "vm_type": "vagrant",
-                                "vagrantfilepath": "systems",
-                            },
-                            "vm_name": "target1"}))
+                                   "os": "windows",
+                                   "vm_controller": {
+                                       "vm_type": "vagrant",
+                                       "vagrantfilepath": "systems",
+                                   },
+                                   "vm_name": "target1"}))
         self.assertEqual(mc.os(), "windows")
 
     def test_windows_is_valid_os_casefix(self):
         """ Testing if windows is valid os - using lowercase fix"""
         mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                            "os": "WINDOWS",
-                            "vm_controller": {
-                                "vm_type": "vagrant",
-                                "vagrantfilepath": "systems",
-                            },
-                            "vm_name": "target1"}))
+                                   "os": "WINDOWS",
+                                   "vm_controller": {
+                                       "vm_type": "vagrant",
+                                       "vagrantfilepath": "systems",
+                                   },
+                                   "vm_name": "target1"}))
         self.assertEqual(mc.os(), "windows")
 
     def test_linux_is_valid_os(self):
         """ Testing if windows is valid os """
         mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                            "os": "linux",
-                            "vm_controller": {
-                                "vm_type": "vagrant",
-                                "vagrantfilepath": "systems",
-                            },
-                            "vm_name": "target1"}))
+                                   "os": "linux",
+                                   "vm_controller": {
+                                       "vm_type": "vagrant",
+                                       "vagrantfilepath": "systems",
+                                   },
+                                   "vm_name": "target1"}))
         self.assertEqual(mc.os(), "linux")
 
     def test_vagrant_is_valid_vmcontroller(self):
         """ Testing if vagrant is valid vmcontroller """
         mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                            "os": "linux",
-                            "vm_controller": {
-                                "vm_type": "vagrant",
-                                "vagrantfilepath": "systems",
-                            },
-                            "vm_name": "target1"}))
+                                   "os": "linux",
+                                   "vm_controller": {
+                                       "vm_type": "vagrant",
+                                       "vagrantfilepath": "systems",
+                                   },
+                                   "vm_name": "target1"}))
         self.assertEqual(mc.vmcontroller(), "vagrant")
 
     def test_vagrant_is_valid_vmcontroller_casefix(self):
         """ Testing if vagrant is valid vmcontroller case fixxed"""
         mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                            "os": "linux",
-                            "vm_controller": {
-                                "vm_type": "VAGRANT",
-                                "vagrantfilepath": "systems",
-                            },
-                            "vm_name": "target1"}))
+                                   "os": "linux",
+                                   "vm_controller": {
+                                       "vm_type": "VAGRANT",
+                                       "vagrantfilepath": "systems",
+                                   },
+                                   "vm_name": "target1"}))
         self.assertEqual(mc.vmcontroller(), "vagrant")
 
     def test_vagrant_is_valid_vmip(self):
         """ Testing if vagrant is valid ip/url """
         mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                            "os": "linux",
-                            "vm_controller": {
-                                "vm_type": "vagrant",
-                                "ip": "kali",
-                                "vagrantfilepath": "systems",
-                            },
-                            "vm_name": "target1"}))
+                                   "os": "linux",
+                                   "vm_controller": {
+                                       "vm_type": "vagrant",
+                                       "ip": "kali",
+                                       "vagrantfilepath": "systems",
+                                   },
+                                   "vm_name": "target1"}))
         self.assertEqual(mc.vm_ip(), "kali")
 
     def test_missing_vmip(self):
         """ Testing if missing vm ip is handled"""
         vm_name = "target1"
         mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                            "os": "linux",
-                            "vm_controller": {
-                                "vm_type": "vagrant",
-                                "vagrantfilepath": "systems",
-                            },
-                            "vm_name": vm_name}))
+                                   "os": "linux",
+                                   "vm_controller": {
+                                       "vm_type": "vagrant",
+                                       "vagrantfilepath": "systems",
+                                   },
+                                   "vm_name": vm_name}))
         self.assertEqual(mc.vm_ip(), vm_name)
 
     def test_machinepath(self):
         """ Testing machinepath setting """
         mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                            "os": "linux",
-                            "vm_controller": {
-                                "vm_type": "vagrant",
-                                "vagrantfilepath": "systems",
-                            },
-                            "vm_name": "target1",
-                            "use_existing_machine": False,
-                            "machinepath": "foo"}))
+                                   "os": "linux",
+                                   "vm_controller": {
+                                       "vm_type": "vagrant",
+                                       "vagrantfilepath": "systems",
+                                   },
+                                   "vm_name": "target1",
+                                   "use_existing_machine": False,
+                                   "machinepath": "foo"}))
         self.assertEqual(mc.machinepath(), "foo")
 
     def test_machinepath_fallback(self):
         """ Testing machinepath setting fallback to vmname"""
         mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                            "os": "linux",
-                            "vm_controller": {
-                                "vm_type": "vagrant",
-                                "vagrantfilepath": "systems",
-                            },
-                            "vm_name": "target1",
-                            "use_existing_machine": False}))
+                                   "os": "linux",
+                                   "vm_controller": {
+                                       "vm_type": "vagrant",
+                                       "vagrantfilepath": "systems",
+                                   },
+                                   "vm_name": "target1",
+                                   "use_existing_machine": False}))
         self.assertEqual(mc.machinepath(), "target1")
 
     def test_paw(self):
         """ Testing for caldera paw """
         mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                            "os": "linux",
-                            "paw": "Bar",
-                            "vm_controller": {
-                                "vm_type": "vagrant",
-                                "vagrantfilepath": "systems",
-                            },
-                            "vm_name": "target1",
-                            "use_existing_machine": False}))
+                                   "os": "linux",
+                                   "paw": "Bar",
+                                   "vm_controller": {
+                                       "vm_type": "vagrant",
+                                       "vagrantfilepath": "systems",
+                                   },
+                                   "vm_name": "target1",
+                                   "use_existing_machine": False}))
         self.assertEqual(mc.caldera_paw(), "Bar")
 
     def test_paw_fallback(self):
         """ Testing for caldera paw fallback """
         mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                            "os": "linux",
-                            "vm_controller": {
-                                "vm_type": "vagrant",
-                                "vagrantfilepath": "systems",
-                            },
-                            "vm_name": "target1",
-                            "use_existing_machine": False}))
+                                   "os": "linux",
+                                   "vm_controller": {
+                                       "vm_type": "vagrant",
+                                       "vagrantfilepath": "systems",
+                                   },
+                                   "vm_name": "target1",
+                                   "use_existing_machine": False}))
         self.assertEqual(mc.caldera_paw(), None)
 
     def test_group(self):
         """ Testing for caldera group """
         mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                            "os": "linux",
-                            "group": "Bar",
-                            "vm_controller": {
-                                "vm_type": "vagrant",
-                                "vagrantfilepath": "systems",
-                            },
-                            "vm_name": "target1",
-                            "use_existing_machine": False}))
+                                   "os": "linux",
+                                   "group": "Bar",
+                                   "vm_controller": {
+                                       "vm_type": "vagrant",
+                                       "vagrantfilepath": "systems",
+                                   },
+                                   "vm_name": "target1",
+                                   "use_existing_machine": False}))
         self.assertEqual(mc.caldera_group(), "Bar")
 
     def test_group_fallback(self):
         """ Testing for caldera group fallback """
         mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                            "os": "linux",
-                            "vm_controller": {
-                                "vm_type": "vagrant",
-                                "vagrantfilepath": "systems",
-                            },
-                            "vm_name": "target1",
-                            "use_existing_machine": False}))
+                                   "os": "linux",
+                                   "vm_controller": {
+                                       "vm_type": "vagrant",
+                                       "vagrantfilepath": "systems",
+                                   },
+                                   "vm_name": "target1",
+                                   "use_existing_machine": False}))
         self.assertEqual(mc.caldera_group(), None)
 
     def test_ssh_keyfile(self):
         """ Testing keyfile config """
         mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                            "os": "linux",
-                            "ssh_keyfile": "Bar",
-                            "vm_controller": {
-                                "vm_type": "vagrant",
-                                "vagrantfilepath": "systems",
-                            },
-                            "vm_name": "target1",
-                            "use_existing_machine": False}))
+                                   "os": "linux",
+                                   "ssh_keyfile": "Bar",
+                                   "vm_controller": {
+                                       "vm_type": "vagrant",
+                                       "vagrantfilepath": "systems",
+                                   },
+                                   "vm_name": "target1",
+                                   "use_existing_machine": False}))
         self.assertEqual(mc.ssh_keyfile(), "Bar")
 
     def test_ssh_keyfile_default(self):
         """ Testing keyfile config default """
         mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                            "os": "linux",
-                            "vm_controller": {
-                                "vm_type": "vagrant",
-                                "vagrantfilepath": "systems",
-                            },
-                            "vm_name": "target1",
-                            "use_existing_machine": False}))
+                                   "os": "linux",
+                                   "vm_controller": {
+                                       "vm_type": "vagrant",
+                                       "vagrantfilepath": "systems",
+                                   },
+                                   "vm_name": "target1",
+                                   "use_existing_machine": False}))
         self.assertEqual(mc.ssh_keyfile(), None)
 
     def test_ssh_user(self):
         """ Testing ssh user config """
         mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                            "os": "linux",
-                            "ssh_user": "Bob",
-                            "vm_controller": {
-                                "vm_type": "vagrant",
-                                "vagrantfilepath": "systems",
-                            },
-                            "vm_name": "target1",
-                            "use_existing_machine": False}))
+                                   "os": "linux",
+                                   "ssh_user": "Bob",
+                                   "vm_controller": {
+                                       "vm_type": "vagrant",
+                                       "vagrantfilepath": "systems",
+                                   },
+                                   "vm_name": "target1",
+                                   "use_existing_machine": False}))
         self.assertEqual(mc.ssh_user(), "Bob")
 
     def test_ssh_user_default(self):
         """ Testing ssh user default config """
         mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                            "os": "linux",
-                            "vm_controller": {
-                                "vm_type": "vagrant",
-                                "vagrantfilepath": "systems",
-                            },
-                            "vm_name": "target1",
-                            "use_existing_machine": False}))
+                                   "os": "linux",
+                                   "vm_controller": {
+                                       "vm_type": "vagrant",
+                                       "vagrantfilepath": "systems",
+                                   },
+                                   "vm_name": "target1",
+                                   "use_existing_machine": False}))
         self.assertEqual(mc.ssh_user(), "vagrant")
 
     def test_ssh_password(self):
         """ Testing ssh password config """
         mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                            "os": "linux",
-                            "ssh_user": "Bob",
-                            "ssh_password": "Ross",
-                            "vm_controller": {
-                                "vm_type": "vagrant",
-                                "vagrantfilepath": "systems",
-                            },
-                            "vm_name": "target1",
-                            "use_existing_machine": False}))
+                                   "os": "linux",
+                                   "ssh_user": "Bob",
+                                   "ssh_password": "Ross",
+                                   "vm_controller": {
+                                       "vm_type": "vagrant",
+                                       "vagrantfilepath": "systems",
+                                   },
+                                   "vm_name": "target1",
+                                   "use_existing_machine": False}))
         self.assertEqual(mc.ssh_password(), "Ross")
 
     def test_ssh_password_default(self):
         """ Testing ssh password default config """
         mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                            "os": "linux",
-                            "vm_controller": {
-                                "vm_type": "vagrant",
-                                "vagrantfilepath": "systems",
-                            },
-                            "vm_name": "target1",
-                            "use_existing_machine": False}))
+                                   "os": "linux",
+                                   "vm_controller": {
+                                       "vm_type": "vagrant",
+                                       "vagrantfilepath": "systems",
+                                   },
+                                   "vm_name": "target1",
+                                   "use_existing_machine": False}))
         self.assertIsNone(mc.ssh_password())
 
     def test_halt_needs_force_default(self):
         """ Testing 'halt needs force' default config """
         mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                            "os": "linux",
-                            "vm_controller": {
-                                "vm_type": "vagrant",
-                                "vagrantfilepath": "systems",
-                            },
-                            "vm_name": "target1",
-                            "use_existing_machine": False}))
+                                   "os": "linux",
+                                   "vm_controller": {
+                                       "vm_type": "vagrant",
+                                       "vagrantfilepath": "systems",
+                                   },
+                                   "vm_name": "target1",
+                                   "use_existing_machine": False}))
         self.assertEqual(mc.halt_needs_force(), False)
 
     def test_halt_needs_force(self):
         """ Testing 'halt needs force' config """
         mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                            "os": "linux",
-                            "halt_needs_force": True,
-                            "vm_controller": {
-                                "vm_type": "vagrant",
-                                "vagrantfilepath": "systems",
-                            },
-                            "vm_name": "target1",
-                            "use_existing_machine": False}))
+                                   "os": "linux",
+                                   "halt_needs_force": True,
+                                   "vm_controller": {
+                                       "vm_type": "vagrant",
+                                       "vagrantfilepath": "systems",
+                                   },
+                                   "vm_name": "target1",
+                                   "use_existing_machine": False}))
         self.assertEqual(mc.halt_needs_force(), True)
 
     def test_vagrantfilepath(self):
         """ Testing vagrantfilepath config """
         mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                            "os": "linux",
-                            "halt_needs_force": True,
-                            "vm_controller": {
-                                "vm_type": "vagrant",
-                                "vagrantfilepath": "systems",
-                            },
-                            "vm_name": "target1",
-                            "use_existing_machine": False}))
+                                   "os": "linux",
+                                   "halt_needs_force": True,
+                                   "vm_controller": {
+                                       "vm_type": "vagrant",
+                                       "vagrantfilepath": "systems",
+                                   },
+                                   "vm_name": "target1",
+                                   "use_existing_machine": False}))
         self.assertEqual(mc.vagrantfilepath(), "systems")
 
     def test_vagrantfilepath_missing(self):
@@ -340,111 +340,111 @@ class TestMachineConfig(unittest.TestCase):
 
         with self.assertRaises(ConfigurationError):
             mc = MachineConfig(DotMap(DotMap({"root": "systems/attacker1",
-                                "os": "linux",
-                                "halt_needs_force": True,
-                                "vm_controller": {
-                                    "vm_type": "vagrant",
-                                },
-                                "vm_name": "target1",
-                                "use_existing_machine": False})))
+                                              "os": "linux",
+                                              "halt_needs_force": True,
+                                              "vm_controller": {
+                                                  "vm_type": "vagrant",
+                                              },
+                                              "vm_name": "target1",
+                                              "use_existing_machine": False})))
             mc.vagrantfilepath()
 
     def test_sensors_empty(self):
         """ Testing empty sensor config """
 
         mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                            "os": "linux",
-                            "halt_needs_force": True,
-                            "vm_controller": {
-                                "vm_type": "vagrant",
-                            },
-                            "vm_name": "target1",
-                            "use_existing_machine": False}))
+                                   "os": "linux",
+                                   "halt_needs_force": True,
+                                   "vm_controller": {
+                                       "vm_type": "vagrant",
+                                   },
+                                   "vm_name": "target1",
+                                   "use_existing_machine": False}))
         self.assertEqual(mc.sensors(), [])
 
     def test_sensors_set(self):
         """ Testing empty sensor config """
 
         mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                            "os": "linux",
-                            "halt_needs_force": True,
-                            "vm_controller": {
-                                "vm_type": "vagrant",
-                            },
-                            "vm_name": "target1",
-                            "use_existing_machine": False,
-                            "sensors": ["linux_idp", "test_sensor"]}))
+                                   "os": "linux",
+                                   "halt_needs_force": True,
+                                   "vm_controller": {
+                                       "vm_type": "vagrant",
+                                   },
+                                   "vm_name": "target1",
+                                   "use_existing_machine": False,
+                                   "sensors": ["linux_idp", "test_sensor"]}))
         self.assertEqual(mc.sensors(), ["linux_idp", "test_sensor"])
 
     def test_vulnerabilities_empty(self):
         """ Testing empty vulnerabilities config """
 
         mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                            "os": "linux",
-                            "halt_needs_force": True,
-                            "vm_controller": {
-                                "vm_type": "vagrant",
-                            },
-                            "vm_name": "target1",
-                            "use_existing_machine": False}))
+                                   "os": "linux",
+                                   "halt_needs_force": True,
+                                   "vm_controller": {
+                                       "vm_type": "vagrant",
+                                   },
+                                   "vm_name": "target1",
+                                   "use_existing_machine": False}))
         self.assertEqual(mc.vulnerabilities(), [])
 
     def test_vulnerabilities_set(self):
         """ Testing empty vulnerabilities config """
 
         mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                            "os": "linux",
-                            "halt_needs_force": True,
-                            "vm_controller": {
-                                "vm_type": "vagrant",
-                            },
-                            "vm_name": "target1",
-                            "use_existing_machine": False,
-                            "vulnerabilities": ["PEBKAC", "USER"]}))
+                                   "os": "linux",
+                                   "halt_needs_force": True,
+                                   "vm_controller": {
+                                       "vm_type": "vagrant",
+                                   },
+                                   "vm_name": "target1",
+                                   "use_existing_machine": False,
+                                   "vulnerabilities": ["PEBKAC", "USER"]}))
         self.assertEqual(mc.vulnerabilities(), ["PEBKAC", "USER"])
 
     def test_active_not_set(self):
         """ machine active not set """
 
         mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                            "os": "linux",
-                            "halt_needs_force": True,
-                            "vm_controller": {
-                                "vm_type": "vagrant",
-                            },
-                            "vm_name": "target1",
-                            "use_existing_machine": False,
-                            "sensors": ["linux_idp", "test_sensor"]}))
+                                   "os": "linux",
+                                   "halt_needs_force": True,
+                                   "vm_controller": {
+                                       "vm_type": "vagrant",
+                                   },
+                                   "vm_name": "target1",
+                                   "use_existing_machine": False,
+                                   "sensors": ["linux_idp", "test_sensor"]}))
         self.assertEqual(mc.is_active(), True)
 
     def test_active_is_false(self):
         """ machine active is set to false """
 
         mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                            "os": "linux",
-                            "halt_needs_force": True,
-                            "vm_controller": {
-                                "vm_type": "vagrant",
-                            },
-                            "vm_name": "target1",
-                            "use_existing_machine": False,
-                            "active": False,
-                            "sensors": ["linux_idp", "test_sensor"]}))
+                                   "os": "linux",
+                                   "halt_needs_force": True,
+                                   "vm_controller": {
+                                       "vm_type": "vagrant",
+                                   },
+                                   "vm_name": "target1",
+                                   "use_existing_machine": False,
+                                   "active": False,
+                                   "sensors": ["linux_idp", "test_sensor"]}))
         self.assertEqual(mc.is_active(), False)
 
     def test_active_is_true(self):
         """ machine active is set to true """
 
         mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                            "os": "linux",
-                            "halt_needs_force": True,
-                            "vm_controller": {
-                                "vm_type": "vagrant",
-                            },
-                            "vm_name": "target1",
-                            "use_existing_machine": False,
-                            "active": True,
-                            "sensors": ["linux_idp", "test_sensor"]}))
+                                   "os": "linux",
+                                   "halt_needs_force": True,
+                                   "vm_controller": {
+                                       "vm_type": "vagrant",
+                                   },
+                                   "vm_name": "target1",
+                                   "use_existing_machine": False,
+                                   "active": True,
+                                   "sensors": ["linux_idp", "test_sensor"]}))
         self.assertEqual(mc.is_active(), True)
 
 
