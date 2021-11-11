@@ -3,7 +3,7 @@
 """ Pydantic verifier for config structure """
 
 from pydantic.dataclasses import dataclass
-from pydantic import conlist, BaseModel
+from pydantic import conlist
 from typing import Literal, Optional, TypedDict, Union
 from enum import Enum
 
@@ -13,26 +13,48 @@ class OSEnum(str, Enum):
     windows = "windows"
 
 
+class VMControllerTypeEnum(str, Enum):
+    vagrant = "vagrant"
+    running_vm = "running_vm"
+
+
 @dataclass
 class CalderaConfig:
     apikey: str
+
+    def has_key(self, keyname):
+        if keyname in self.__dict__.keys():
+            return True
+        return False
+
+
+@dataclass
+class VMController:
+    vm_type: VMControllerTypeEnum
+    vagrantfilepath: str
+    ip: Optional[str] = ""
+
+    def has_key(self, keyname):
+        if keyname in self.__dict__.keys():
+            return True
+        return False
 
 
 @dataclass
 class Attacker:
     name: str
-    vm_controller: dict
+    vm_controller: VMController
     vm_name: str
+    nicknames: Optional[list[str]]
     machinepath: str
     os: OSEnum
     use_existing_machine: bool = False
 
+    def has_key(self, keyname):
+        if keyname in self.__dict__.keys():
+            return True
+        return False
 
-@dataclass
-class VMController:
-    type: str
-    vagrantfilepath: str
-    ip: Optional[str] = ""
 
 @dataclass
 class Target:
@@ -44,6 +66,7 @@ class Target:
     group: str
     machinepath: str
     sensors: Optional[list[str]]
+    nicknames: Optional[list[str]]
     active: bool = True
     use_existing_machine: bool = False
     playground: Optional[str] = None
@@ -53,12 +76,22 @@ class Target:
     ssh_keyfile: Optional[str] = None
     vulnerabilities: list[str] = None
 
+    def has_key(self, keyname):
+        if keyname in self.__dict__.keys():
+            return True
+        return False
+
 
 @dataclass
 class AttackConfig:
-    nap_time: int
-    caldera_obfuscator: str
-    caldera_jitter: str
+    caldera_obfuscator: str = "plain-text"
+    caldera_jitter: str = "4/8"
+    nap_time: int = 5
+
+    def has_key(self, keyname):
+        if keyname in self.__dict__.keys():
+            return True
+        return False
 
 
 @dataclass
@@ -66,14 +99,29 @@ class AttackList:
     linux: Optional[list[str]]
     windows: Optional[list[str]]
 
+    def has_key(self, keyname):
+        if keyname in self.__dict__.keys():
+            return True
+        return False
+
+    def get(self, keyname, default=None):
+        if self.has_key(keyname):
+            return self.__dict__[keyname]
+        return default
+
 
 @dataclass
 class Results:
     loot_dir: str
 
+    def has_key(self, keyname):
+        if keyname in self.__dict__.keys():
+            return True
+        return False
+
 
 @dataclass
-class MainConfig():
+class MainConfig:
     caldera: CalderaConfig
     attackers: conlist(Attacker, min_items=1)
     targets: conlist(Target, min_items=1)
@@ -83,8 +131,13 @@ class MainConfig():
     results: Results
 
     # Free form configuration for plugins
-    attack_conf: dict
-    sensor_conf: dict
+    attack_conf: Optional[dict]
+    sensor_conf: Optional[dict]
+
+    def has_key(self, keyname):
+        if keyname in self.__dict__.keys():
+            return True
+        return False
 
 
 # TODO: Check for name duplication

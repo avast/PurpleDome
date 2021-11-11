@@ -25,3 +25,5 @@ if __name__ == "__main__":
     r = load(arguments.filename)
     print(r)
     print(r.caldera.apikey)
+    # print(r.blarg)
+    print(dir(r.__dict__))

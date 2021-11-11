@@ -41,6 +41,11 @@ extensions += ['sphinx_pyreverse']
 extensions += ['sphinxcontrib.autoyaml']
 autoyaml_level = 5
 
+# Pydantic plugin for sphinx. Another way to generate config documentation
+# extensions += ['sphinx-pydantic']
+# This has bugs and is not properly maintained
+# But would be awesome: https://sphinx-pydantic.readthedocs.io/en/latest/
+
 # Properly display command line behaviour https://pypi.org/project/sphinxcontrib.asciinema/
 # https://github.com/divi255/sphinxcontrib.asciinema/issues/11
 extensions += ['sphinxcontrib.asciinema']
