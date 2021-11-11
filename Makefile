@@ -6,6 +6,7 @@
 
 test: tox.ini
 	tox;
+	pylint --rcfile=pylint.rc  *.py app/*.py plugins/base/*.py
 	coverage html;
 	coverage report;
 
@@ -18,6 +19,7 @@ shipit: test
 pylint:
 	pylint --rcfile=pylint.rc  *.py app/*.py plugins/base/*.py
 
+# Testing if types are used properly
 mypy:
 	mypy --strict-optional app/
 
