@@ -29,12 +29,12 @@ class BasePlugin():
 
     def get_filename(self):
         """ Returns the current filename.  """
-        cf = currentframe()
+        cf = currentframe()  # pylint: disable=invalid-name
         return cf.f_back.filename
 
     def get_linenumber(self):
         """ Returns the current linenumber.  """
-        cf = currentframe()
+        cf = currentframe()  # pylint: disable=invalid-name
         return cf.f_back.f_lineno
 
     def get_playground(self):

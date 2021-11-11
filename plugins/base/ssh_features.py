@@ -167,7 +167,7 @@ class SSHFeatures(BasePlugin):
             do_retry = False
             try:
                 res = self.connection.get(src, dst)
-            except (paramiko.ssh_exception.NoValidConnectionsError, UnexpectedExit) as error:
+            except (UnexpectedExit) as error:
                 if retry <= 0:
                     raise NetworkError from error
                 do_retry = True

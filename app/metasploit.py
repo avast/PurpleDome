@@ -54,7 +54,7 @@ class Metasploit():
         exp = self.get_client().modules.use('exploit', exploit)
         # print(exploit.description)
         # print(exploit.missing_required)
-        pl = self.get_client().modules.use('payload', payload)
+        pl = self.get_client().modules.use('payload', payload)  # pylint: disable=invalid-name
         # print(payload.description)
         # print(payload.missing_required)
         if lhost is None:
@@ -208,7 +208,7 @@ class Metasploit():
         if payload_type is None:
             raise MetasploitError("Payload not defined")
         try:
-            ip = socket.gethostbyname(self.attacker.get_ip())
+            ip = socket.gethostbyname(self.attacker.get_ip())  # pylint: disable=invalid-name
             self.start_exploit_stub_for_external_payload(payload_type, lhost=kwargs.get("lhost", ip))
             self.wait_for_session(2)
         except MetasploitError:
@@ -459,7 +459,7 @@ class MetasploitInstant(Metasploit):
         description = "Migrating to another process can escalate privileges, move the meterpreter to a long running process or evade detection. For that the Meterpreter stub is injected into another process and the new stub then connects to the Metasploit server instead of the old one."
 
         process_list = self.ps_process_discovery(target)
-        ps = self.parse_ps(process_list[0])
+        ps = self.parse_ps(process_list[0])  # pylint: disable=invalid-name
         filtered_list = self.filter_ps_results(ps, user, name, arch)
 
         if len(filtered_list) == 0:

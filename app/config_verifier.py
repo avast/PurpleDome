@@ -2,27 +2,36 @@
 
 """ Pydantic verifier for config structure """
 
-from pydantic.dataclasses import dataclass
-from pydantic import conlist
-from typing import Optional
 from enum import Enum
+from typing import Optional
+from pydantic.dataclasses import dataclass
+from pydantic import conlist  # pylint: disable=no-name-in-module
+
+# TODO: Move from has_key to iterators and "is in"
 
 
 class OSEnum(str, Enum):
-    linux = "linux"
-    windows = "windows"
+    """ List of all supported OS-es """
+    LINUX = "linux"
+    WINDOWS = "windows"
 
 
 class VMControllerTypeEnum(str, Enum):
-    vagrant = "vagrant"
-    running_vm = "running_vm"
+    """ List of all supported controlled plugins. This is only done for VM controller plugins !
+        I do not expect many new ones. And typos in config can be a waste of time. Let's see if I am right.  """
+    VAGRANT = "vagrant"
+    RUNNING_VM = "running_vm"
 
 
 @dataclass
 class CalderaConfig:
+    """ Configuration for the Caldera server """
     apikey: str
 
     def has_key(self, keyname):
+        """ Checks if a key exists
+        Required for compatibility with DotMap which is used in Unit tests
+        """
         if keyname in self.__dict__.keys():
             return True
         return False
@@ -30,11 +39,15 @@ class CalderaConfig:
 
 @dataclass
 class VMController:
+    """ Configuration for the VM controller """
     vm_type: VMControllerTypeEnum
     vagrantfilepath: str
-    ip: Optional[str] = ""
+    ip: Optional[str] = ""  # pylint: disable=invalid-name
 
     def has_key(self, keyname):
+        """ Checks if a key exists
+            Required for compatibility with DotMap which is used in Unit tests
+        """
         if keyname in self.__dict__.keys():
             return True
         return False
@@ -47,21 +60,28 @@ class VMController:
 
 @dataclass
 class Attacker:
+    """ Configuration for a attacker VM """
     name: str
     vm_controller: VMController
     vm_name: str
     nicknames: Optional[list[str]]
     machinepath: str
-    os: OSEnum
+    os: OSEnum  # pylint: disable=invalid-name
     use_existing_machine: bool = False
     playground: Optional[str] = None
 
     def has_key(self, keyname):
+        """ Checks if a key exists
+            Required for compatibility with DotMap which is used in Unit tests
+        """
         if keyname in self.__dict__.keys():
             return True
         return False
 
     def get(self, keyname, default=None):
+        """ Returns the value of a specific key
+            Required for compatibility with DotMap which is used in Unit tests
+        """
         if self.has_key(keyname):
             return self.__dict__[keyname]
         return default
@@ -69,10 +89,11 @@ class Attacker:
 
 @dataclass
 class Target:
+    """ Configuration for a target VM """
     name: str
     vm_controller: VMController
     vm_name: str
-    os: OSEnum
+    os: OSEnum  # pylint: disable=invalid-name
     paw: str
     group: str
     machinepath: str
@@ -88,11 +109,17 @@ class Target:
     vulnerabilities: list[str] = None
 
     def has_key(self, keyname):
+        """ Checks if a key exists
+            Required for compatibility with DotMap which is used in Unit tests
+        """
         if keyname in self.__dict__.keys():
             return True
         return False
 
     def get(self, keyname, default=None):
+        """ Returns the value of a specific key
+            Required for compatibility with DotMap which is used in Unit tests
+        """
         if self.has_key(keyname):
             return self.__dict__[keyname]
         return default
@@ -100,11 +127,15 @@ class Target:
 
 @dataclass
 class AttackConfig:
+    """ Generic configuration for attacks """
     caldera_obfuscator: str = "plain-text"
     caldera_jitter: str = "4/8"
     nap_time: int = 5
 
     def has_key(self, keyname):
+        """ Checks if a key exists
+            Required for compatibility with DotMap which is used in Unit tests
+        """
         if keyname in self.__dict__.keys():
             return True
         return False
@@ -112,15 +143,22 @@ class AttackConfig:
 
 @dataclass
 class AttackList:
+    """ A list of attacks to run. Either plugin based or caldera based """
     linux: Optional[list[str]]
     windows: Optional[list[str]]
 
     def has_key(self, keyname):
+        """ Checks if a key exists
+            Required for compatibility with DotMap which is used in Unit tests
+        """
         if keyname in self.__dict__.keys():
             return True
         return False
 
     def get(self, keyname, default=None):
+        """ Returns the value of a specific key
+            Required for compatibility with DotMap which is used in Unit tests
+        """
         if self.has_key(keyname):
             return self.__dict__[keyname]
         return default
@@ -128,9 +166,13 @@ class AttackList:
 
 @dataclass
 class Results:
+    """ What to do with the results """
     loot_dir: str
 
     def has_key(self, keyname):
+        """ Checks if a key exists
+            Required for compatibility with DotMap which is used in Unit tests
+        """
         if keyname in self.__dict__.keys():
             return True
         return False
@@ -138,6 +180,7 @@ class Results:
 
 @dataclass
 class MainConfig:
+    """ Central configuration for PurpleDome """
     caldera: CalderaConfig
     attackers: conlist(Attacker, min_items=1)
     targets: conlist(Target, min_items=1)
@@ -151,6 +194,9 @@ class MainConfig:
     sensor_conf: Optional[dict]
 
     def has_key(self, keyname):
+        """ Checks if a key exists
+            Required for compatibility with DotMap which is used in Unit tests
+        """
         if keyname in self.__dict__.keys():
             return True
         return False

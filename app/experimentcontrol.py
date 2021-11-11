@@ -279,18 +279,18 @@ class Experiment():
         defaultname = os.path.join(self.lootdir, "..", "most_recent.zip")
         shutil.copyfile(filename, defaultname)
 
-    @staticmethod
-    def __get_results_files(root):
-        """ Yields a list of potential result files
+    # @staticmethod
+    # def __get_results_files(root):
+    #    """ Yields a list of potential result files
 
-        @param root: Root dir of the machine to collect data from
-        """
-        # TODO: Properly implement. Get proper root parameter
+    #    @param root: Root dir of the machine to collect data from
+    #    """
+    #    # TODO: Properly implement. Get proper root parameter
 
-        total = [os.path.join(root, "logstash", "filebeat.json")]
-        for a_file in total:
-            if os.path.exists(a_file):
-                yield a_file
+    #    total = [os.path.join(root, "logstash", "filebeat.json")]
+    #    for a_file in total:
+    #        if os.path.exists(a_file):
+    #            yield a_file
 
     # def __clean_result_files(self, root):
     #     """ Deletes result files

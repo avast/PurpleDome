@@ -265,8 +265,7 @@ class PluginManager():
             if section["name"] == subclass_name:
                 subclass = section["subclass"]
         if subclass is None:
-            print("Use proper subclass. Available subclasses are: ")
-            "\n- ".join(list(sections["name"]))
+            print("Use proper subclass")
 
         plugins = self.get_plugins(subclass, [name])
         for plugin in plugins:

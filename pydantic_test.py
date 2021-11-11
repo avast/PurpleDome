@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
 
+""" A command line tool to verify PurpleDome configuration files """
+
 import argparse
+from pprint import pprint
+import sys
 import yaml
 from app.config_verifier import MainConfig
 
 
 def load(filename):
+    """ Loads the config file and feeds it into the built in verifier """
     with open(filename) as fh:
         data = yaml.safe_load(fh)
         return MainConfig(**data)
@@ -22,8 +27,13 @@ def create_parser():
 
 if __name__ == "__main__":
     arguments = create_parser().parse_args()
-    r = load(arguments.filename)
-    print(r)
-    print(r.caldera.apikey)
-    # print(r.blarg)
-    print(dir(r.__dict__))
+    try:
+        r = load(arguments.filename)
+    except TypeError as e:
+        print("Config file has error(s):")
+        print(e)
+        sys.exit(1)
+    print("Loaded successfully: ")
+    pprint(r)
+
+    sys.exit(0)
