@@ -54,6 +54,7 @@ class Attacker:
     machinepath: str
     os: OSEnum
     use_existing_machine: bool = False
+    playground: Optional[str] = None
 
     def has_key(self, keyname):
         if keyname in self.__dict__.keys():

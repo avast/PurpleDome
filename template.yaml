@@ -11,14 +11,14 @@ caldera:
 attackers:
   ###
   # Configuration for the first attacker. One should normally be enough
-  attacker:
+  - name: attacker
 
     ###
     # Defining VM controller settings for this machine
     vm_controller:
       ###
       # Type of the VM controller, Options are "vagrant"
-      type: vagrant
+      vm_type: vagrant
       ###
       # # path where the vagrantfile is in
       vagrantfilepath: systems
@@ -51,9 +51,9 @@ attackers:
 targets:
   ###
   # Specific target
-  target1:
+  - name: target1
     vm_controller:
-      type: vagrant
+      vm_type: vagrant
       vagrantfilepath: systems
 
     ###
@@ -87,10 +87,10 @@ targets:
     sensors:
       # - linux_idp
 
-  target2:
+  - name: target2
     #root: systems/target1
     vm_controller:
-      type: vagrant
+      vm_type: vagrant
       vagrantfilepath: systems
 
     ###
@@ -152,9 +152,9 @@ targets:
 
 
   # Ubuntu 20.10 (Groovy)
-  target3:
+  - name: target3
     vm_controller:
-      type: vagrant
+      vm_type: vagrant
       vagrantfilepath: systems
 
     ###
@@ -194,37 +194,20 @@ targets:
       - weak_user_passwords
 
 ###
-# General sensor config config
-sensors:
-  ###
-  # Windows IDP plugin configuration
-  windows_idp:
-    ###
-    # Name of the dll to use. Must match AV version
-    dll_name: aswidptestdll.dll
-
-    ###
-    # Folder where the IDP tool is located
-    idp_tool_folder: C:\\capture
-
-###
 # General attack config
 attacks:
   ###
   # configure the seconds the system idles between the attacks. Makes it slower. But attack and defense logs will be simpler to match
   nap_time: 5
 
-###
-# Configuration for caldera
-caldera_conf:
   ###
   # The obfuscator to use between the implant and the server. Not all obfuscators are supported by all implants. Existing obfuscators:
   # plain-text, base64, base64jumble, caesar, base64noPadding, steganography
-  obfuscator: plain-text
+  caldera_obfuscator: plain-text
 
   ###
   # Jitter settings for the implant. it is min/max seconds. The first number has to be smaller. Default is 4/8
-  jitter: 4/8
+  caldera_jitter: 4/8
 
 ###
 # A list of caldera attacks to run against the targets.
@@ -271,6 +254,20 @@ attack_conf:
     # A file containing potential passwords
     pwdfile: passwords.txt
   nmap:
+
+###
+# General sensor config config
+sensor_conf:
+  ###
+  # Windows IDP plugin configuration
+  windows_idp:
+    ###
+    # Name of the dll to use. Must match AV version
+    dll_name: aswidptestdll.dll
+
+    ###
+    # Folder where the IDP tool is located
+    idp_tool_folder: C:\\capture
 
 
 ###
