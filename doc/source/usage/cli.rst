@@ -19,10 +19,20 @@ Experiment control is the core tool to run an experiment. It accepts a yaml conf
     :func: create_parser
     :prog: ./experiment_control.py
 
+Testing YAML files
+==================
+
+Configuration can be a bit complex and mistakes can happen. To find them before you run Purpledome use pydantic_test.py
+
+.. argparse::
+    :filename: ../pydantic_test.py
+    :func: create_parser
+    :prog: ./pydantic_test.py
+
 Plugin manager
 ==============
 
-List available plugins or a specific plugin config
+List available plugins or a specific plugin config. Most importantly: You can verify your plugin using it !
 
 .. argparse::
     :filename: ../plugin_manager.py
@@ -49,3 +59,10 @@ Directly control the machines
     :func: create_parser
     :prog: ./machine_control.py
 
+Doc generator
+=============
+
+.. argparse::
+    :filename: ../doc_generator.py
+    :func: create_parser
+    :prog: ./doc_generator.py

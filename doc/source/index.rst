@@ -25,9 +25,9 @@ Welcome to the Purple Dome documentation!
 
    extending/vulnerability_plugins
 
-   extending/attack_plugins
-
    extending/sensor_plugins
+
+   extending/attack_plugins
 
    extending/vm_controller_plugins
 

@@ -2,11 +2,29 @@
 Basics
 ======
 
-Purple Dome is a simulated and automated environment to experiment with several operating system attacking each other.
+Purple Dome is a simulated and automated environment to experiment with hacking - and defense.
 
-This tool generates an attacker VM and target VMs. Automated attacks are then run against the targets and they will log system events. Those logs will then be stored away for analysis.
+PurpleDome is relevant for you:
 
-Attacks are started from the attacker VM which is normally a Kali linux machine (with all the Kali tools) running a Caldera server for additional tooling.
+* If you develop sensors for bolt on security
+* If you want to test detection logic for your bolt on security
+* If you want to stress test mitigation around your vulnerable apps
+* Experiment with hardening your OS or software
+* Want to forensically analyse a system after an attack
+* Do some blue team exercises
+* Want to train ML on data from real attacks
+
+PurpleDome simulates a small busniess network. It generates an attacker VM and target VMs. Automated attacks are then run against the targets.
+
+Depending on which sensors you picked you will get their logs. And the logs from the attacks. Perfect to compare them side-by-side.
+
+Attacks are written as small plugins and control pre-installed tools:
+
+* Kali command line tools
+* Caldera commands
+* Metasploit
+
+That way your experiments focus on behaviour detection. And not on whack-a-mole games with malware samples.
 
 -------------------
 
@@ -23,11 +41,12 @@ Features
     * Metasploit attacks
 * Data collection: Attack log and sensor data in parallel with timestamps for matching events
 * Vulnerability plugins: Modify the targets before the attack
+* Sensor plugins: Write a simple wrapper around your sensor and integrate it into the experiments
 
 Components
 ==========
 
-The command line tools are the way you will interact with Purple Dome the most. Those are described in the *CLI* chapter.
+The command line tools are the way you will interact with Purple Dome. Those are described in the *CLI* chapter.
 
 The experiments are configured in YAML files, the format is described in the *configuration* chapter. You will also want to create some target VMs. You can do this manually or use Vagrant. Vagrant makes it simple to create Linux targets. Windows targets (with some start configuration) are harder and have an own chapter.
 

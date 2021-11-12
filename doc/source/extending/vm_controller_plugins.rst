@@ -2,7 +2,7 @@
 VM Controller plugins
 *********************
 
-The experiment being run handles the machines. As there can be several VM controllers being used this is handled by the plugin layer as well. Those machines can be target or attack machines.
+The experiment being run handles the machines. Those machines can be targets or attacker machines. Different types of machine controllers are covered by those plugins.
 
 A VM plugin handles several things:
 
@@ -32,12 +32,27 @@ The boilerplate contains some basics:
 * description. A human readable description for this plugin.
 * required_files: A list. If you ship files with your plugin, listing them here will cause them to be installed on plugin init.
 
-Some relevant methods are
+Some relevant methods that must be implemented (even if they will not contain code) are:
 
-process_config
---------------
+up
+--
 
-The configuration for this machine is a sub-section in the experiment config. As the different machinery systems might require special handling, you can parse the config in this section and add your own processing or defaults
+Starts the machine
+
+create
+------
+
+Creates the machine. Vagrant for example can create machines based on config files.
+
+halt
+----
+
+Stop the machine
+
+destroy
+-------
+
+Destroy the machine
 
 get_state
 ---------
@@ -52,7 +67,6 @@ Get the ip of the machine. If the machine is registered at the system resolver (
 The plugin class
 ================
 
-The machine class can also be very essential if you write attack plugins. Those have access to the kali attack and one or more targets. And those are Machinery objects.
 For a full list of methods read on:
 
 .. autoclass:: plugins.base.machinery.MachineryPlugin

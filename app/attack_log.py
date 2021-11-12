@@ -33,7 +33,6 @@ class AttackLog():
         self.machines: list[dict] = []
         self.verbosity = verbosity
 
-        # TODO. As soon as someone wants custom timestamps, make the format variable
         self.datetime_format = "%H:%M:%S.%f"
 
     def __add_to_log__(self, item: dict):

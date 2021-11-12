@@ -2,6 +2,8 @@
 Extending the documentation
 ===========================
 
+The documentation is Sphinx based.
+
 Tools being used for documentation are:
 
 

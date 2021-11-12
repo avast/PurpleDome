@@ -5,15 +5,16 @@ Extending
 Modules
 =======
 
-Several core module create the system.
+Several core module create the system. They are in the *app* folder
 
-* CalderaControl: remote control for Caldera using the Caldera REST API
-* Metasploit: Metasploit control
-* MachineControl: Create/start and stop VMs
-* ExperimentControl: Control experiments. Will internally use the modules already mentioned
-* PluginManager: Plugin manager tasks
-* MachineConfig / ExperimentConfig: Reading and processing configuration files
-* AttackLog: Logging attack steps and output to stdio
+* experimentcontrol: Control experiments. This is the central control for everything
+* calderacontrol: remote control for Caldera using the Caldera REST API
+* metasploit: Metasploit control. Simplifies the basic attack step so they can be used from plugins
+* machinecontrol: Create/start and stop VMs. Will call the machinery plugin
+* pluginmanager: Plugin manager tasks. Has methods to verify plugin quality as well
+* config: Reading and processing configuration files
+* attacklog: Logging attack steps and output to stdio
+* doc_generator: Generates human readable documents from attack logs
 
 
 --------------
@@ -26,12 +27,21 @@ Class for Caldera communication
    :members:
 
 ----------
-MetaSploit
+Metasploit
 ----------
 
 Class for Metasploit automation
 
 .. autoclass:: app.metasploit.Metasploit
+   :members:
+
+-----------------
+MetasploitInstant
+-----------------
+
+Extends. In addition to the communication features from the superclass Metasploit it simplifies basic commands.
+
+.. autoclass:: app.metasploit.MetasploitInstant
    :members:
 
 --------
