@@ -8,6 +8,7 @@ import time
 import zipfile
 import shutil
 from datetime import datetime
+from typing import Optional
 
 from app.attack_log import AttackLog
 from app.config import ExperimentConfig
@@ -32,12 +33,14 @@ class Experiment():
         @param verbosity: verbosity level between 0 and 3
         @param caldera_attacks: an optional argument to override caldera attacks in the config file and run just this one caldera attack. A list of caldera ID
         """
-        self.attacker_1 = None
+        self.attacker_1: Optional[Machine] = None
 
         self.experiment_config = ExperimentConfig(configfile)
         self.attack_logger = AttackLog(verbosity)
         self.plugin_manager = PluginManager(self.attack_logger)
         self.__start_attacker()
+        if self.attacker_1 is None:
+            raise ServerError
         caldera_url = "http://" + self.attacker_1.get_ip() + ":8888"
         self.caldera_control = CalderaControl(caldera_url, attack_logger=self.attack_logger, config=self.experiment_config)
         # self.caldera_control = CalderaControl("http://" + self.attacker_1.get_ip() + ":8888", self.attack_logger,

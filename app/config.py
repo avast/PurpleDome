@@ -151,7 +151,7 @@ class ExperimentConfig():
         @param configfile: The configuration file to process
         """
 
-        self.raw_config: Optional[dict] = None
+        self.raw_config: MainConfig = None
         self._targets: list[MachineConfig] = []
         self._attackers: list[MachineConfig] = []
         self.load(configfile)

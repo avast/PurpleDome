@@ -30,7 +30,7 @@ class AttackLog():
         @param verbosity: verbosity setting from 0 to 3 for stdout printing
         """
         self.log: list[dict] = []
-        self.machines: dict = []
+        self.machines: list[dict] = []
         self.verbosity = verbosity
 
         # TODO. As soon as someone wants custom timestamps, make the format variable
@@ -510,6 +510,8 @@ class AttackLog():
         timestamp = self.__get_timestamp__()
         logid = timestamp + "_" + str(randint(1, 100000))
 
+        cframe = currentframe()
+
         data = {"timestamp": timestamp,
                 "timestamp_end": None,
                 "event": "start",
@@ -527,8 +529,8 @@ class AttackLog():
                 "situation_description": kwargs.get("situation_description", None),  # Description for the situation this attack was run in. Set by the plugin or attacker emulation
                 "countermeasure": kwargs.get("countermeasure", None),  # Set by the attack
                 "result": None,
-                "sourcefile": kwargs.get("sourcefile", getsourcefile(currentframe().f_back)),
-                "sourceline": kwargs.get("sourceline", currentframe().f_back.f_lineno)
+                "sourcefile": kwargs.get("sourcefile", getsourcefile(cframe.f_back)),
+                "sourceline": kwargs.get("sourceline", cframe.f_back.f_lineno)
                 }
         self.__add_to_log__(data)
 
@@ -642,7 +644,7 @@ class AttackLog():
 
         return res
 
-    def add_machine_info(self, machine_info):
+    def add_machine_info(self, machine_info: dict):
         """ Adds a dict with machine info. One machine per call of this method """
         self.machines.append(machine_info)
 
