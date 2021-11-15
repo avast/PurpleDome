@@ -11,7 +11,7 @@ class MetasploitKiwiPlugin(AttackPlugin):
     # Boilerplate
     name = "metasploit_kiwi"
     description = "Extract credentials from memory. Kiwi is the more modern Mimikatz"
-    ttp = "t1003"
+    ttp = "T1003"
     references = ["https://www.hackers-arise.com/post/2018/11/26/metasploit-basics-part-21-post-exploitation-with-mimikatz"]
 
     required_files = []    # Files shipped with the plugin which are needed by the kali tool. Will be copied to the kali share

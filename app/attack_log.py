@@ -2,6 +2,7 @@
 
 """ Logger for the attack side. Output must be flexible, because we want to be able to feed it into many different processes. From ML to analysts """
 
+from inspect import currentframe, getsourcefile
 import json
 import datetime
 from random import randint
@@ -29,10 +30,9 @@ class AttackLog():
         @param verbosity: verbosity setting from 0 to 3 for stdout printing
         """
         self.log: list[dict] = []
-        self.machines: dict = []
+        self.machines: list[dict] = []
         self.verbosity = verbosity
 
-        # TODO. As soon as someone wants custom timestamps, make the format variable
         self.datetime_format = "%H:%M:%S.%f"
 
     def __add_to_log__(self, item: dict):
@@ -75,7 +75,6 @@ class AttackLog():
         """ Returns the default tactics for this ability based on a db """
 
         data = {"bd527b63-9f9e-46e0-9816-b8434d2b8989": "System Owner/User Discovery",
-                "697e8a432031075e47cccba24417013d": "Persistence",
                 "f39161b2fa5d692ebe3972e0680a8f97": "Persistence",
                 "16e6823c4656f5cd155051f5f1e5d6ad": "Persistence",
                 "443b853ac50a79fc4a85354cb2c90fa2": "Persistence",
@@ -84,7 +83,11 @@ class AttackLog():
                 "697e8a432031075e47cccba24417013d": "Persistence"}
 
         ttp_data = {"t1547": "Persistence",
-                    "t1547.001": "Persistence"}
+                    "t1547.001": "Persistence",
+                    "t1547.004": "Persistence",
+                    "t1547.005": "Persistence",
+                    "t1547.009": "Persistence",
+                    "t1547.010": "Persistence"}
 
         if ability_id in data:
             return data[ability_id]
@@ -99,7 +102,6 @@ class AttackLog():
         """ Returns the default name for this ability based on a db """
 
         data = {"bd527b63-9f9e-46e0-9816-b8434d2b8989": "T1033",
-                "697e8a432031075e47cccba24417013d": "TA0003",
                 "f39161b2fa5d692ebe3972e0680a8f97": "TA0003",
                 "16e6823c4656f5cd155051f5f1e5d6ad": "TA0003",
                 "443b853ac50a79fc4a85354cb2c90fa2": "TA0003",
@@ -108,7 +110,11 @@ class AttackLog():
                 "697e8a432031075e47cccba24417013d": "TA0003"}
 
         ttp_data = {"t1547": "TA0003",
-                    "t1547.001": "TA0003"}
+                    "t1547.001": "TA0003",
+                    "t1547.004": "TA0003",
+                    "t1547.005": "TA0003",
+                    "t1547.009": "TA0003",
+                    "t1547.010": "TA0003"}
 
         if ability_id in data:
             return data[ability_id]
@@ -503,6 +509,8 @@ class AttackLog():
         timestamp = self.__get_timestamp__()
         logid = timestamp + "_" + str(randint(1, 100000))
 
+        cframe = currentframe()
+
         data = {"timestamp": timestamp,
                 "timestamp_end": None,
                 "event": "start",
@@ -519,7 +527,9 @@ class AttackLog():
                 "description": kwargs.get("description", None),  # Generic description for this attack. Set by the attack
                 "situation_description": kwargs.get("situation_description", None),  # Description for the situation this attack was run in. Set by the plugin or attacker emulation
                 "countermeasure": kwargs.get("countermeasure", None),  # Set by the attack
-                "result": None
+                "result": None,
+                "sourcefile": kwargs.get("sourcefile", getsourcefile(cframe.f_back)),
+                "sourceline": kwargs.get("sourceline", cframe.f_back.f_lineno)
                 }
         self.__add_to_log__(data)
 
@@ -633,7 +643,7 @@ class AttackLog():
 
         return res
 
-    def add_machine_info(self, machine_info):
+    def add_machine_info(self, machine_info: dict):
         """ Adds a dict with machine info. One machine per call of this method """
         self.machines.append(machine_info)
 

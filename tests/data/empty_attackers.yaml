@@ -1,0 +1,20 @@
+targets:
+  target1:
+    vm_controller:
+      type: vagrant
+      vagrantfilepath: systems
+
+    vm_name: target1
+    os: linux
+    ###
+    # Targets need a unique PAW name for caldera
+    paw: target1
+    ###
+    # Targets need to be in a group for caldera
+    group: red
+
+    machinepath: target1
+    # Do not destroy/create the machine: Set this to "yes".
+    use_existing_machine: yes
+
+attackers:

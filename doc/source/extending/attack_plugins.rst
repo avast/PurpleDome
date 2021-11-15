@@ -3,7 +3,7 @@ Attack plugins
 **************
 
 
-Attack features of PurpleDome can be extended using a plugin system. Those attack plugins can start Caldera ttacks, run Kali command line tools ir use Metasploit.
+Attack features of PurpleDome can be extended using a plugin system. Those attack plugins can start Caldera attacks, run Kali command line tools or use Metasploit.
 
 An example plugin is in the file *hydra_plugin.py*. It contains a plugin class that **MUST** be based on the *AttackPlugin* class.
 
@@ -30,7 +30,7 @@ The boilerplate contains some basics:
 
 * name: a unique name, also used in the config yaml file to reference this plugin
 * description: A human readable description for this plugin.
-* ttp: The TTP number of this kali attack. See https://attack.mitre.org/
+* ttp: The TTP number of this kali attack. See https://attack.mitre.org/ "???" if it is unknown "multiple" if it covers several TTPs
 * references. A list of urls to blog posts or similar describing the attack
 * required_files: A list. If you ship files with your plugin, listing them here will cause them to be installed on plugin init.
 Better than using required_files is to use:

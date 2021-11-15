@@ -11,14 +11,14 @@ caldera:
 attackers:
   ###
   # Configuration for the first attacker. One should normally be enough
-  attacker:
+  - name: attacker
 
     ###
     # Defining VM controller settings for this machine
     vm_controller:
       ###
       # Type of the VM controller, Options are "vagrant"
-      type: vagrant
+      vm_type: vagrant
       ###
       # # path where the vagrantfile is in
       vagrantfilepath: systems
@@ -26,6 +26,8 @@ attackers:
     ###
     # Name of machine in Vagrantfile
     vm_name: attacker
+
+    nicknames:
 
     ###
     # machinepath is a path where the machine specific files and logs are stored. Relative to the Vagrantfile path
@@ -46,12 +48,13 @@ attackers:
 targets:
   ###
   # Specific target
-  target1:
+  - name: target1
     vm_controller:
-      type: vagrant
+      vm_type: vagrant
       vagrantfilepath: systems
 
     vm_name: target1
+    nicknames:
     os: linux
     ###
     # Targets need a unique PAW name for caldera
@@ -64,13 +67,17 @@ targets:
     # Do not destroy/create the machine: Set this to "yes".
     use_existing_machine: yes
 
-  target2:
+    sensors:
+
+  - name: target2
     #root: systems/target1
     vm_controller:
-      type: vagrant
+      vm_type: vagrant
       vagrantfilepath: systems
 
     vm_name: target2
+    nicknames:
+
     os: windows
     paw: target2w
     group: red
@@ -91,6 +98,8 @@ targets:
     # For non-vagrant ssh connections a ssh keyfile stored in the machinepath is required.
     ssh_keyfile: id_rsa.3
 
+    sensors:
+
 ###
 # General attack config
 attacks:
@@ -99,9 +108,7 @@ attacks:
   nap_time: 5
 
 
-## Broken caldera conf
-caldera_conf:
-  foo: bar
+sensor_conf:
 
 ###
 # A list of caldera attacks to run against the targets.

@@ -90,9 +90,6 @@ class SSHFeatures(BasePlugin):
                 if retry <= 0:
                     raise NetworkError from error
                 do_retry = True
-            except paramiko.ssh_exception.NoValidConnectionsError as error:
-                self.vprint(f"No valid connection. Errors: {error.errors}", 1)
-                do_retry = True
             if do_retry:
                 self.disconnect()
                 self.connect()
@@ -133,14 +130,14 @@ class SSHFeatures(BasePlugin):
             except paramiko.ssh_exception.NoValidConnectionsError as error:
                 self.vprint(f"SSH PUT: No valid connection. Errors: {error.errors}", 1)
                 do_retry = True
-            except OSError:
-                self.vprint("SSH PUT: Obscure OSError, ignoring (file should have been copied)", 1)
-                pass
-                # do_retry = True
-                # breakpoint()
             except FileNotFoundError as error:
                 self.vprint(f"SSH PUT: File not found: {error}", 0)
                 break
+            except OSError:
+                self.vprint("SSH PUT: Obscure OSError, ignoring (file should have been copied)", 1)
+                # do_retry = True
+                # breakpoint()
+
             if do_retry:
                 self.vprint(f"SSH PUT: Will retry {retries} times. Timeout: {timeout}", 3)
                 retries -= 1
@@ -170,20 +167,19 @@ class SSHFeatures(BasePlugin):
             do_retry = False
             try:
                 res = self.connection.get(src, dst)
-            except (paramiko.ssh_exception.NoValidConnectionsError, UnexpectedExit) as error:
+            except (UnexpectedExit) as error:
                 if retry <= 0:
                     raise NetworkError from error
                 do_retry = True
             except paramiko.ssh_exception.NoValidConnectionsError as error:
                 self.vprint(f"SSH GET: No valid connection. Errors: {error.errors}", 1)
                 do_retry = True
-            except OSError:
-                self.vprint("SSH GET: Obscure OSError, ignoring (file should have been copied)", 1)
-                pass
-                # do_retry = True
             except FileNotFoundError as error:
                 self.vprint(error, 0)
                 break
+            except OSError:
+                self.vprint("SSH GET: Obscure OSError, ignoring (file should have been copied)", 1)
+                # do_retry = True
             if do_retry:
                 self.disconnect()
                 self.connect()

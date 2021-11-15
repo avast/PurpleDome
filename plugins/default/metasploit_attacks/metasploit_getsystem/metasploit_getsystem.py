@@ -11,7 +11,7 @@ class MetasploitGetsystemPlugin(AttackPlugin):
     # Boilerplate
     name = "metasploit_getsystem"
     description = "Privilege elevation via metasploit getsystem"
-    ttp = "????"
+    ttp = "???"
     references = ["https://docs.rapid7.com/metasploit/meterpreter-getsystem/"]
 
     required_files = []    # Files shipped with the plugin which are needed by the kali tool. Will be copied to the kali share

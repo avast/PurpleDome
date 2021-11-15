@@ -140,7 +140,27 @@ disable=print-statement,
         exception-escape,
         comprehension-escape,
         line-too-long,
-        fixme
+        fixme,
+# Added: no-self-use: We do not want stray external functions. And decorating it is not worth the mess
+        no-self-use,
+# too-many-arguments: Must be fixed sooner or later in a refactoring. Not now
+        too-many-arguments,
+# too-many-public-methods: Must be fixed sooner or later in a refactoring. Not now
+        too-many-public-methods,
+# too-many-locals: Must be fixed sooner or later in a refactoring. Not now
+        too-many-locals,
+# too-many-instance-attributes: Must be fixed sooner or later in a refactoring. Not now
+        too-many-instance-attributes,
+# too-many-branches: Must be fixed sooner or later in a refactoring. Not now
+        too-many-branches,
+# too-many-statements: Must be fixed sooner or later in a refactoring. Not now
+        too-many-statements,
+# too-many-nested-blocks: Must be fixed sooner or later in a refactoring. Not now
+        too-many-nested-blocks,
+# duplicate lines in files. Removed from the standard RC file. Will be used in a stricter one for manual code reviews
+        R0801
+
+
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

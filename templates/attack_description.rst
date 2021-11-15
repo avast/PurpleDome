@@ -75,6 +75,7 @@ Metasploit attack {{ e.name }}
 + Hunting Tag: {{ e.hunting_tag}}
 + At {{ e.timestamp }} a Metasploit command {{ e.name }} was used to attack {{ e.target }} from {{ e.source }}.
 + Description: {{ e.description }}
++ Code in {{ e.sourcefile }} / {{ e.sourceline }}
 {% if e.metasploit_command is string() %}
 + Metasploit command: {{ e.metasploit_command }}
 {% endif %}

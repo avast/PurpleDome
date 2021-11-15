@@ -3,12 +3,17 @@
 
 from glob import glob
 import os
+import re
+from typing import Optional
 import straight.plugin  # type: ignore
+
 
 from plugins.base.plugin_base import BasePlugin
 from plugins.base.attack import AttackPlugin
 from plugins.base.machinery import MachineryPlugin
+from plugins.base.ssh_features import SSHFeatures
 from plugins.base.sensor import SensorPlugin
+
 from plugins.base.vulnerability_plugin import VulnerabilityPlugin
 from app.interface_sfx import CommandlineColors
 from app.attack_log import AttackLog
@@ -29,15 +34,19 @@ sections = [{"name": "Vulnerabilities",
 class PluginManager():
     """ Manage plugins """
 
-    def __init__(self, attack_logger: AttackLog):
+    def __init__(self, attack_logger: AttackLog, basedir: Optional[str] = None):
         """
 
         @param attack_logger: The attack logger to use
+        @param basedir: optional base directory for plugins. A glob
         """
-        self.base = "plugins/**/*.py"
+        if basedir is None:
+            self.base = "plugins/**/*.py"
+        else:
+            self.base = basedir
         self.attack_logger = attack_logger
 
-    def get_plugins(self, subclass, name_filter=None) -> list[BasePlugin]:
+    def get_plugins(self, subclass, name_filter: Optional[list[str]] = None) -> list[BasePlugin]:
         """ Returns a list plugins matching specified criteria
 
 
@@ -110,6 +119,29 @@ class PluginManager():
                 print(f"Description: {plugin.get_description()}")
                 print("\t")
 
+    def is_ttp_wrong(self, ttp):
+        """ Checks if a ttp is a valid ttp """
+        if ttp is None:
+            return True
+
+        # Short: T1234
+        if re.match("^T\\d{4}$", ttp):
+            return False
+
+        # Detailed: T1234.123
+        if re.match("^T\\d{4}\\.\\d{3}$", ttp):
+            return False
+
+        # Unkown: ???
+        if ttp == "???":
+            return False
+
+        # Multiple TTPs in this attack
+        if ttp == "multiple":
+            return False
+
+        return True
+
     def check(self, plugin):
         """ Checks a plugin for valid implementation
 
@@ -117,6 +149,16 @@ class PluginManager():
         """
 
         issues = []
+
+        # Base functionality for all plugin types
+
+        if plugin.name is None:
+            report = f"No name for plugin: in {plugin.plugin_path}"
+            issues.append(report)
+
+        if plugin.description is None:
+            report = f"No description in plugin: {plugin.get_name()} in {plugin.plugin_path}"
+            issues.append(report)
 
         # Sensors
         if issubclass(type(plugin), SensorPlugin):
@@ -131,6 +173,9 @@ class PluginManager():
             if plugin.run.__func__ is AttackPlugin.run:
                 report = f"Method 'run' not implemented in {plugin.get_name()} in {plugin.plugin_path}"
                 issues.append(report)
+            if self.is_ttp_wrong(plugin.ttp):
+                report = f"Attack plugins need a valid ttp number (either T1234, T1234.222 or ???)  {plugin.get_name()} uses {plugin.ttp} in {plugin.plugin_path}"
+                issues.append(report)
 
         # Machinery
         if issubclass(type(plugin), MachineryPlugin):
@@ -138,7 +183,7 @@ class PluginManager():
             if plugin.get_state.__func__ is MachineryPlugin.get_state:
                 report = f"Method 'get_state' not implemented in {plugin.get_name()} in {plugin.plugin_path}"
                 issues.append(report)
-            if plugin.get_ip.__func__ is MachineryPlugin.get_ip:
+            if (plugin.get_ip.__func__ is MachineryPlugin.get_ip) or (plugin.get_ip.__func__ is SSHFeatures.get_ip):
                 report = f"Method 'get_ip' not implemented in {plugin.get_name()} in {plugin.plugin_path}"
                 issues.append(report)
             if plugin.up.__func__ is MachineryPlugin.up:
@@ -162,6 +207,9 @@ class PluginManager():
                 issues.append(report)
             if plugin.stop.__func__ is VulnerabilityPlugin.stop:
                 report = f"Method 'stop' not implemented in {plugin.get_name()} in {plugin.plugin_path}"
+                issues.append(report)
+            if self.is_ttp_wrong(plugin.ttp):
+                report = f"Vulnerability plugins need a valid ttp number (either T1234, T1234.222 or ???)  {plugin.get_name()} uses {plugin.ttp} in {plugin.plugin_path}"
                 issues.append(report)
 
         return issues
@@ -217,8 +265,7 @@ class PluginManager():
             if section["name"] == subclass_name:
                 subclass = section["subclass"]
         if subclass is None:
-            print("Use proper subclass. Available subclasses are: ")
-            "\n- ".join(list(sections["name"]))
+            print("Use proper subclass")
 
         plugins = self.get_plugins(subclass, [name])
         for plugin in plugins:

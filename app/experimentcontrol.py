@@ -8,6 +8,7 @@ import time
 import zipfile
 import shutil
 from datetime import datetime
+from typing import Optional
 
 from app.attack_log import AttackLog
 from app.config import ExperimentConfig
@@ -32,12 +33,14 @@ class Experiment():
         @param verbosity: verbosity level between 0 and 3
         @param caldera_attacks: an optional argument to override caldera attacks in the config file and run just this one caldera attack. A list of caldera ID
         """
-        self.attacker_1 = None
+        self.attacker_1: Optional[Machine] = None
 
         self.experiment_config = ExperimentConfig(configfile)
         self.attack_logger = AttackLog(verbosity)
         self.plugin_manager = PluginManager(self.attack_logger)
         self.__start_attacker()
+        if self.attacker_1 is None:
+            raise ServerError
         caldera_url = "http://" + self.attacker_1.get_ip() + ":8888"
         self.caldera_control = CalderaControl(caldera_url, attack_logger=self.attack_logger, config=self.experiment_config)
         # self.caldera_control = CalderaControl("http://" + self.attacker_1.get_ip() + ":8888", self.attack_logger,
@@ -279,18 +282,18 @@ class Experiment():
         defaultname = os.path.join(self.lootdir, "..", "most_recent.zip")
         shutil.copyfile(filename, defaultname)
 
-    @staticmethod
-    def __get_results_files(root):
-        """ Yields a list of potential result files
+    # @staticmethod
+    # def __get_results_files(root):
+    #    """ Yields a list of potential result files
 
-        @param root: Root dir of the machine to collect data from
-        """
-        # TODO: Properly implement. Get proper root parameter
+    #    @param root: Root dir of the machine to collect data from
+    #    """
+    #    # TODO: Properly implement. Get proper root parameter
 
-        total = [os.path.join(root, "logstash", "filebeat.json")]
-        for a_file in total:
-            if os.path.exists(a_file):
-                yield a_file
+    #    total = [os.path.join(root, "logstash", "filebeat.json")]
+    #    for a_file in total:
+    #        if os.path.exists(a_file):
+    #            yield a_file
 
     # def __clean_result_files(self, root):
     #     """ Deletes result files

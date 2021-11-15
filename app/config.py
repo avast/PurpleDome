@@ -4,6 +4,7 @@
 
 from typing import Optional
 import yaml
+from app.config_verifier import MainConfig
 
 from app.exceptions import ConfigurationError
 
@@ -18,7 +19,7 @@ from app.exceptions import ConfigurationError
 class MachineConfig():
     """ Sub config for a specific machine"""
 
-    def __init__(self, machinedata: dict):
+    def __init__(self, machinedata):
         """ Init machine control config
 
         @param machinedata: dict containing machine data
@@ -27,53 +28,46 @@ class MachineConfig():
             raise ConfigurationError
 
         self.raw_config = machinedata
-        self.verify()
-
-    def verify(self):
-        """ Verify essential data is present """
-        try:
-            self.vmname()
-            operating_system = self.os()
-            vmcontroller = self.vmcontroller()
-        except KeyError as exception:
-            raise ConfigurationError from exception
-
-        if operating_system not in ["linux", "windows"]:
-            raise ConfigurationError
-
-        # TODO: Verify with plugins
-        if vmcontroller not in ["vagrant", "running_vm"]:
-            raise ConfigurationError
 
     def vmname(self) -> str:
         """ Returns the vmname """
 
-        return self.raw_config["vm_name"]
+        return self.raw_config.vm_name
 
     def get_nicknames(self) -> list[str]:
         """ Gets the nicknames """
 
-        if "nicknames" in self.raw_config:
-            return self.raw_config["nicknames"] or []
+        if self.raw_config.has_key("nicknames"):
+            return self.raw_config.nicknames or []
 
         return []
 
     def vmcontroller(self) -> str:
         """ Returns the vm controller. lowercase """
 
-        return self.raw_config["vm_controller"]["type"].lower()
+        if not self.raw_config.has_key("vm_controller"):
+            raise ConfigurationError
+
+        return self.raw_config.vm_controller.vm_type.lower()
 
     def vm_ip(self) -> str:
         """ Return the configured ip/domain name (whatever is needed to reach the machine). Returns None if missing """
+
+        if not self.raw_config.has_key("vm_controller"):
+            return self.vmname()
+
+        if not self.raw_config.vm_controller.has_key("ip"):
+            return self.vmname()
+
         try:
-            return self.raw_config["vm_controller"]["ip"]
+            return self.raw_config.vm_controller.ip
         except KeyError:
             return self.vmname()
 
     def os(self) -> str:  # pylint: disable=invalid-name
         """ returns the os. lowercase """
 
-        return self.raw_config["os"].lower()
+        return self.raw_config.os.lower()
 
     def use_existing_machine(self) -> bool:
         """ Returns if we want to use the existing machine """
@@ -83,7 +77,10 @@ class MachineConfig():
     def machinepath(self) -> str:
         """ Returns the machine path. If not configured it will fall back to the vm_name """
 
-        return self.raw_config.get("machinepath", self.vmname())
+        if self.raw_config.has_key("machinepath"):
+            return self.raw_config.machinepath
+
+        return self.vmname()
 
     def get_playground(self) -> Optional[str]:
         """ Returns the machine specific playground where all the implants and tools will be installed """
@@ -123,20 +120,20 @@ class MachineConfig():
     def vagrantfilepath(self) -> str:
         """ Vagrant specific config: The vagrant file path """
 
-        if "vagrantfilepath" not in self.raw_config["vm_controller"]:
+        if not self.raw_config.vm_controller.has_key("vagrantfilepath"):
             raise ConfigurationError("Vagrantfilepath missing")
-        return self.raw_config["vm_controller"]["vagrantfilepath"]
+        return self.raw_config.vm_controller.vagrantfilepath
 
     def sensors(self) -> list[str]:
         """ Return a list of sensors configured for this machine """
-        if "sensors" in self.raw_config:
-            return self.raw_config["sensors"] or []
+        if self.raw_config.has_key("sensors"):
+            return self.raw_config.sensors or []
         return []
 
     def vulnerabilities(self) -> list[str]:
         """ Return a list of vulnerabilities configured for this machine """
-        if "vulnerabilities" in self.raw_config:
-            return self.raw_config["vulnerabilities"] or []
+        if self.raw_config.has_key("vulnerabilities"):
+            return self.raw_config.vulnerabilities or []
         return []
 
     def is_active(self) -> bool:
@@ -154,7 +151,7 @@ class ExperimentConfig():
         @param configfile: The configuration file to process
         """
 
-        self.raw_config: Optional[dict] = None
+        self.raw_config: MainConfig = None
         self._targets: list[MachineConfig] = []
         self._attackers: list[MachineConfig] = []
         self.load(configfile)
@@ -169,22 +166,25 @@ class ExperimentConfig():
         """
 
         with open(configfile) as fh:
-            self.raw_config = yaml.safe_load(fh)
+            data = yaml.safe_load(fh)
 
-        if self.raw_config is None:
+        if data is None:
             raise ConfigurationError("Config file is empty")
 
+        self.raw_config = MainConfig(**data)
+
         # Process targets
-        if self.raw_config["targets"] is None:
+        if self.raw_config.targets is None:
             raise ConfigurationError("Config file does not specify targets")
-        for target in self.raw_config["targets"]:
-            self._targets.append(MachineConfig(self.raw_config["targets"][target]))
+
+        for target in self.raw_config.targets:
+            self._targets.append(MachineConfig(target))
 
         # Process attackers
-        if self.raw_config["attackers"] is None:
+        if self.raw_config.attackers is None:
             raise ConfigurationError("Config file does not specify attackers")
-        for attacker in self.raw_config["attackers"]:
-            self._attackers.append(MachineConfig(self.raw_config["attackers"][attacker]))
+        for attacker in self.raw_config.attackers:
+            self._attackers.append(MachineConfig(attacker))
 
     def targets(self) -> list[MachineConfig]:
         """ Return config for targets as MachineConfig objects """
@@ -210,7 +210,7 @@ class ExperimentConfig():
         if self.raw_config is None:
             raise ConfigurationError("Config file is empty")
 
-        return self.raw_config["caldera"]["apikey"]
+        return self.raw_config.caldera.apikey
 
     def loot_dir(self) -> str:
         """ Returns the loot dir """
@@ -218,10 +218,8 @@ class ExperimentConfig():
         if self.raw_config is None:
             raise ConfigurationError("Config file is empty")
 
-        if "results" not in self.raw_config or self.raw_config["results"] is None:
-            raise ConfigurationError("results missing in configuration")
         try:
-            res = self.raw_config["results"]["loot_dir"]
+            res = self.raw_config.results.loot_dir
         except KeyError as error:
             raise ConfigurationError("results/loot_dir not properly set in configuration") from error
         return res
@@ -234,10 +232,9 @@ class ExperimentConfig():
 
         if self.raw_config is None:
             raise ConfigurationError("Config file is empty")
-        if self.raw_config["attack_conf"] is None:
-            raise ConfigurationError("Config file missing attacks")
+
         try:
-            res = self.raw_config["attack_conf"][attack]
+            res = self.raw_config.attack_conf[attack]
         except KeyError:
             res = {}
         if res is None:
@@ -252,10 +249,9 @@ class ExperimentConfig():
             raise ConfigurationError("Config file is empty")
 
         try:
-            res = self.raw_config["caldera_conf"]["obfuscator"]
+            return self.raw_config.attacks.caldera_obfuscator
         except KeyError:
             return "plain-text"
-        return res
 
     def get_caldera_jitter(self) -> str:
         """ Get the caldera configuration. In this case: Jitter. Will default to 4/8 """
@@ -264,10 +260,9 @@ class ExperimentConfig():
             raise ConfigurationError("Config file is empty")
 
         try:
-            res = self.raw_config["caldera_conf"]["jitter"]
+            return self.raw_config.attacks.caldera_jitter
         except KeyError:
             return "4/8"
-        return res
 
     def get_plugin_based_attacks(self, for_os: str) -> list[str]:
         """ Get the configured kali attacks to run for a specific OS
@@ -278,11 +273,11 @@ class ExperimentConfig():
         if self.raw_config is None:
             raise ConfigurationError("Config file is empty")
 
-        if "plugin_based_attacks" not in self.raw_config:
+        if not self.raw_config.has_key("plugin_based_attacks"):
             return []
-        if for_os not in self.raw_config["plugin_based_attacks"]:
+        if not self.raw_config.plugin_based_attacks.has_key(for_os):
             return []
-        res = self.raw_config["plugin_based_attacks"][for_os]
+        res = self.raw_config.plugin_based_attacks.get(for_os)
         if res is None:
             return []
         return res
@@ -296,11 +291,11 @@ class ExperimentConfig():
         if self.raw_config is None:
             raise ConfigurationError("Config file is empty")
 
-        if "caldera_attacks" not in self.raw_config:
+        if not self.raw_config.has_key("caldera_attacks"):
             return []
-        if for_os not in self.raw_config["caldera_attacks"]:
+        if not self.raw_config.caldera_attacks.has_key(for_os):
             return []
-        res = self.raw_config["caldera_attacks"][for_os]
+        res = self.raw_config.caldera_attacks.get(for_os)
         if res is None:
             return []
         return res
@@ -312,7 +307,7 @@ class ExperimentConfig():
             raise ConfigurationError("Config file is empty")
 
         try:
-            return int(self.raw_config["attacks"]["nap_time"])
+            return int(self.raw_config.attacks.nap_time)
         except KeyError:
             return 0
 
@@ -325,11 +320,9 @@ class ExperimentConfig():
         if self.raw_config is None:
             raise ConfigurationError("Config file is empty")
 
-        if "sensors" not in self.raw_config:
+        if self.raw_config.sensor_conf is None:  # Better for unit tests that way.
             return {}
-        if self.raw_config["sensors"] is None:  # Better for unit tests that way.
-            return {}
-        if name in self.raw_config["sensors"]:
-            return self.raw_config["sensors"][name]
+        if name in self.raw_config.sensor_conf:
+            return self.raw_config.sensor_conf[name]
 
         return {}
