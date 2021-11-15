@@ -4,9 +4,14 @@
 
 .PHONY: test init deinit shipit pylint
 
+# This is for CI on Github
+check: tox.ini
+	tox -e py
+
+# Manual tests
 test: tox.ini
 	tox;
-	# pylint --rcfile=pylint.rc  *.py app/*.py plugins/base/*.py
+	pylint --rcfile=pylint.rc  *.py app/*.py plugins/base/*.py
 	coverage html;
 	coverage report;
 
