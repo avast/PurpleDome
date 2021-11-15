@@ -7,6 +7,9 @@
 
 echo "Bootstrapping attacker1"
 
+# Switching potential for the package configuration question "Restart services during package upgrades without asking?"
+echo '* libraries/restart-without-asking boolean true' | sudo debconf-set-selections
+
 # Update system
 apt update
 cd ~
