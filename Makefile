@@ -6,7 +6,7 @@
 
 test: tox.ini
 	tox;
-	pylint --rcfile=pylint.rc  *.py app/*.py plugins/base/*.py
+	# pylint --rcfile=pylint.rc  *.py app/*.py plugins/base/*.py
 	coverage html;
 	coverage report;
 
