@@ -208,7 +208,7 @@ class TestMachineControl(unittest.TestCase):
                             "vm_name": "target3",
                             "group": "testgroup",
                             "paw": "testpaw",
-                            "machinepath": "target2w"}), self.attack_logger)
+                            "machinepath": "target3"}), self.attack_logger)
         m.set_caldera_server("www.test.test")
         cmd = m.create_start_caldera_client_cmd()
         self.maxDiff = None
