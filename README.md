@@ -1,4 +1,4 @@
-![main branch test](https://github.com/avast/PurpleDome/github/workflows/main.yml/badge.svg?branch=main)
+![main branch test](https://github.com/avast/PurpleDome/.github/workflows/makefile.yml/badge.svg?branch=main)
 
 # PurpleDome creates simulated systems which hack each other 
 
