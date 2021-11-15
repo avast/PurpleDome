@@ -1,3 +1,5 @@
+![main branch test](https://github.com/avast/PurpleDome/github/workflows/main.yml/badge.svg?branch=main)
+
 # PurpleDome creates simulated systems which hack each other 
 
 It creates several virtual machines to simulate a target network. A Kali attacker will be spawned and use configured attacks to blast at the targets. Those attacks can be Kali command line tools, Caldera abilities or Metasploit tools.
@@ -66,3 +68,9 @@ Generate it switching to the directory doc and calling
 
 *make all*
 
+## Development
+
+Development happens in *feature branches* branched of from *develop* branch. And all PRs go back there.
+The branch *release* is a temporary branch from *develop* and will be used for bug fixing before a PR to *main* creates a new release. Commits in main will be marked with tags and the *changelog.txt* file in human readable form describe the new features.
+
+https://nvie.com/posts/a-successful-git-branching-model/
