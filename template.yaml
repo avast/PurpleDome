@@ -104,7 +104,7 @@ targets:
     ###
     # List of sensors to run on this machine. They are implemented as plugins and have a unique name
     sensors:
-      # - linux_idp
+      # - osquery
 
   - name: target2
     ###
@@ -179,7 +179,7 @@ targets:
     ###
     # Sensors to run on this machine
     sensors:
-      - windows_idp
+      - osquery
 
     ###
     # Vulnerabilities to pre-install. They are implemented as plugins
@@ -245,7 +245,7 @@ targets:
 
     # Sensors to run on this machine
     sensors:
-      - linux_idp
+      - osquery
 
     ###
     # Vulnerabilities to pre-install. They are implemented as plugins
@@ -319,15 +319,9 @@ attack_conf:
 # General sensor config config
 sensor_conf:
   ###
-  # Windows IDP plugin configuration
-  windows_idp:
-    ###
-    # Name of the dll to use. Must match AV version
-    dll_name: aswidptestdll.dll
-
-    ###
-    # Folder where the IDP tool is located
-    idp_tool_folder: C:\\capture
+  # Osqueryplugin configuration
+  osquery:
+    foo: bar
 
 
 ###

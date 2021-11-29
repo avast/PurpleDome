@@ -373,8 +373,8 @@ class TestMachineConfig(unittest.TestCase):
                                    },
                                    "vm_name": "target1",
                                    "use_existing_machine": False,
-                                   "sensors": ["linux_idp", "test_sensor"]}))
-        self.assertEqual(mc.sensors(), ["linux_idp", "test_sensor"])
+                                   "sensors": ["linux_foo", "test_sensor"]}))
+        self.assertEqual(mc.sensors(), ["linux_foo", "test_sensor"])
 
     def test_vulnerabilities_empty(self):
         """ Testing empty vulnerabilities config """
@@ -414,7 +414,7 @@ class TestMachineConfig(unittest.TestCase):
                                    },
                                    "vm_name": "target1",
                                    "use_existing_machine": False,
-                                   "sensors": ["linux_idp", "test_sensor"]}))
+                                   "sensors": ["linux_foo", "test_sensor"]}))
         self.assertEqual(mc.is_active(), True)
 
     def test_active_is_false(self):
@@ -429,7 +429,7 @@ class TestMachineConfig(unittest.TestCase):
                                    "vm_name": "target1",
                                    "use_existing_machine": False,
                                    "active": False,
-                                   "sensors": ["linux_idp", "test_sensor"]}))
+                                   "sensors": ["linux_foo", "test_sensor"]}))
         self.assertEqual(mc.is_active(), False)
 
     def test_active_is_true(self):
@@ -444,7 +444,7 @@ class TestMachineConfig(unittest.TestCase):
                                    "vm_name": "target1",
                                    "use_existing_machine": False,
                                    "active": True,
-                                   "sensors": ["linux_idp", "test_sensor"]}))
+                                   "sensors": ["linux_foo", "test_sensor"]}))
         self.assertEqual(mc.is_active(), True)
 
 
