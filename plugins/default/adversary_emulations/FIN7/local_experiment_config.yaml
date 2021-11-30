@@ -166,7 +166,7 @@ attack_conf:
 # General sensor config config
 sensor_conf:
   ###
-  # Windows IDP plugin configuration
+  # Windows sensor plugin configuration
   osquery:
     foo: bar
 
