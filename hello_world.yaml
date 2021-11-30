@@ -81,7 +81,6 @@ targets:
 
     # Sensors to run on this machine
     sensors:
-      # - linux_idp   # it had issues. Fix them
       - linux_filebeat
 
     vulnerabilities:
