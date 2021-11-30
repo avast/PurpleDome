@@ -109,3 +109,31 @@ Development happens in *feature branches* branched of from *develop* branch. And
 The branch *release* is a temporary branch from *develop* and will be used for bug fixing before a PR to *main* creates a new release. Commits in main will be marked with tags and the *changelog.txt* file in human readable form describe the new features.
 
 https://nvie.com/posts/a-successful-git-branching-model/
+
+Short:
+
+* As a user, the *main* branch is relevant for you
+* Start a feature branch from *develop*
+* When doing a hotfix, branch from *main* 
+
+### GIT
+
+Branching your own feature branch
+
+$ git checkout development
+$ git pull --rebase=preserve
+$ git checkout -b my_feature
+
+Do some coding, commit.
+
+Rebase before pushing
+
+$ git checkout development
+$ git pull --rebase=preserve
+$ git checkout my_feature
+$ git rebase development
+
+Code review will be happening on github. If everything is nice, you should squash the several commits you made into one (so one commit = one feature). This will make code management and debugging a lot simpler when you commit is added to develop and main branches
+
+.. TODO: git rebase --interactive
+git push --force

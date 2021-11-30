@@ -38,19 +38,6 @@ class SensorOkPlugin(SensorPlugin):
     def prime(self):
         """ Hard-core install. Requires a reboot """
 
-        # For reference: This is the core config we will need. In addition there are two reg files to apply to the registry
-        #        sc control aswbidsagent 255
-        #        timeout /t 5
-        #        'copy /y "cd %userprofile% & aswidptestdll.dll" "c:\Program Files\Avast Software\Avast\"'
-        #        reg.exe add "HKLM\SOFTWARE\Avast Software\Avast\properties\IDP\Setting" /v debug_channel.enabled /t REG_DWORD /d 1 /f
-        #        timeout /t 2
-        #        sc start aswbidsagent
-
-        # Important: AV must be 21.2
-        # dll_name = self.conf["dll_name"]
-
-        # idp_tool_folder = self.conf["idp_tool_folder"]
-
         pg = self.get_playground()
 
         self.vprint("Installing Linux filebeat sensor", 3)

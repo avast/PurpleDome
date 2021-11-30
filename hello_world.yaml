@@ -1,3 +1,6 @@
+# A basic example config file running just one Caldera and one kali attack vs an Ubuntu target.
+#
+
 
 ###
 # Caldera configuration
@@ -46,9 +49,8 @@ attackers:
 ###
 # List of targets
 targets:
-
-  - name: target2
-    #root: systems/target1
+  # Ubuntu 20.10 (Groovy)
+  - name: target3
     vm_controller:
       vm_type: vagrant
       vagrantfilepath: systems
@@ -57,50 +59,38 @@ targets:
     # simple switch if targets is used in attack simulation. Default is true. If set to false the machine will not be started
     active: yes
 
-    vm_name: target2
+    vm_name: target3
 
-    # TODO: itadmin must be moved to another target
     nicknames:
-      - hotelmanager
-      - itadmin
-      - accounting
 
-    os: windows
-    paw: target2w
-    group: red_windows
+    os: linux
+    ###
+    # Targets need a unique PAW name for caldera
+    paw: target3
+    ###
+    # Targets need to be in a group for caldera
+    group: red_linux
 
-    machinepath: target2w
-
+    machinepath: target3
     # Do not destroy/create the machine: Set this to "yes".
-    use_existing_machine: yes
-    ###
-    # Optional setting to activate force when halting the machine. Windows guests sometime get stuck
-    halt_needs_force: yes
-
-    ###
-    # If SSH without vagrant support is used (Windows !) we need a user name (uppercase)
-    ssh_user: ATTACKX
-
-    ###
-    # If SSH without vagrant support is used (Windows !) we maybe need a password
-    ssh_password: AttackX
-
-    ###
-    # For non-vagrant ssh connections a ssh keyfile stored in the machinepath is required.
-    ssh_keyfile: systems/target2w/id_rsa.3
+    use_existing_machine: no
 
     ###
     # The folder all the implants will be installed into
-    # Windows can only use default playground at the moment !
-    # playground: C:\\Users\\AttackX
+    playground: /home/vagrant
 
     # Sensors to run on this machine
     sensors:
-      - osquery
+      # - linux_idp   # it had issues. Fix them
+      - linux_filebeat
 
     vulnerabilities:
+      - sshd_config_vul
       - weak_user_passwords
-      - rdp_config_vul
+
+###
+# General sensor config config
+sensor_conf:
 
 ###
 # General attack config
@@ -119,6 +109,24 @@ attacks:
   caldera_jitter: 4/8
 
 
+###
+# A list of caldera attacks to run against the targets.
+caldera_attacks:
+  ###
+  # Linux specific attacks. A list of caldera ability IDs
+  linux:
+    # Name: Current User
+    # Technique name: System Owner/User Discovery
+    # Tactic: discovery
+    # Description: Obtain user from current session
+    # ID: T1033
+    - "bd527b63-9f9e-46e0-9816-b8434d2b8989"
+
+
+  ###
+  # Windows specific attacks. A list of caldera ability IDs
+  windows:
+
 
 ###
 # Plugin based attacks. Will result in plugins being called
@@ -126,19 +134,10 @@ plugin_based_attacks:
   ###
   # Linux specific attacks, a list
   linux:
+    - hydra
+
   ###
   # Windows specific attacks, a list
-  windows:
-    - fin7_1
-
-###
-# A list of caldera attacks to run against the targets.
-caldera_attacks:
-  ###
-  # Linux specific attacks. A list of caldera ability IDs
-  linux:
-  ###
-  # Windows specific attacks. A list of caldera ability IDs
   windows:
 
 ###
@@ -151,8 +150,7 @@ attack_conf:
     # A list of protocols to brute force against. Supported: "ssh"
     protocols:
       - ssh
-      - rdp
-      #- ftps
+
     ###
     # A file containing potential user names
     userfile: users.txt
@@ -161,14 +159,6 @@ attack_conf:
     pwdfile: passwords.txt
   nmap:
 
-
-###
-# General sensor config config
-sensor_conf:
-  ###
-  # Windows IDP plugin configuration
-  osquery:
-    foo: bar
 
 ###
 # Settings for the results being harvested

@@ -69,7 +69,7 @@ TODO: Add Mac Server
 Data aggregator
 ---------------
 
-We currently can use IDP and logstash
+We currently can use logstash
 
 There are several options for data aggregators:
 
