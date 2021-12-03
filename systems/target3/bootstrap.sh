@@ -33,28 +33,30 @@ wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | apt-key add -
 echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" | tee /etc/apt/sources.list.d/elastic-7.x.list
 apt update
 
+
+################# This must move into a plugin !!! ###############
 # Install Logstash
-apt -y install default-jre
-apt -y install logstash
+# apt -y install default-jre
+# apt -y install logstash
 
 # Install filebeat
-apt -y install filebeat
+# apt -y install filebeat
 # Configure logstash as output
-cp /vagrant/target1/config/filebeat.yml /etc/filebeat/filebeat.yml
-cp /vagrant/target1/config/caldera_agent.service /etc/systemd/system/
+# cp /vagrant/target1/config/filebeat.yml /etc/filebeat/filebeat.yml
+# cp /vagrant/target1/config/caldera_agent.service /etc/systemd/system/
 
 # Config logstash
-cp /vagrant/target1/logstash_conf/*.conf /etc/logstash/conf.d
-rm /vagrant/target1/logstash/filebeat.json
-touch /vagrant/target1/logstash/filebeat.json
-chmod o+w /vagrant/target1/logstash/filebeat.json
+# cp /vagrant/target1/logstash_conf/*.conf /etc/logstash/conf.d
+# rm /vagrant/target1/logstash/filebeat.json
+# touch /vagrant/target1/logstash/filebeat.json
+# chmod o+w /vagrant/target1/logstash/filebeat.json
 
 # Start Logstash and filebeat
-filebeat modules enable system,iptables
-filebeat setup --pipelines --modules iptables,system,
-systemctl start logstash.service
-systemctl enable filebeat
-systemctl enable logstash.service
+# filebeat modules enable system,iptables
+# filebeat setup --pipelines --modules iptables,system,
+# systemctl start logstash.service
+# systemctl enable filebeat
+# systemctl enable logstash.service
 
 # Run logstash manually for debugging:
 # https://www.elastic.co/guide/en/logstash/current/running-logstash-command-line.html
