@@ -11,7 +11,12 @@ The system is at the same time reproducible and quite flexible (target system wi
 
 ## Installation
 
-On a current Ubuntu system, just execute the *init.sh* to install the required packages and set up the virtual env.
+On a current Ubuntu 21.10 system, just execute the *init.sh* to install the required packages and set up the virtual env. 
+
+You need python 3.9 (which is part of this Ubuntu)
+
+And it will not run properly in a VM as it spawns its own VMs ... unless VT-x is available.
+We confirmed it is working in VirtualBox. Please reserve enough disk space. The simple hello_world will already download a kali and an ubuntu image. They must be stored on your VM. 
 
 ```
 ./init.sh
@@ -27,7 +32,7 @@ source venv/bin/activate
 
 ## My first experiment
 
-Run
+Run and be very patient. The first time it runs it will build target and attacker VMs which is time consuming and will need some bandwidth. 
 
 ```
 python3 ./experiment_control.py -vvv  run --configfile hello_world.yaml
@@ -55,6 +60,41 @@ evince tools/human_readable_documentation/build/latex/purpledomesimulation.pdf
 ```
 
 (which is included in the zip as well)
+
+## Fixing issues
+
+### Machine creation
+
+One of the big steps is creation of attacker and target machines. If this fails, you can do the step manually and check why it fails.
+
+```
+cd systems
+vagrant up attacker
+vagrant up target3
+vagrant ssh attacker
+# do someting
+exit
+vagrant ssh target
+# do something
+exit
+vagrant destroy target3
+vagrant destroy attacker
+```
+
+### Caldera issues
+
+The caldera server is running on the attacker. It will be contacted by the implants installed on the client and remote controlled by PurpleDome using a REST Api. This can be tested using curl:
+
+```
+curl -H 'KEY: ADMIN123' http://attacker:8888/api/rest -H 'Content-Type: application/json' -d '{"index":"adversaries"}'
+```
+
+If there are errors, connect to the attacker using ssh and monitor the server while contacting it. Maybe kill it first.
+
+```
+cd caldera
+python3 server.py --insecure
+```
 
 ## Running the basic commands
 
