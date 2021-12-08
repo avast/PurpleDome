@@ -73,6 +73,7 @@ class Experiment():
             if self.machine_needs_caldera(target_1, caldera_attacks):
                 target_1.install_caldera_service()
             target_1.up()
+            target_1.reboot()  # Kernel changes on system creation require a reboot
             needs_reboot = target_1.prime_vulnerabilities()
             needs_reboot |= target_1.prime_sensors()
             if needs_reboot:
@@ -331,7 +332,7 @@ class Experiment():
             except subprocess.CalledProcessError:
                 # Machine does not exist
                 pass
-            self.attacker_1.create(reboot=False)
+            self.attacker_1.create(reboot=True)
             self.attacker_1.up()
             self.attacker_1.install_caldera_server(cleanup=False)
         else:

@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
 # A plugin to experiment with Linux logstash filebeat sensors
+# https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-installation-configuration.html
 
 from plugins.base.sensor import SensorPlugin
 import os
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+import time
 
 
 class LinuxFilebeatPlugin(SensorPlugin):
@@ -42,12 +44,17 @@ class LinuxFilebeatPlugin(SensorPlugin):
 
         self.vprint("Installing Linux filebeat sensor", 3)
 
-        self.run_cmd("sudo wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -")
-        self.run_cmd('sudo echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-7.x.list')
-        self.run_cmd("sudo apt update")
-        self.run_cmd("sudo apt -y install default-jre")
-        self.run_cmd("sudo apt -y install logstash")
-        self.run_cmd("sudo apt -y install filebeat")
+        # Filebeat
+        fb_file = "filebeat-7.15.2-amd64.deb"
+        self.run_cmd(f"curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/{fb_file}")
+        self.run_cmd(f"sudo dpkg -i {fb_file}")
+
+        # Logstash
+
+        self.run_cmd("wget -qO- https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -")
+        self.run_cmd("sudo apt-get install apt-transport-https")
+        self.run_cmd("echo 'deb https://artifacts.elastic.co/packages/7.x/apt stable main' | sudo tee -a /etc/apt/sources.list.d/elastic-7.x.list")
+        self.run_cmd("sudo apt update && sudo apt install logstash")
 
         # Copy config
         self.run_cmd(f"sudo cp {pg}/filebeat.yml /etc/filebeat/filebeat.yml")
@@ -67,12 +74,12 @@ class LinuxFilebeatPlugin(SensorPlugin):
 
     def start(self):
 
-        self.run_cmd("sudo filebeat modules enable system,iptables")
+        self.run_cmd("sudo filebeat modules enable system iptables")
         self.run_cmd("sudo filebeat setup --pipelines --modules iptables,system,")
-        self.run_cmd("sudo systemctl enable filebeat")
-        self.run_cmd("sudo systemctl start filebeat")
-        self.run_cmd("sudo systemctl enable logstash.service")
-        self.run_cmd("sudo systemctl start logstash.service")
+        # self.run_cmd("sudo systemctl start logstash.service")
+        self.run_cmd("sudo nohup /usr/share/logstash/bin/logstash  -f /etc/logstash/conf.d/filebeat.conf &", disown=True)
+        time.sleep(20)
+        self.run_cmd("sudo service filebeat start")
 
         return None
 
