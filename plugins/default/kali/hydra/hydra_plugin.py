@@ -56,5 +56,6 @@ class HydraPlugin(AttackPlugin):
                                                     attack_name=self.name,
                                                     ttp=self.ttp,
                                                     logid=logid)
+                cmd = f"cd {playground};"
 
         return total_res
