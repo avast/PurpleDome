@@ -62,8 +62,10 @@ class LinuxFilebeatPlugin(SensorPlugin):
 
         # Cleanup
         self.run_cmd(f"rm {pg}/filebeat.json")
-        self.run_cmd(f"touch {pg}/filebeat.json")
-        self.run_cmd(f"chmod o+w {pg}/filebeat.json")
+        # self.run_cmd(f"touch {pg}/filebeat.json")
+        # self.run_cmd(f"chmod o+w {pg}/filebeat.json")
+        self.run_cmd("touch /tmp/filebeat_collection.json")
+        self.run_cmd("sudo chown logstash:logstash /tmp/filebeat_collection.json")
 
         return False
 
@@ -75,11 +77,18 @@ class LinuxFilebeatPlugin(SensorPlugin):
     def start(self):
 
         self.run_cmd("sudo filebeat modules enable system iptables")
-        self.run_cmd("sudo filebeat setup --pipelines --modules iptables,system,")
+        self.run_cmd("sudo filebeat setup --pipelines --modules iptables,system,")    # check with sudo filebeat modules list
         # self.run_cmd("sudo systemctl start logstash.service")
-        self.run_cmd("sudo nohup /usr/share/logstash/bin/logstash  -f /etc/logstash/conf.d/filebeat.conf &", disown=True)
+        # self.run_cmd("sudo nohup /usr/share/logstash/bin/logstash  -f /etc/logstash/conf.d/filebeat.conf &", disown=True)
+        self.run_cmd("sudo chown logstash:logstash filebeat.json")  # check with: systemctl status logstash.service
+        self.run_cmd("sudo systemctl start logstash")   # check with: systemctl status logstash.service
+        self.run_cmd("sudo systemctl enable logstash")  # check with: systemctl status logstash.service
         time.sleep(20)
-        self.run_cmd("sudo service filebeat start")
+        self.run_cmd("sudo systemctl start filebeat")  # check with: systemctl status filebeat.service
+        self.run_cmd("sudo systemctl enable filebeat")  # check with: systemctl status filebeat.service
+
+        # Check the logs: sudo journalctl -u filebeat.service
+        # Check the logs: sudo journalctl -u logstash.service
 
         return None
 
@@ -91,6 +100,8 @@ class LinuxFilebeatPlugin(SensorPlugin):
         """ Collect sensor data """
 
         pg = self.get_playground()
+        breakpoint()
         dst = os.path.join(path, "filebeat.json")
-        self.get_from_machine(f"{pg}/filebeat.json", dst)  # nosec
+        # self.get_from_machine(f"{pg}/filebeat.json", dst)  # nosec
+        self.get_from_machine("/tmp/filebeat_collection.json", dst)  # nosec
         return [dst]
