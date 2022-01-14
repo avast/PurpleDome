@@ -99,8 +99,6 @@ class LinuxFilebeatPlugin(SensorPlugin):
     def collect(self, path):
         """ Collect sensor data """
 
-        pg = self.get_playground()
-        breakpoint()
         dst = os.path.join(path, "filebeat.json")
         # self.get_from_machine(f"{pg}/filebeat.json", dst)  # nosec
         self.get_from_machine("/tmp/filebeat_collection.json", dst)  # nosec
