@@ -4,7 +4,10 @@
 
 import argparse
 
-from app.calderacontrol import CalderaControl
+#from app.calderacontrol import CalderaControl
+from app.calderacontrol_4 import CalderaControl
+from pprint import pprint
+
 from app.attack_log import AttackLog
 
 
@@ -15,13 +18,17 @@ from app.attack_log import AttackLog
 # TODO: Get results of a specific attack
 
 # Arpgparse handling
-def list_agents(calcontrol, arguments):  # pylint: disable=unused-argument
-    """ Call list agents in caldera control
+def agents(calcontrol, arguments):  # pylint: disable=unused-argument
+    """ Agents in caldera control
 
     @param calcontrol: Connection to the caldera server
     @param arguments: Parser command line arguments
     """
-    print(f"Running agents: {calcontrol.list_agents()}")
+
+    if arguments.list:
+        for agent in calcontrol.list_agents().__dict__["agents"]:
+            print(agent)
+
 
 
 def list_facts(calcontrol, arguments):  # pylint: disable=unused-argument
@@ -77,14 +84,52 @@ def list_abilities(calcontrol, arguments):
     @param arguments: Parser command line arguments
     """
 
-    abilities = arguments.ability_ids
+    abilities = calcontrol.list_abilities().__dict__["abilities"]
 
-    if arguments.all:
-        abilities = [aid["ability_id"] for aid in calcontrol.list_abilities()]
+    if arguments.list:
+        abi_ids = [aid.ability_id for aid in abilities]
+        print(abi_ids)
 
-    for aid in abilities:
-        for ability in calcontrol.get_ability(aid):
-            calcontrol.pretty_print_ability(ability)
+    for abi in abilities:
+        for executor in abi.executors:
+            for parser in executor.parsers:
+                pprint(parser.relationships)
+
+    #for aid in abilities:
+    #    for ability in calcontrol.get_ability(aid):
+    #        calcontrol.pretty_print_ability(ability)
+
+
+def obfuscators(calcontrol, arguments):
+    """ Manage obfuscators caldera control
+
+    @param calcontrol: Connection to the caldera server
+    @param arguments: Parser command line arguments
+    """
+
+    if arguments.list:
+        obfs = calcontrol.list_obfuscators().__dict__["obfuscators"]
+        # ob_ids = [aid.ability_id for aid in obfuscators]
+        # print(ob_ids)
+
+        for ob in obfs:
+            print(ob)
+
+
+def adversaries(calcontrol, arguments):
+    """ Manage adversaries caldera control
+
+    @param calcontrol: Connection to the caldera server
+    @param arguments: Parser command line arguments
+    """
+
+    if arguments.list:
+        advs = calcontrol.list_adversaries().__dict__["adversaries"]
+        # ob_ids = [aid.ability_id for aid in obfuscators]
+        # print(ob_ids)
+
+        for ob in advs:
+            print(ob)
 
 
 def attack(calcontrol, arguments):
@@ -122,11 +167,12 @@ def create_parser():
     parser_abilities.set_defaults(func=list_abilities)
     parser_abilities.add_argument("--ability_ids", default=[], nargs="+",
                                   help="The abilities to look up. One or more ids")
-    parser_abilities.add_argument("--all", default=False, action="store_true",
+    parser_abilities.add_argument("--list", default=False, action="store_true",
                                   help="List all abilities")
 
     parser_agents = subparsers.add_parser("agents", help="agents")
-    parser_agents.set_defaults(func=list_agents)
+    parser_agents.set_defaults(func=agents)
+    parser_agents.add_argument("--list", default=False, action="store_true", help="List all agents")
 
     parser_delete_agents = subparsers.add_parser("delete_agents", help="agents")
     parser_delete_agents.add_argument("--paw", default=None, help="PAW to delete. if not set it will delete all agents")
@@ -139,8 +185,20 @@ def create_parser():
     parser_facts = subparsers.add_parser("add_facts", help="facts")
     parser_facts.set_defaults(func=add_facts)
 
+    # Sub parser to list obfuscators
+    parser_obfuscators = subparsers.add_parser("obfuscators", help="obfuscators")
+    parser_obfuscators.set_defaults(func=obfuscators)
+    parser_obfuscators.add_argument("--list", default=False, action="store_true",
+                                  help="List all obfuscators")
+
+    # Sub parser to list adversaries
+    parser_adversaries = subparsers.add_parser("adversaries", help="adversaries")
+    parser_adversaries.set_defaults(func=adversaries)
+    parser_adversaries.add_argument("--list", default=False, action="store_true",
+                                    help="List all obfuscators")
+
     # For all parsers
-    main_parser.add_argument("--caldera_url", help="caldera url, including port", default="http://192.168.178.125:8888/")
+    main_parser.add_argument("--caldera_url", help="caldera url, including port", default="http://localhost:8888/")
     main_parser.add_argument("--apikey", help="caldera api key", default="ADMIN123")
 
     return main_parser
