@@ -390,7 +390,8 @@ class Machine():
         # TODO: Caldera implant
         # TODO: Metasploit implant
 
-    def install_caldera_server(self, cleanup=False, version="2.8.1"):
+    # options for version: 4.0.0-alpha.2   2.8.1
+    def install_caldera_server(self, cleanup=False, version="4.0.0-alpha.2"):
         """ Installs the caldera server on the VM
 
         @param cleanup: Remove the old caldera version. Slow but reduces side effects
