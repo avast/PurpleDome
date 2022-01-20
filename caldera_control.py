@@ -11,6 +11,9 @@ from pprint import pprint
 from app.attack_log import AttackLog
 
 
+class CmdlineArgumentException(Exception):
+    pass
+
 # https://caldera.readthedocs.io/en/latest/The-REST-API.html
 
 # TODO: Check if attack is finished
@@ -130,6 +133,53 @@ def adversaries(calcontrol, arguments):
 
         for ob in advs:
             print(ob)
+    if arguments.add:
+        if arguments.ability_id is None:
+            raise CmdlineArgumentException("Creating an adversary requires an ability id")
+        if arguments.name is None:
+            raise CmdlineArgumentException("Creating an adversary requires an adversary name")
+        res = calcontrol.add_adversary(arguments.name, arguments.ability_id)
+    if arguments.delete:
+        if arguments.adversary_id is None:
+            raise CmdlineArgumentException("Deleting an adversary requires an adversary id")
+        res = calcontrol.delete_adversary(arguments.adversary_id)
+
+
+def sources(calcontrol, arguments):
+    """ Manage sources caldera control
+
+    @param calcontrol: Connection to the caldera server
+    @param arguments: Parser command line arguments
+    """
+
+    if arguments.list:
+        srcs = calcontrol.list_sources().__dict__["sources"]
+        # ob_ids = [aid.ability_id for aid in obfuscators]
+        # print(ob_ids)
+
+        for ob in srcs:
+            print(ob)
+
+
+def operations(calcontrol, arguments):
+    """ Manage operations caldera control
+
+    @param calcontrol: Connection to the caldera server
+    @param arguments: Parser command line arguments
+    """
+
+    if arguments.list:
+        ops = calcontrol.list_operations().__dict__["operations"]
+        # ob_ids = [aid.ability_id for aid in obfuscators]
+        # print(ob_ids)
+
+        for ob in ops:
+            print(ob)
+
+    if arguments.add:
+        if arguments.adversary_id is None:
+            raise CmdlineArgumentException("Adding an operation requires an adversary id")
+        ops = calcontrol.add_operations(arguments.adversary_id)
 
 
 def attack(calcontrol, arguments):
@@ -185,17 +235,39 @@ def create_parser():
     parser_facts = subparsers.add_parser("add_facts", help="facts")
     parser_facts.set_defaults(func=add_facts)
 
-    # Sub parser to list obfuscators
+    # Sub parser for obfuscators
     parser_obfuscators = subparsers.add_parser("obfuscators", help="obfuscators")
     parser_obfuscators.set_defaults(func=obfuscators)
     parser_obfuscators.add_argument("--list", default=False, action="store_true",
                                   help="List all obfuscators")
 
-    # Sub parser to list adversaries
+    # Sub parser for adversaries
     parser_adversaries = subparsers.add_parser("adversaries", help="adversaries")
     parser_adversaries.set_defaults(func=adversaries)
     parser_adversaries.add_argument("--list", default=False, action="store_true",
-                                    help="List all obfuscators")
+                                    help="List all adversaries")
+    parser_adversaries.add_argument("--add", default=False, action="store_true",
+                                    help="Add a new adversary")
+    parser_adversaries.add_argument("--ability_id", "--abid", default=None, help="Ability ID")
+    parser_adversaries.add_argument("--ability_name", default=None, help="Adversary name")
+    parser_adversaries.add_argument("--delete", default=False, action="store_true",
+                                    help="Delete adversary")
+    parser_adversaries.add_argument("--adversary_id", "--advid", default=None, help="Adversary ID")
+
+    # Sub parser for operations
+    parser_operations = subparsers.add_parser("operations", help="operations")
+    parser_operations.set_defaults(func=operations)
+    parser_operations.add_argument("--list", default=False, action="store_true",
+                                    help="List all operations")
+    parser_operations.add_argument("--add", default=False, action="store_true",
+                                    help="Add a new operations")
+    parser_operations.add_argument("--adversary_id", "--advid", default=None, help="Adversary ID")
+
+    # Sub parser for sources
+    parser_sources = subparsers.add_parser("sources", help="sources")
+    parser_sources.set_defaults(func=sources)
+    parser_sources.add_argument("--list", default=False, action="store_true",
+                                    help="List all sources")
 
     # For all parsers
     main_parser.add_argument("--caldera_url", help="caldera url, including port", default="http://localhost:8888/")
@@ -213,5 +285,8 @@ if __name__ == "__main__":
     attack_logger = AttackLog(args.verbose)
     caldera_control = CalderaControl(args.caldera_url, attack_logger, config=None, apikey=args.apikey)
     print("Caldera Control ready")
-
-    str(args.func(caldera_control, args))
+    try:
+        str(args.func(caldera_control, args))
+    except CmdlineArgumentException as ex:
+        parser.print_help()
+        print(f"\nCommandline error: {ex}")
