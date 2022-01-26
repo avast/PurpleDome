@@ -21,16 +21,6 @@ from app.calderaapi_2 import CalderaAPI
 class CalderaControl(CalderaAPI):
     """ Remote control Caldera through REST api """
 
-    def __init__(self, server: str, attack_logger, config=None, apikey=None):
-        """
-
-        @param server: Caldera server url/ip
-        @param attack_logger: The attack logger to use
-        @param config: The configuration
-        """
-
-        super().__init__(server, attack_logger, config, apikey)
-
     def fetch_client(self, platform: str = "windows", file: str = "sandcat.go", target_dir: str = ".", extension: str = ""):
         """ Downloads the appropriate Caldera client
 
@@ -157,12 +147,12 @@ class CalderaControl(CalderaAPI):
 
         @param op_id: Operation id
         """
-        ops = self.list_operations()
+        operations = self.list_operations()
 
-        if ops is not None:
-            for op in ops:
-                if op["id"] == op_id:
-                    return [op]
+        if operations is not None:
+            for an_operation in operations:
+                if an_operation["id"] == op_id:
+                    return [an_operation]
         return []
 
     def get_linkid(self, op_id: str, paw: str, ability_id: str):

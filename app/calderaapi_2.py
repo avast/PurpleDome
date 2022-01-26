@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """ Direct API to the caldera server. Not abstract simplification methods. Compatible with Caldera 2.8.1 """
 
-import requests
 import json
+import requests
 import simplejson
 
 

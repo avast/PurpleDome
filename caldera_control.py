@@ -3,16 +3,17 @@
 """ A command line tool to control a caldera server """
 
 import argparse
+from pprint import pprint
 
 # from app.calderacontrol import CalderaControl
 from app.calderaapi_4 import CalderaControl
-from pprint import pprint
+
 
 from app.attack_log import AttackLog
 
 
 class CmdlineArgumentException(Exception):
-    pass
+    """ An error in the user supplied command line """
 
 # https://caldera.readthedocs.io/en/latest/The-REST-API.html
 
@@ -30,8 +31,7 @@ def agents(calcontrol, arguments):  # pylint: disable=unused-argument
     """
 
     if arguments.list:
-        agents = calcontrol.list_agents().__dict__["agents"]
-        print(agents)
+        print(calcontrol.list_agents().__dict__["agents"])
     if arguments.delete:
         print(calcontrol.delete_agent(arguments.paw))
     if arguments.kill:
@@ -82,8 +82,8 @@ def list_abilities(calcontrol, arguments):
 
     for abi in abilities:
         for executor in abi.executors:
-            for parser in executor.parsers:
-                pprint(parser.relationships)
+            for a_parser in executor.parsers:
+                pprint(a_parser.relationships)
 
 
 def obfuscators(calcontrol, arguments):
@@ -98,8 +98,8 @@ def obfuscators(calcontrol, arguments):
         # ob_ids = [aid.ability_id for aid in obfuscators]
         # print(ob_ids)
 
-        for ob in obfs:
-            print(ob)
+        for obfuscator in obfs:
+            print(obfuscator)
 
 
 def objectives(calcontrol, arguments):
@@ -110,12 +110,8 @@ def objectives(calcontrol, arguments):
     """
 
     if arguments.list:
-        objectives = calcontrol.list_objectives().__dict__["objectives"]
-        # ob_ids = [aid.ability_id for aid in objectives]
-        # print(ob_ids)
-
-        for ob in objectives:
-            print(ob)
+        for objective in calcontrol.list_objectives().__dict__["objectives"]:
+            print(objective)
 
 
 def adversaries(calcontrol, arguments):
@@ -126,12 +122,8 @@ def adversaries(calcontrol, arguments):
     """
 
     if arguments.list:
-        advs = calcontrol.list_adversaries().__dict__["adversaries"]
-        # ob_ids = [aid.ability_id for aid in obfuscators]
-        # print(ob_ids)
-
-        for ob in advs:
-            print(ob)
+        for adversary in calcontrol.list_adversaries().__dict__["adversaries"]:
+            print(adversary)
     if arguments.add:
         if arguments.ability_id is None:
             raise CmdlineArgumentException("Creating an adversary requires an ability id")
@@ -152,12 +144,8 @@ def sources(calcontrol, arguments):
     """
 
     if arguments.list:
-        srcs = calcontrol.list_sources().__dict__["sources"]
-        # ob_ids = [aid.ability_id for aid in obfuscators]
-        # print(ob_ids)
-
-        for ob in srcs:
-            print(ob)
+        for a_source in calcontrol.list_sources().__dict__["sources"]:
+            print(a_source)
 
 
 def planners(calcontrol, arguments):
@@ -168,12 +156,8 @@ def planners(calcontrol, arguments):
     """
 
     if arguments.list:
-        plns = calcontrol.list_planners().__dict__["planners"]
-        # ob_ids = [aid.ability_id for aid in obfuscators]
-        # print(ob_ids)
-
-        for ob in plns:
-            print(ob)
+        for a_planner in calcontrol.list_planners().__dict__["planners"]:
+            print(a_planner)
 
 
 def operations(calcontrol, arguments):
@@ -184,12 +168,8 @@ def operations(calcontrol, arguments):
     """
 
     if arguments.list:
-        ops = calcontrol.list_operations().__dict__["operations"]
-        # ob_ids = [aid.ability_id for aid in obfuscators]
-        # print(ob_ids)
-
-        for ob in ops:
-            print(ob)
+        for an_operation in calcontrol.list_operations().__dict__["operations"]:
+            print(an_operation)
 
     if arguments.add:
         if arguments.adversary_id is None:

@@ -5,9 +5,9 @@
 import json
 
 from pprint import pformat
+from typing import Optional, Union
 import requests
 import simplejson
-from typing import Optional, Union
 from pydantic.dataclasses import dataclass
 from pydantic import conlist  # pylint: disable=no-name-in-module
 
@@ -47,9 +47,9 @@ class Requirement:
 
 @dataclass
 class AdditionalInfo:
-    additionalProp1: Optional[str] = None
-    additionalProp2: Optional[str] = None
-    additionalProp3: Optional[str] = None
+    additionalProp1: Optional[str] = None  # pylint: disable=invalid-name
+    additionalProp2: Optional[str] = None  # pylint: disable=invalid-name
+    additionalProp3: Optional[str] = None  # pylint: disable=invalid-name
 
 
 @dataclass
@@ -71,6 +71,7 @@ class Executor:
 
 @dataclass
 class Ability:
+    """ An ability is an exploit, a TTP, an attack step ...more or less... """
     description: str
     plugin: str
     technique_name: str
@@ -90,11 +91,13 @@ class Ability:
 
 @dataclass
 class AbilityList:
+    """ A list of exploits """
     abilities: conlist(Ability, min_items=1)
 
 
 @dataclass
 class Obfuscator:
+    """ An obfuscator hides the attack by encryption/encoding """
     description: str
     name: str
     module: Optional[str] = None  # Documentation error !!!
@@ -102,11 +105,13 @@ class Obfuscator:
 
 @dataclass
 class ObfuscatorList:
+    """ A list of obfuscators """
     obfuscators: conlist(Obfuscator, min_items=1)
 
 
 @dataclass
 class Adversary:
+    """ An adversary is a defined attacker """
     has_repeatable_abilities: bool
     adversary_id: str
     description: str
@@ -119,6 +124,7 @@ class Adversary:
 
 @dataclass
 class AdversaryList:
+    """ A list of adversary """
     adversaries: conlist(Adversary, min_items=1)
 
 
@@ -173,7 +179,7 @@ class Link:
     used: list[Fact]
     facts: list[Fact]
     agent_reported_time: str
-    id: str
+    id: str  # pylint: disable=invalid-name
     collect: str
     command: str
     cleanup: int
@@ -184,6 +190,7 @@ class Link:
 
 @dataclass
 class Agent:
+    """ A representation of an agent on the target (agent = implant) """
     paw: str
     location: str
     platform: str
@@ -218,6 +225,7 @@ class Agent:
 
 @dataclass
 class AgentList:
+    """ A list of agents """
     agents: conlist(Agent)
 
 
@@ -243,7 +251,7 @@ class Source:
     facts: list[Fact]
     rules: list[Rule]
     relationships: list[Relationship]
-    id: str
+    id: str  # pylint: disable=invalid-name
     adjustments: Optional[list[Adjustment]] = None
 
 
@@ -254,9 +262,10 @@ class SourceList:
 
 @dataclass
 class Planner:
+    """ A logic defining the order in which attack steps are executed """
     name: str
     plugin: str
-    id: str
+    id: str  # pylint: disable=invalid-name
     stopping_conditions: list[Fact]
     params: dict
     description: str
@@ -286,11 +295,12 @@ class Objective:
     name: str
     goals: list[Goal]
     description: str
-    id: str
+    id: str  # pylint: disable=invalid-name
 
 
 @dataclass
 class Operation:
+    """ An attack operation collecting all the relevant items (obfuscator, adversary, planner) """
     obfuscator: str
     state: str
     jitter: str
@@ -305,7 +315,7 @@ class Operation:
     use_learning_parsers: bool
     planner: Planner
     visibility: int
-    id: str
+    id: str  # pylint: disable=invalid-name
     auto_close: bool
     chain: Optional[list] = None
 
@@ -533,11 +543,11 @@ class CalderaControl():
         operations = OperationList(**data)
         return operations
 
-    def delete_operation(self, id):
+    def delete_operation(self, operation_id):
 
         payload = {}
 
-        data = self.__contact_server__(payload, method="delete", rest_path=f"api/v2/operations/{id}")
+        data = self.__contact_server__(payload, method="delete", rest_path=f"api/v2/operations/{operation_id}")
 
         return data
 
@@ -554,7 +564,7 @@ class CalderaControl():
         with open("debug_removeme.txt", "wt") as fh:
             fh.write(pformat(self.list_abilities()))
 
-        for ability in self.list_abilities():
+        for ability in self.list_abilities()["abilities"]:
             if ability.get("ability_id", None) == abid or ability.get("auto_generated_guid", None) == abid:
                 res.append(ability)
         return res
