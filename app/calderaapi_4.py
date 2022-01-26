@@ -3,18 +3,16 @@
 """ Remote control a caldera 4 server. Starting compatible to the old control 2.8 calderacontrol. Maybe it will stop being compatible if refactoring is an option """
 
 import json
-import os
-import time
 
-from pprint import pprint, pformat
+from pprint import pformat
 import requests
 import simplejson
 from typing import Optional, Union
 from pydantic.dataclasses import dataclass
-from pydantic import conlist, constr  # pylint: disable=no-name-in-module
+from pydantic import conlist  # pylint: disable=no-name-in-module
 
-from app.exceptions import CalderaError
-from app.interface_sfx import CommandlineColors
+# from app.exceptions import CalderaError
+# from app.interface_sfx import CommandlineColors
 
 
 # TODO: Ability deserves an own class.
@@ -25,6 +23,7 @@ class Variation:
     description: str
     command: str
 
+
 @dataclass
 class ParserConfig:
     source: str
@@ -32,22 +31,26 @@ class ParserConfig:
     target: str
     custom_parser_vals: dict  # undocumented ! Needs improvement ! TODO
 
+
 @dataclass
 class Parser:
     module: str
     relationships: list[ParserConfig]  # undocumented ! Needs improvement ! TODO
     parserconfigs: Optional[list[ParserConfig]] = None
 
+
 @dataclass
 class Requirement:
     module: str
     relationship_match: list[dict]
+
 
 @dataclass
 class AdditionalInfo:
     additionalProp1: Optional[str] = None
     additionalProp2: Optional[str] = None
     additionalProp3: Optional[str] = None
+
 
 @dataclass
 class Executor:
@@ -64,6 +67,7 @@ class Executor:
     uploads: list[str]
     platform: str
     command: Optional[str]
+
 
 @dataclass
 class Ability:
@@ -95,9 +99,11 @@ class Obfuscator:
     name: str
     module: Optional[str] = None  # Documentation error !!!
 
+
 @dataclass
 class ObfuscatorList:
     obfuscators: conlist(Obfuscator, min_items=1)
+
 
 @dataclass
 class Adversary:
@@ -109,6 +115,7 @@ class Adversary:
     objective: str
     tags: list[str]
     plugin: Optional[str] = None
+
 
 @dataclass
 class AdversaryList:
@@ -175,13 +182,12 @@ class Link:
     deadman: bool
 
 
-
 @dataclass
 class Agent:
     paw: str
     location: str
     platform: str
-    last_seen: str   #  Error in document
+    last_seen: str   # Error in document
     host_ip_addrs: list[str]
     group: str
     architecture: str
@@ -212,7 +218,7 @@ class Agent:
 
 @dataclass
 class AgentList:
-    agents: conlist(Agent, min_items=1)
+    agents: conlist(Agent)
 
 
 @dataclass
@@ -292,7 +298,7 @@ class Operation:
     name: str
     source: Source
     adversary: Adversary
-    objective: Union[Objective, str]   #  Maybe Error in caldera 4: Creating a Operation returns a objective ID, not an objective object
+    objective: Union[Objective, str]   # Maybe Error in caldera 4: Creating a Operation returns a objective ID, not an objective object
     host_group: list[Agent]
     start: str
     group: str
@@ -307,6 +313,12 @@ class Operation:
 @dataclass
 class OperationList:
     operations: conlist(Operation)
+
+
+@dataclass
+class ObjectiveList:
+    objectives: conlist(Objective)
+
 
 class CalderaControl():
     """ Remote control Caldera through REST api """
@@ -340,7 +352,7 @@ class CalderaControl():
         print(url)
         header = {"KEY": "ADMIN123",
                   "accept": "application/json",
-                  "Content-Type": "application/json",}
+                  "Content-Type": "application/json"}
         if method.lower() == "post":
             j = json.dumps(payload)
             print(j)
@@ -353,6 +365,8 @@ class CalderaControl():
             request = requests.head(url, headers=header, data=json.dumps(payload))
         elif method.lower() == "delete":
             request = requests.delete(url, headers=header, data=json.dumps(payload))
+        elif method.lower() == "patch":
+            request = requests.patch(url, headers=header, data=json.dumps(payload))
         else:
             raise ValueError
         try:
@@ -429,14 +443,22 @@ class CalderaControl():
 
         payload = None
         data = {"agents": self.__contact_server__(payload, method="get", rest_path="api/v2/agents")}
-        print(data)
+        # print(data)
         agents = AgentList(**data)
         return agents
+
+    def list_objectives(self):
+        """ Return all objectivs """
+
+        payload = None
+        data = {"objectives": self.__contact_server__(payload, method="get", rest_path="api/v2/objectives")}
+        print(data)
+        objectives = ObjectiveList(**data)
+        return objectives
 
     # TODO: list_sources_for_name
     # TODO: list_facts_for_name
     # TODO: list_paws_of_running_agents
-    # TODO: list_objectives
     # TODO: get_operation
     # TODO: get_adversary
     # TODO: get_source
@@ -445,15 +467,11 @@ class CalderaControl():
     # TODO: get_operation_by_id
     # TODO: view_operation_report
     # TODO: view_operation_output
-    # TODO: add_sources
+    # TODO: add_sources (maybe not needed anymore)
     # TODO: execute_operation
-    # TODO: delete_operation
-    # TODO: delete_agent
-    # TODO: kill_agent
 
     # TODO is_operation_finished
     # TODO: attack
-
 
     def add_adversary(self, name: str, ability: str, description: str = "created automatically"):
         payload = {
@@ -477,7 +495,23 @@ class CalderaControl():
     def delete_adversary(self, adversary_id: str):
         payload = None
         data = {"agents": self.__contact_server__(payload, method="delete", rest_path=f"api/v2/adversaries/{adversary_id}")}
-        print(data)
+        # print(data)
+        # agents = AgentList(**data)
+        return data
+
+    def delete_agent(self, agent_paw: str):
+        payload = None
+        data = {"agents": self.__contact_server__(payload, method="delete", rest_path=f"api/v2/agents/{agent_paw}")}
+        # print(data)
+        # agents = AgentList(**data)
+        return data
+
+    def kill_agent(self, agent_paw: str):
+        payload = {"watchdog": 1,
+                   "sleep_min": 3,
+                   "sleep_max": 3}
+        data = self.__contact_server__(payload, method="patch", rest_path=f"api/v2/agents/{agent_paw}")
+        # print(data)
         # agents = AgentList(**data)
         return data
 
@@ -496,8 +530,15 @@ class CalderaControl():
                    "jitter": jitter,
                    "visibility": "51"}
         data = {"operations": [self.__contact_server__(payload, method="post", rest_path="api/v2/operations")]}
-        print (data)
         operations = OperationList(**data)
+        return operations
+
+    def delete_operation(self, id):
+
+        payload = {}
+
+        data = self.__contact_server__(payload, method="delete", rest_path=f"api/v2/operations/{id}")
+
         return data
 
     def get_ability(self, abid: str):
@@ -530,6 +571,6 @@ class CalderaControl():
         Tactic: {tactic}
         Name: {name}
         ID: {ability_id}
-        Description: {description}        
+        Description: {description}
 
         """.format(**abi))

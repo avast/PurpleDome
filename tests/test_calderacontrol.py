@@ -17,30 +17,6 @@ class TestExample(unittest.TestCase):
     def tearDown(self) -> None:
         pass
 
-    # List links sends the right commands and post
-    def test_list_links(self):
-        with patch.object(self.cc, "__contact_server__", return_value=None) as mock_method:
-            self.cc.list_links("asd")
-        mock_method.assert_called_once_with({"index": "link", "op_id": "asd"})
-
-    # List links gets an Exception and does not handle it (as expected)
-    def test_list_links_with_exception(self):
-        with self.assertRaises(JSONDecodeError):
-            with patch.object(self.cc, "__contact_server__", side_effect=JSONDecodeError("foo", "bar", 2)):
-                self.cc.list_links("asd")
-
-    # list results sends the right commands and post
-    def test_list_results(self):
-        with patch.object(self.cc, "__contact_server__", return_value=None) as mock_method:
-            self.cc.list_results("asd")
-        mock_method.assert_called_once_with({"index": "result", "link_id": "asd"})
-
-    # List results gets an Exception and does not handle it (as expected)
-    def test_list_results_with_exception(self):
-        with self.assertRaises(JSONDecodeError):
-            with patch.object(self.cc, "__contact_server__", side_effect=JSONDecodeError("foo", "bar", 2)):
-                self.cc.list_results("asd")
-
     # list_operations
     def test_list_operations(self):
         with patch.object(self.cc, "__contact_server__", return_value=None) as mock_method:
@@ -162,26 +138,7 @@ class TestExample(unittest.TestCase):
         opid = "FooBar"
         with patch.object(self.cc, "__contact_server__", return_value=None) as mock_method:
             self.cc.get_operation_by_id(opid)
-        mock_method.assert_called_once_with({"index": "operations", "id": opid})
-
-    # get_operation_by_id gets the expected exception
-    def test_get_operation_by_id_with_exception(self):
-        with self.assertRaises(JSONDecodeError):
-            with patch.object(self.cc, "__contact_server__", side_effect=JSONDecodeError("foo", "bar", 2)):
-                self.cc.get_result_by_id("FooBar")
-
-    # get_result_by_id
-    def test_get_result_by_id(self):
-        opid = "FooBar"
-        with patch.object(self.cc, "__contact_server__", return_value=None) as mock_method:
-            self.cc.get_result_by_id(opid)
-        mock_method.assert_called_once_with({"index": "result", "link_id": opid})
-
-    # get_result_by_id gets the expected exception
-    def test_get_result_by_id_with_exception(self):
-        with self.assertRaises(JSONDecodeError):
-            with patch.object(self.cc, "__contact_server__", side_effect=JSONDecodeError("foo", "bar", 2)):
-                self.cc.get_result_by_id("FooBar")
+        mock_method.assert_called_once_with({"index": "operations"})
 
     # get_linkid
     def test_get_linkid(self):
@@ -346,32 +303,6 @@ class TestExample(unittest.TestCase):
         with patch.object(self.cc, "__contact_server__", return_value=None) as mock_method:
             self.cc.add_adversary(name, ability)
         mock_method.assert_called_once_with(exp, method="put")
-
-    # execute_ability
-    def test_execute_ability(self):
-        paw = "test_paw"
-        ability_id = "test_ability"
-        obfuscator = "plain-text"
-
-        exp = {"paw": paw,
-               "ability_id": ability_id,
-               "obfuscator": obfuscator,
-               "facts": []}
-        with patch.object(self.cc, "__contact_server__", return_value=None) as mock_method:
-            self.cc.execute_ability(paw, ability_id, obfuscator)
-        mock_method.assert_called_once_with(exp, rest_path="plugin/access/exploit_ex")
-
-    def test_execute_ability_default(self):
-        paw = "test_paw"
-        ability_id = "test_ability"
-
-        exp = {"paw": paw,
-               "ability_id": ability_id,
-               "obfuscator": "plain-text",
-               "facts": []}
-        with patch.object(self.cc, "__contact_server__", return_value=None) as mock_method:
-            self.cc.execute_ability(paw, ability_id)
-        mock_method.assert_called_once_with(exp, rest_path="plugin/access/exploit_ex")
 
     # execute_operation
     def test_execute_operation(self):

@@ -4,8 +4,8 @@
 
 import argparse
 
-#from app.calderacontrol import CalderaControl
-from app.calderacontrol_4 import CalderaControl
+# from app.calderacontrol import CalderaControl
+from app.calderaapi_4 import CalderaControl
 from pprint import pprint
 
 from app.attack_log import AttackLog
@@ -20,6 +20,7 @@ class CmdlineArgumentException(Exception):
 
 # TODO: Get results of a specific attack
 
+
 # Arpgparse handling
 def agents(calcontrol, arguments):  # pylint: disable=unused-argument
     """ Agents in caldera control
@@ -29,9 +30,12 @@ def agents(calcontrol, arguments):  # pylint: disable=unused-argument
     """
 
     if arguments.list:
-        for agent in calcontrol.list_agents().__dict__["agents"]:
-            print(agent)
-
+        agents = calcontrol.list_agents().__dict__["agents"]
+        print(agents)
+    if arguments.delete:
+        print(calcontrol.delete_agent(arguments.paw))
+    if arguments.kill:
+        print(calcontrol.kill_agent(arguments.paw))
 
 
 def list_facts(calcontrol, arguments):  # pylint: disable=unused-argument
@@ -63,23 +67,6 @@ def add_facts(calcontrol, arguments):  # pylint: disable=unused-argument
     print(f'Created fact: {calcontrol.add_sources(name, data)}')
 
 
-def delete_agents(calcontrol, arguments):  # pylint: disable=unused-argument
-    """ Call list agents in caldera control
-
-    @param calcontrol: Connection to the caldera server
-    @param arguments: Parser command line arguments
-    """
-    print(calcontrol.list_paws_of_running_agents())
-
-    if arguments.paw:
-        print(calcontrol.kill_agent(paw=arguments.paw))
-        print(calcontrol.delete_agent(paw=arguments.paw))
-
-    else:
-        print(calcontrol.kill_all_agents())
-        print(calcontrol.delete_all_agents())
-
-
 def list_abilities(calcontrol, arguments):
     """ Call list abilities in caldera control
 
@@ -98,10 +85,6 @@ def list_abilities(calcontrol, arguments):
             for parser in executor.parsers:
                 pprint(parser.relationships)
 
-    #for aid in abilities:
-    #    for ability in calcontrol.get_ability(aid):
-    #        calcontrol.pretty_print_ability(ability)
-
 
 def obfuscators(calcontrol, arguments):
     """ Manage obfuscators caldera control
@@ -116,6 +99,22 @@ def obfuscators(calcontrol, arguments):
         # print(ob_ids)
 
         for ob in obfs:
+            print(ob)
+
+
+def objectives(calcontrol, arguments):
+    """ Manage objectives caldera control
+
+    @param calcontrol: Connection to the caldera server
+    @param arguments: Parser command line arguments
+    """
+
+    if arguments.list:
+        objectives = calcontrol.list_objectives().__dict__["objectives"]
+        # ob_ids = [aid.ability_id for aid in objectives]
+        # print(ob_ids)
+
+        for ob in objectives:
             print(ob)
 
 
@@ -138,11 +137,11 @@ def adversaries(calcontrol, arguments):
             raise CmdlineArgumentException("Creating an adversary requires an ability id")
         if arguments.name is None:
             raise CmdlineArgumentException("Creating an adversary requires an adversary name")
-        res = calcontrol.add_adversary(arguments.name, arguments.ability_id)
+        calcontrol.add_adversary(arguments.name, arguments.ability_id)
     if arguments.delete:
         if arguments.adversary_id is None:
             raise CmdlineArgumentException("Deleting an adversary requires an adversary id")
-        res = calcontrol.delete_adversary(arguments.adversary_id)
+        calcontrol.delete_adversary(arguments.adversary_id)
 
 
 def sources(calcontrol, arguments):
@@ -201,6 +200,12 @@ def operations(calcontrol, arguments):
         ops = calcontrol.add_operation(arguments.name, arguments.adversary_id, arguments.source_id, arguments.planner_id, arguments.group, arguments.state, arguments.obfuscator, arguments.jitter)
         print(ops)
 
+    if arguments.delete:
+        if arguments.id is None:
+            raise CmdlineArgumentException("Deleting an operation requires its id")
+        ops = calcontrol.delete_operation(arguments.id)
+        print(ops)
+
 
 def attack(calcontrol, arguments):
     """ Calling attack
@@ -243,10 +248,9 @@ def create_parser():
     parser_agents = subparsers.add_parser("agents", help="agents")
     parser_agents.set_defaults(func=agents)
     parser_agents.add_argument("--list", default=False, action="store_true", help="List all agents")
-
-    parser_delete_agents = subparsers.add_parser("delete_agents", help="agents")
-    parser_delete_agents.add_argument("--paw", default=None, help="PAW to delete. if not set it will delete all agents")
-    parser_delete_agents.set_defaults(func=delete_agents)
+    parser_agents.add_argument("--delete", default=False, action="store_true", help="Delete agent")
+    parser_agents.add_argument("--kill", default=False, action="store_true", help="Delete agent")
+    parser_agents.add_argument("--paw", default=None, help="PAW to delete. if not set it will delete all agents")
 
     parser_facts = subparsers.add_parser("facts", help="facts")
     parser_facts.set_defaults(func=list_facts)
@@ -259,7 +263,13 @@ def create_parser():
     parser_obfuscators = subparsers.add_parser("obfuscators", help="obfuscators")
     parser_obfuscators.set_defaults(func=obfuscators)
     parser_obfuscators.add_argument("--list", default=False, action="store_true",
-                                  help="List all obfuscators")
+                                    help="List all obfuscators")
+
+    # Sub parser for objectives
+    parser_objectives = subparsers.add_parser("objectives", help="objectives")
+    parser_objectives.set_defaults(func=objectives)
+    parser_objectives.add_argument("--list", default=False, action="store_true",
+                                   help="List all objectives")
 
     # Sub parser for adversaries
     parser_adversaries = subparsers.add_parser("adversaries", help="adversaries")
@@ -278,9 +288,11 @@ def create_parser():
     parser_operations = subparsers.add_parser("operations", help="operations")
     parser_operations.set_defaults(func=operations)
     parser_operations.add_argument("--list", default=False, action="store_true",
-                                    help="List all operations")
+                                   help="List all operations")
     parser_operations.add_argument("--add", default=False, action="store_true",
-                                    help="Add a new operations")
+                                   help="Add a new operations")
+    parser_operations.add_argument("--delete", default=False, action="store_true",
+                                   help="Delete an operation")
     parser_operations.add_argument("--name", default=None, help="Name of the operation")
     parser_operations.add_argument("--adversary_id", "--advid", default=None, help="Adversary ID")
     parser_operations.add_argument("--source_id", "--sourceid", default="basic", help="'Source' ID")
@@ -289,18 +301,19 @@ def create_parser():
     parser_operations.add_argument("--state", default="running", help="State to start the operation in")
     parser_operations.add_argument("--obfuscator", default="plain-text", help="Obfuscator to use for this attack")
     parser_operations.add_argument("--jitter", default="4/8", help="Jitter to use")
+    parser_operations.add_argument("--id", default=None, help="ID of operation to delete")
 
     # Sub parser for sources
     parser_sources = subparsers.add_parser("sources", help="sources")
     parser_sources.set_defaults(func=sources)
     parser_sources.add_argument("--list", default=False, action="store_true",
-                                    help="List all sources")
+                                help="List all sources")
 
     # Sub parser for planners
     parser_sources = subparsers.add_parser("planners", help="planners")
     parser_sources.set_defaults(func=planners)
     parser_sources.add_argument("--list", default=False, action="store_true",
-                                    help="List all planners")
+                                help="List all planners")
 
     # For all parsers
     main_parser.add_argument("--caldera_url", help="caldera url, including port", default="http://localhost:8888/")

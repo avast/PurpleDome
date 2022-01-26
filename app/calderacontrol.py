@@ -2,23 +2,23 @@
 
 """ Remote control a caldera server """
 
-import json
 import os
 import time
 
 from pprint import pprint, pformat
 from typing import Optional
 import requests
-import simplejson
 
 from app.exceptions import CalderaError
 from app.interface_sfx import CommandlineColors
+
+from app.calderaapi_2 import CalderaAPI
 
 
 # TODO: Ability deserves an own class.
 # TODO: Support all Caldera agents: "Sandcat (GoLang)","Elasticat (Blue Python/ Elasticsearch)","Manx (Reverse Shell TCP)","Ragdoll (Python/HTML)"
 
-class CalderaControl():
+class CalderaControl(CalderaAPI):
     """ Remote control Caldera through REST api """
 
     def __init__(self, server: str, attack_logger, config=None, apikey=None):
@@ -28,16 +28,8 @@ class CalderaControl():
         @param attack_logger: The attack logger to use
         @param config: The configuration
         """
-        # print(server)
-        self.url = server if server.endswith("/") else server + "/"
-        self.attack_logger = attack_logger
 
-        self.config = config
-
-        if self.config:
-            self.apikey = self.config.caldera_apikey()
-        else:
-            self.apikey = apikey
+        super().__init__(server, attack_logger, config, apikey)
 
     def fetch_client(self, platform: str = "windows", file: str = "sandcat.go", target_dir: str = ".", extension: str = ""):
         """ Downloads the appropriate Caldera client
@@ -56,93 +48,6 @@ class CalderaControl():
             fh.write(request.content)
         # print(r.headers)
         return filename
-
-    def __contact_server__(self, payload, rest_path: str = "api/rest", method: str = "post"):
-        """
-
-        @param payload: payload as dict to send to the server
-        @param rest_path: specific path for this rest api
-        @param method: http method to use
-        """
-        url = self.url + rest_path
-        header = {"KEY": self.apikey,
-                  "Content-Type": "application/json"}
-        if method.lower() == "post":
-            request = requests.post(url, headers=header, data=json.dumps(payload))
-        elif method.lower() == "put":
-            request = requests.put(url, headers=header, data=json.dumps(payload))
-        elif method.lower() == "get":
-            request = requests.get(url, headers=header, data=json.dumps(payload))
-        elif method.lower() == "delete":
-            request = requests.delete(url, headers=header, data=json.dumps(payload))
-        else:
-            raise ValueError
-        try:
-            res = request.json()
-        except simplejson.errors.JSONDecodeError as exception:  # type: ignore
-            print("!!! Error !!!!")
-            print(payload)
-            print(request.text)
-            print("!!! Error !!!!")
-            raise exception
-
-        return res
-
-    #  ############## List
-    def list_links(self, opid: str):
-        """ List links associated with an operation
-
-        @param opid: operation id to list links for
-        """
-
-        payload = {"index": "link",
-                   "op_id": opid}
-        return self.__contact_server__(payload)
-
-    def list_results(self, linkid: str):
-        """ List results for a link
-
-        @param linkid: ID of the link
-        """
-
-        payload = {"index": "result",
-                   "link_id": linkid}
-        return self.__contact_server__(payload)
-
-    def list_operations(self):
-        """ Return operations """
-
-        payload = {"index": "operations"}
-        return self.__contact_server__(payload)
-
-    def list_abilities(self):
-        """ Return all ablilities """
-        # curl -H 'KEY: ADMIN123' http://192.168.178.102:8888/api/rest -H 'Content-Type: application/json' -d '{"index":"abilities"}'
-
-        payload = {"index": "abilities"}
-        return self.__contact_server__(payload)
-
-    def list_agents(self):
-        """ List running agents
-
-        """
-        # TODO: Add filters for specific platforms/executors  :  , platform_filter=None, executor_filter=None as parameters
-        # curl -H 'KEY: ADMIN123' http://192.168.178.102:8888/api/rest -H 'Content-Type: application/json' -d '{"index":"agents"}'
-        payload = {"index": "agents"}
-
-        agents = self.__contact_server__(payload)
-        return agents
-
-    def list_sources(self):
-        """ List stored facts
-
-        """
-        # TODO: Add filters for specific platforms/executors  :  , platform_filter=None, executor_filter=None as parameters
-        # curl -H 'KEY: ADMIN123' http://192.168.178.102:8888/api/rest -H 'Content-Type: application/json' -d '{"index":"agents"}'
-        payload = {"index": "sources"}
-
-        facts = self.__contact_server__(payload)
-        return facts
 
     def list_sources_for_name(self, name: str):
         """ List facts in a source pool with a specific name """
@@ -174,18 +79,6 @@ class CalderaControl():
     def list_paws_of_running_agents(self):
         """ Returns a list of all paws of running agents """
         return [i["paw"] for i in self.list_agents()]
-
-    def list_adversaries(self):
-        """ List registered adversaries """
-        # curl -H 'KEY: ADMIN123' http://192.168.178.102:8888/api/rest -H 'Content-Type: application/json' -d '{"index":"adversaries"}'
-        payload = {"index": "adversaries"}
-        return self.__contact_server__(payload)
-
-    def list_objectives(self):
-        """ List registered objectives """
-        # curl -H 'KEY: ADMIN123' http://192.168.178.102:8888/api/rest -H 'Content-Type: application/json' -d '{"index":"objectives"}'
-        payload = {"index": "objectives"}
-        return self.__contact_server__(payload)
 
     #  ######### Get one specific item
 
@@ -219,18 +112,6 @@ class CalderaControl():
             if objective["name"] == name:
                 return objective
         return None
-
-    #  ######### Get by id
-
-    def get_source(self, source_name: str):
-        """ Retrieves data source and detailed  facts
-
-        @param: The name of the source
-        """
-
-        payload = {"index": "sources",
-                   "name": source_name}
-        return self.__contact_server__(payload)
 
     def get_ability(self, abid: str):
         """" Return an ability by id
@@ -276,18 +157,13 @@ class CalderaControl():
 
         @param op_id: Operation id
         """
-        payload = {"index": "operations",
-                   "id": op_id}
-        return self.__contact_server__(payload)
+        ops = self.list_operations()
 
-    def get_result_by_id(self, linkid: str):
-        """ Get the result from a link id
-
-        @param linkid: link id
-        """
-        payload = {"index": "result",
-                   "link_id": linkid}
-        return self.__contact_server__(payload)
+        if ops is not None:
+            for op in ops:
+                if op["id"] == op_id:
+                    return [op]
+        return []
 
     def get_linkid(self, op_id: str, paw: str, ability_id: str):
         """ Get the id of a link identified by paw and ability_id
@@ -347,123 +223,6 @@ class CalderaControl():
         # print(f"Did not find ability {ability_id} in caldera operation output")
         return None
 
-    #  ######### Add
-
-    def add_sources(self, name: str, parameters):
-        """ Adds a data source and seeds it with facts """
-
-        payload = {"index": "sources",
-                   "name": name,
-                   # "id": "123456-1234-1234-1234-12345678",
-                   "rules": [],
-                   "relationships": []
-                   }
-
-        facts = []
-        if parameters is not None:
-            for key, value in parameters.items():
-                facts.append({"trait": key, "value": value})
-
-        # TODO: We need something better than a dict here as payload to have strong typing
-        payload["facts"] = facts  # type: ignore
-
-        print(payload)
-        return self.__contact_server__(payload, method="put")
-
-    def add_operation(self, name: str, advid: str, group: str = "red", state: str = "running", obfuscator: str = "plain-text", jitter: str = '4/8', parameters=None):
-        """ Adds a new operation
-
-        @param name: Name of the operation
-        @param advid: Adversary id
-        @param group: agent group to attack
-        @param state: state to initially set
-        @param obfuscator: obfuscator to use for the attack
-        @param jitter: jitter to use for the attack
-        @param parameters: parameters to pass to the ability
-        """
-
-        # Add operation: curl -X PUT -H "KEY:$KEY" http://127.0.0.1:8888/api/rest -d '{"index":"operations","name":"testoperation1"}'
-        # observed from GUI sniffing: PUT {'name': 'schnuffel2', 'group': 'red', 'adversary_id': '0f4c3c67-845e-49a0-927e-90ed33c044e0', 'state': 'running', 'planner': 'atomic', 'autonomous': '1', 'obfuscator': 'plain-text', 'auto_close': '1', 'jitter': '4/8', 'source': 'Alice Filters', 'visibility': '50'}
-
-        sources_name = "source_" + name
-        self.add_sources(sources_name, parameters)
-
-        # To verify:
-        # print(self.get_source(sources_name))
-
-        payload = {"index": "operations",
-                   "name": name,
-                   "state": state,
-                   "autonomous": 1,
-                   'obfuscator': obfuscator,
-                   'auto_close': '1',
-                   'jitter': jitter,
-                   'source': sources_name,
-                   'visibility': '50',
-                   "group": group,
-                   #
-                   "planner": "atomic",
-                   "adversary_id": advid,
-                   }
-
-        return self.__contact_server__(payload, method="put")
-
-    def add_adversary(self, name: str, ability: str, description: str = "created automatically"):
-        """ Adds a new adversary
-
-        @param name: Name of the adversary
-        @param ability: One ability for this adversary
-        @param description: Description of this adversary
-        """
-
-        # Add operation: curl -X PUT -H "KEY:$KEY" http://127.0.0.1:8888/api/rest -d '{"index":"operations","name":"testoperation1"}'
-
-        # Sniffed from gui:
-        # Rest core: PUT adversaries {'name': 'removeme', 'description': 'description', 'atomic_ordering': [{'id': 'bd527b63-9f9e-46e0-9816-b8434d2b8989'}], 'id': '558932cb-3ac6-43d2-b821-2db0fa8ad469', 'objective': ''}
-        # Returns: [{'name': 'removeme', 'adversary_id': '558932cb-3ac6-43d2-b821-2db0fa8ad469', 'description': 'description', 'tags': [], 'atomic_ordering': ['bd527b63-9f9e-46e0-9816-b8434d2b8989'], 'objective': '495a9828-cab1-44dd-a0ca-66e58177d8cc'}]
-
-        payload = {"index": "adversaries",
-                   "name": name,
-                   "description": description,
-                   "atomic_ordering": [{"id": ability}],
-                   #
-                   "objective": '495a9828-cab1-44dd-a0ca-66e58177d8cc'  # default objective
-                   # "objective": ''
-                   }
-        return self.__contact_server__(payload, method="put")
-
-    #  ######### Execute
-
-    # TODO View the abilities a given agent could execute. curl -H "key:$API_KEY" -X POST localhost:8888/plugin/access/abilities -d '{"paw":"$PAW"}'
-
-    def execute_ability(self, paw: str, ability_id: str, obfuscator: str = "plain-text", parameters=None):
-        """ Executes an ability on a target. This happens outside of the scop of an operation. You will get no result of the ability back
-
-        @param paw: Paw of the target
-        @param ability_id: ability to execute
-        @param obfuscator: Obfuscator to use
-        @param parameters: parameters to pass to the ability
-        """
-
-        # curl -H "key:ADMIN123" -X POST localhost:8888/plugin/access/exploit -d '{"paw":"$PAW","ability_id":"$ABILITY_ID"}'```
-        # You can optionally POST an obfuscator and/or a facts dictionary with key/value pairs to fill in any variables the chosen ability requires.
-        # {"paw":"$PAW","ability_id":"$ABILITY_ID","obfuscator":"base64","facts":[{"trait":"username","value":"admin"},{"trait":"password", "value":"123"}]}
-        payload = {"paw": paw,
-                   "ability_id": ability_id,
-                   "obfuscator": obfuscator}
-
-        facts = []
-        if parameters is not None:
-            for key, value in parameters.items():
-                facts.append({"trait": key, "value": value})
-
-        # TODO. We need something better than a dict here for strong typing
-        payload["facts"] = facts  # type: ignore
-
-        # print(payload)
-
-        return self.__contact_server__(payload, rest_path="plugin/access/exploit_ex")
-
     def execute_operation(self, operation_id: str, state: str = "running"):
         """ Executes an operation on a server
 
@@ -483,48 +242,6 @@ class CalderaControl():
         return self.__contact_server__(payload)
 
     #  ######### Delete
-
-    # curl -X DELETE http://localhost:8888/api/rest -d '{"index":"operations","id":"$operation_id"}'
-    def delete_operation(self, opid: str):
-        """ Delete operation by id
-
-        @param opid: Operation id
-        """
-        payload = {"index": "operations",
-                   "id": opid}
-        return self.__contact_server__(payload, method="delete")
-
-    def delete_adversary(self, adid: str):
-        """ Delete adversary by id
-
-        @param adid: Adversary id
-        """
-        payload = {"index": "adversaries",
-                   "adversary_id": [{"adversary_id": adid}]}
-        return self.__contact_server__(payload, method="delete")
-
-    def delete_agent(self, paw: str):
-        """ Delete a specific agent from the kali db. implant may still be running and reconnect
-
-        @param paw: The Id of the agent to delete
-        """
-        payload = {"index": "adversaries",
-                   "paw": paw}
-        return self.__contact_server__(payload, method="delete")
-
-    def kill_agent(self, paw: str):
-        """ Send a message to an agent to kill itself
-
-        @param paw: The Id of the agent to delete
-        """
-
-        payload = {"index": "agents",
-                   "paw": paw,
-                   "watchdog": 1,
-                   "sleep_min": 3,
-                   "sleep_max": 3}
-
-        return self.__contact_server__(payload, method="put")
 
     def delete_all_agents(self):
         """ Delete all agents from kali db """
