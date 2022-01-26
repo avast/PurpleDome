@@ -161,6 +161,22 @@ def sources(calcontrol, arguments):
             print(ob)
 
 
+def planners(calcontrol, arguments):
+    """ Manage planners caldera control
+
+    @param calcontrol: Connection to the caldera server
+    @param arguments: Parser command line arguments
+    """
+
+    if arguments.list:
+        plns = calcontrol.list_planners().__dict__["planners"]
+        # ob_ids = [aid.ability_id for aid in obfuscators]
+        # print(ob_ids)
+
+        for ob in plns:
+            print(ob)
+
+
 def operations(calcontrol, arguments):
     """ Manage operations caldera control
 
@@ -179,7 +195,11 @@ def operations(calcontrol, arguments):
     if arguments.add:
         if arguments.adversary_id is None:
             raise CmdlineArgumentException("Adding an operation requires an adversary id")
-        ops = calcontrol.add_operations(arguments.adversary_id)
+        if arguments.name is None:
+            raise CmdlineArgumentException("Adding an operation requires a name for it")
+
+        ops = calcontrol.add_operation(arguments.name, arguments.adversary_id, arguments.source_id, arguments.planner_id, arguments.group, arguments.state, arguments.obfuscator, arguments.jitter)
+        print(ops)
 
 
 def attack(calcontrol, arguments):
@@ -261,13 +281,26 @@ def create_parser():
                                     help="List all operations")
     parser_operations.add_argument("--add", default=False, action="store_true",
                                     help="Add a new operations")
+    parser_operations.add_argument("--name", default=None, help="Name of the operation")
     parser_operations.add_argument("--adversary_id", "--advid", default=None, help="Adversary ID")
+    parser_operations.add_argument("--source_id", "--sourceid", default="basic", help="'Source' ID")
+    parser_operations.add_argument("--planner_id", "--planid", default="atomic", help="Planner ID")
+    parser_operations.add_argument("--group", default="", help="Caldera group to run the operation on (we are targeting groups, not PAWs)")
+    parser_operations.add_argument("--state", default="running", help="State to start the operation in")
+    parser_operations.add_argument("--obfuscator", default="plain-text", help="Obfuscator to use for this attack")
+    parser_operations.add_argument("--jitter", default="4/8", help="Jitter to use")
 
     # Sub parser for sources
     parser_sources = subparsers.add_parser("sources", help="sources")
     parser_sources.set_defaults(func=sources)
     parser_sources.add_argument("--list", default=False, action="store_true",
                                     help="List all sources")
+
+    # Sub parser for planners
+    parser_sources = subparsers.add_parser("planners", help="planners")
+    parser_sources.set_defaults(func=planners)
+    parser_sources.add_argument("--list", default=False, action="store_true",
+                                    help="List all planners")
 
     # For all parsers
     main_parser.add_argument("--caldera_url", help="caldera url, including port", default="http://localhost:8888/")

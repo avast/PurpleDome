@@ -7,10 +7,9 @@ import os
 import time
 
 from pprint import pprint, pformat
-from typing import Optional
 import requests
 import simplejson
-from typing import Optional
+from typing import Optional, Union
 from pydantic.dataclasses import dataclass
 from pydantic import conlist, constr  # pylint: disable=no-name-in-module
 
@@ -108,8 +107,8 @@ class Adversary:
     name: str
     atomic_ordering: list[str]
     objective: str
-    plugin: str
     tags: list[str]
+    plugin: Optional[str] = None
 
 @dataclass
 class AdversaryList:
@@ -249,15 +248,21 @@ class SourceList:
 
 @dataclass
 class Planner:
-    module: str
     name: str
     plugin: str
     id: str
     stopping_conditions: list[Fact]
     params: dict
-    ignore_enforcement_module: list[str]
     description: str
     allow_repeatable_abilities: bool
+    module: Optional[str] = None
+    ignore_enforcement_module: Optional[list[str]] = None
+    ignore_enforcement_modules: Optional[list[str]] = None   # Maybe error in Caldera 4 ?
+
+
+@dataclass
+class PlannerList:
+    planners: list[Planner]
 
 
 @dataclass
@@ -287,7 +292,7 @@ class Operation:
     name: str
     source: Source
     adversary: Adversary
-    objective: Objective
+    objective: Union[Objective, str]   #  Maybe Error in caldera 4: Creating a Operation returns a objective ID, not an objective object
     host_group: list[Agent]
     start: str
     group: str
@@ -296,6 +301,7 @@ class Operation:
     visibility: int
     id: str
     auto_close: bool
+    chain: Optional[list] = None
 
 
 @dataclass
@@ -331,10 +337,14 @@ class CalderaControl():
         @param method: http method to use
         """
         url = self.url + rest_path
+        print(url)
         header = {"KEY": "ADMIN123",
-                  "accept": "application/json"}
+                  "accept": "application/json",
+                  "Content-Type": "application/json",}
         if method.lower() == "post":
-            request = requests.post(url, headers=header, data=json.dumps(payload))
+            j = json.dumps(payload)
+            print(j)
+            request = requests.post(url, headers=header, data=j)
         elif method.lower() == "put":
             request = requests.put(url, headers=header, data=json.dumps(payload))
         elif method.lower() == "get":
@@ -353,7 +363,7 @@ class CalderaControl():
                 res = {"result": "ok",
                        "http_status_code": 204}
             else:
-                print(f"Status code: {request.status_code}")
+                print(f"Status code: {request.status_code} {request.json()}")
                 res = request.json()
 
         except simplejson.errors.JSONDecodeError as exception:  # type: ignore
@@ -386,7 +396,6 @@ class CalderaControl():
 
         payload = None
         data = {"adversaries": self.__contact_server__(payload, method="get", rest_path="api/v2/adversaries")}
-        print(data)
         adversaries = AdversaryList(**data)
         return adversaries
 
@@ -395,9 +404,16 @@ class CalderaControl():
 
         payload = None
         data = {"sources": self.__contact_server__(payload, method="get", rest_path="api/v2/sources")}
-        print(data)
         sources = SourceList(**data)
         return sources
+
+    def list_planners(self):
+        """ Return all planners """
+
+        payload = None
+        data = {"planners": self.__contact_server__(payload, method="get", rest_path="api/v2/planners")}
+        planners = PlannerList(**data)
+        return planners
 
     def list_operations(self):
         """ Return all operations """
@@ -417,7 +433,6 @@ class CalderaControl():
         agents = AgentList(**data)
         return agents
 
-    # TODO: list_sources
     # TODO: list_sources_for_name
     # TODO: list_facts_for_name
     # TODO: list_paws_of_running_agents
@@ -431,7 +446,6 @@ class CalderaControl():
     # TODO: view_operation_report
     # TODO: view_operation_output
     # TODO: add_sources
-    # TODO: add_operation
     # TODO: execute_operation
     # TODO: delete_operation
     # TODO: delete_agent
@@ -467,15 +481,23 @@ class CalderaControl():
         # agents = AgentList(**data)
         return data
 
-    def add_operations(self, adversary_id):
-        payload = {
-            "adversary": {"adversary_id": adversary_id},
-            "planner": {"id": "foo"},
-            "source": {"id": "foo"}
-        }
-        data = {"agents": self.__contact_server__(payload, method="post", rest_path="api/v2/operations")}
-        print(data)
-        # agents = AgentList(**data)
+    def add_operation(self, name, adversary_id, source_id="basic", planner_id="atomic", group="", state: str = "running", obfuscator: str = "plain-text", jitter: str = '4/8'):
+
+        payload = {"name": name,
+                   "group": group,
+                   "adversary": {"adversary_id": adversary_id},
+                   "auto_close": False,
+                   "state": state,
+                   "autonomous": 1,
+                   "planner": {"id": planner_id},
+                   "source": {"id": source_id},
+                   "use_learning_parsers": True,
+                   "obfuscator": obfuscator,
+                   "jitter": jitter,
+                   "visibility": "51"}
+        data = {"operations": [self.__contact_server__(payload, method="post", rest_path="api/v2/operations")]}
+        print (data)
+        operations = OperationList(**data)
         return data
 
     def get_ability(self, abid: str):
