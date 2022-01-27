@@ -94,6 +94,9 @@ class AbilityList:
     """ A list of exploits """
     abilities: conlist(Ability, min_items=1)
 
+    def get_data(self):
+        return self.abilities
+
 
 @dataclass
 class Obfuscator:
@@ -107,6 +110,9 @@ class Obfuscator:
 class ObfuscatorList:
     """ A list of obfuscators """
     obfuscators: conlist(Obfuscator, min_items=1)
+
+    def get_data(self):
+        return self.obfuscators
 
 
 @dataclass
@@ -126,6 +132,9 @@ class Adversary:
 class AdversaryList:
     """ A list of adversary """
     adversaries: conlist(Adversary, min_items=1)
+
+    def get_data(self):
+        return self.adversaries
 
 
 @dataclass
@@ -228,6 +237,9 @@ class AgentList:
     """ A list of agents """
     agents: conlist(Agent)
 
+    def get_data(self):
+        return self.agents
+
 
 @dataclass
 class Rule:
@@ -259,6 +271,9 @@ class Source:
 class SourceList:
     sources: list[Source]
 
+    def get_data(self):
+        return self.sources
+
 
 @dataclass
 class Planner:
@@ -278,6 +293,9 @@ class Planner:
 @dataclass
 class PlannerList:
     planners: list[Planner]
+
+    def get_data(self):
+        return self.planners
 
 
 @dataclass
@@ -324,10 +342,16 @@ class Operation:
 class OperationList:
     operations: conlist(Operation)
 
+    def get_data(self):
+        return self.operations
+
 
 @dataclass
 class ObjectiveList:
     objectives: conlist(Objective)
+
+    def get_data(self):
+        return self.objectives
 
 
 class CalderaControl():
@@ -405,7 +429,7 @@ class CalderaControl():
         payload = None
         data = {"abilities": self.__contact_server__(payload, method="get", rest_path="api/v2/abilities")}
         abilities = AbilityList(**data)
-        return abilities
+        return abilities.get_data()
 
     def list_obfuscators(self):
         """ Return all obfuscators """
@@ -413,7 +437,7 @@ class CalderaControl():
         payload = None
         data = {"obfuscators": self.__contact_server__(payload, method="get", rest_path="api/v2/obfuscators")}
         obfuscators = ObfuscatorList(**data)
-        return obfuscators
+        return obfuscators.get_data()
 
     def list_adversaries(self):
         """ Return all adversaries """
@@ -421,7 +445,7 @@ class CalderaControl():
         payload = None
         data = {"adversaries": self.__contact_server__(payload, method="get", rest_path="api/v2/adversaries")}
         adversaries = AdversaryList(**data)
-        return adversaries
+        return adversaries.get_data()
 
     def list_sources(self):
         """ Return all sources """
@@ -429,7 +453,7 @@ class CalderaControl():
         payload = None
         data = {"sources": self.__contact_server__(payload, method="get", rest_path="api/v2/sources")}
         sources = SourceList(**data)
-        return sources
+        return sources.get_data()
 
     def list_planners(self):
         """ Return all planners """
@@ -437,7 +461,7 @@ class CalderaControl():
         payload = None
         data = {"planners": self.__contact_server__(payload, method="get", rest_path="api/v2/planners")}
         planners = PlannerList(**data)
-        return planners
+        return planners.get_data()
 
     def list_operations(self):
         """ Return all operations """
@@ -446,7 +470,7 @@ class CalderaControl():
         data = {"operations": self.__contact_server__(payload, method="get", rest_path="api/v2/operations")}
         print(data)
         operations = OperationList(**data)
-        return operations
+        return operations.get_data()
 
     def list_agents(self):
         """ Return all agents """
@@ -455,7 +479,7 @@ class CalderaControl():
         data = {"agents": self.__contact_server__(payload, method="get", rest_path="api/v2/agents")}
         # print(data)
         agents = AgentList(**data)
-        return agents
+        return agents.get_data()
 
     def list_objectives(self):
         """ Return all objectivs """
@@ -464,7 +488,7 @@ class CalderaControl():
         data = {"objectives": self.__contact_server__(payload, method="get", rest_path="api/v2/objectives")}
         print(data)
         objectives = ObjectiveList(**data)
-        return objectives
+        return objectives.get_data()
 
     # TODO: list_sources_for_name
     # TODO: list_facts_for_name

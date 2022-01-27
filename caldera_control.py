@@ -31,7 +31,7 @@ def agents(calcontrol, arguments):  # pylint: disable=unused-argument
     """
 
     if arguments.list:
-        print(calcontrol.list_agents().__dict__["agents"])
+        print(calcontrol.list_agents())
     if arguments.delete:
         print(calcontrol.delete_agent(arguments.paw))
     if arguments.kill:
@@ -74,16 +74,15 @@ def list_abilities(calcontrol, arguments):
     @param arguments: Parser command line arguments
     """
 
-    abilities = calcontrol.list_abilities().__dict__["abilities"]
-
     if arguments.list:
+        abilities = calcontrol.list_abilities()
         abi_ids = [aid.ability_id for aid in abilities]
         print(abi_ids)
 
-    for abi in abilities:
-        for executor in abi.executors:
-            for a_parser in executor.parsers:
-                pprint(a_parser.relationships)
+        for abi in abilities:
+            for executor in abi.executors:
+                for a_parser in executor.parsers:
+                    pprint(a_parser.relationships)
 
 
 def obfuscators(calcontrol, arguments):
@@ -94,7 +93,7 @@ def obfuscators(calcontrol, arguments):
     """
 
     if arguments.list:
-        obfs = calcontrol.list_obfuscators().__dict__["obfuscators"]
+        obfs = calcontrol.list_obfuscators()
         # ob_ids = [aid.ability_id for aid in obfuscators]
         # print(ob_ids)
 
@@ -110,7 +109,7 @@ def objectives(calcontrol, arguments):
     """
 
     if arguments.list:
-        for objective in calcontrol.list_objectives().__dict__["objectives"]:
+        for objective in calcontrol.list_objectives():
             print(objective)
 
 
@@ -122,7 +121,7 @@ def adversaries(calcontrol, arguments):
     """
 
     if arguments.list:
-        for adversary in calcontrol.list_adversaries().__dict__["adversaries"]:
+        for adversary in calcontrol.list_adversaries():
             print(adversary)
     if arguments.add:
         if arguments.ability_id is None:
@@ -144,7 +143,7 @@ def sources(calcontrol, arguments):
     """
 
     if arguments.list:
-        for a_source in calcontrol.list_sources().__dict__["sources"]:
+        for a_source in calcontrol.list_sources():
             print(a_source)
 
 
@@ -156,7 +155,7 @@ def planners(calcontrol, arguments):
     """
 
     if arguments.list:
-        for a_planner in calcontrol.list_planners().__dict__["planners"]:
+        for a_planner in calcontrol.list_planners():
             print(a_planner)
 
 
@@ -168,7 +167,7 @@ def operations(calcontrol, arguments):
     """
 
     if arguments.list:
-        for an_operation in calcontrol.list_operations().__dict__["operations"]:
+        for an_operation in calcontrol.list_operations():
             print(an_operation)
 
     if arguments.add:
