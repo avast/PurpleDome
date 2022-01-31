@@ -16,8 +16,8 @@ from app.interface_sfx import CommandlineColors
 from app.exceptions import ServerError
 from app.pluginmanager import PluginManager
 from app.doc_generator import DocGenerator
-from caldera_control import CalderaControl
-from machine_control import Machine
+from app.calderacontrol import CalderaControl
+from app.machinecontrol import Machine
 from plugins.base.attack import AttackPlugin
 
 
