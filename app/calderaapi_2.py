@@ -126,7 +126,7 @@ class CalderaAPI:
         print(payload)
         return self.__contact_server__(payload, method="put")
 
-    def add_operation(self, name: str, advid: str, group: str = "red", state: str = "running", obfuscator: str = "plain-text", jitter: str = '4/8', parameters=None):
+    def add_operation(self, **kwargs):
         """ Adds a new operation
 
         @param name: Name of the operation
@@ -137,6 +137,15 @@ class CalderaAPI:
         @param jitter: jitter to use for the attack
         @param parameters: parameters to pass to the ability
         """
+
+        # name: str, advid: str, group: str = "red", state: str = "running", obfuscator: str = "plain-text", jitter: str = '4/8', parameters=None
+        name: str = kwargs.get("name")
+        advid: str = kwargs.get("adversary_id")
+        group: str = kwargs.get("group", "red")
+        state: str = kwargs.get("state", "running")
+        obfuscator: str = kwargs.get("obfuscator", "plain-text")
+        jitter: str = kwargs.get("jitter", "4/8")
+        parameters = kwargs.get("parameters", None)
 
         # Add operation: curl -X PUT -H "KEY:$KEY" http://127.0.0.1:8888/api/rest -d '{"index":"operations","name":"testoperation1"}'
         # observed from GUI sniffing: PUT {'name': 'schnuffel2', 'group': 'red', 'adversary_id': '0f4c3c67-845e-49a0-927e-90ed33c044e0', 'state': 'running', 'planner': 'atomic', 'autonomous': '1', 'obfuscator': 'plain-text', 'auto_close': '1', 'jitter': '4/8', 'source': 'Alice Filters', 'visibility': '50'}
@@ -163,6 +172,38 @@ class CalderaAPI:
                    }
 
         return self.__contact_server__(payload, method="put")
+
+    def view_operation_report(self, opid: str):
+        """ views the operation report
+
+        @param opid: Operation id to look for
+        """
+
+        # let postData = selectedOperationId ? {'index':'operation_report', 'op_id': selectedOperationId, 'agent_output': Number(agentOutput)} : null;
+        # checking it (from snifffing protocol at the server): POST {'id': 539687}
+        payload = {"index": "operation_report",
+                   "op_id": opid,
+                   'agent_output': 1
+                   }
+        return self.__contact_server__(payload)
+
+    def set_operation_state(self, operation_id: str, state: str = "running"):
+        """ Executes an operation on a server
+
+        @param operation_id: The operation to modify
+        @param state: The state to set this operation into
+        """
+
+        # TODO: Change state of an operation: curl -X POST -H "KEY:ADMIN123" http://localhost:8888/api/rest -d '{"index":"operation", "op_id":123, "state":"finished"}'
+        # curl -X POST -H "KEY:ADMIN123" http://localhost:8888/api/rest -d '{"index":"operation", "op_id":123, "state":"finished"}'
+
+        if state not in ["running", "finished", "paused", "run_one_link", "cleanup"]:
+            raise ValueError
+
+        payload = {"index": "operation",
+                   "op_id": operation_id,
+                   "state": state}
+        return self.__contact_server__(payload)
 
     def add_adversary(self, name: str, ability: str, description: str = "created automatically"):
         """ Adds a new adversary

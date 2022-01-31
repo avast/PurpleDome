@@ -12,7 +12,8 @@ import requests
 from app.exceptions import CalderaError
 from app.interface_sfx import CommandlineColors
 
-from app.calderaapi_2 import CalderaAPI
+# from app.calderaapi_2 import CalderaAPI
+from app.calderaapi_4 import CalderaAPI
 
 
 # TODO: Ability deserves an own class.
@@ -43,7 +44,7 @@ class CalderaControl(CalderaAPI):
         """ List facts in a source pool with a specific name """
 
         for i in self.list_sources():
-            if i["name"] == name:
+            if i.get("name") == name:
                 return i
         return None
 
@@ -59,19 +60,19 @@ class CalderaControl(CalderaAPI):
             return {}
 
         res = {}
-        for i in source["facts"]:
-            res[i["trait"]] = {"value": i["value"],
-                               "technique_id": i["technique_id"],
-                               "collected_by": i["collected_by"]
-                               }
+        for i in source.get("facts"):
+            res[i.get("trait")] = {"value": i.get("value"),
+                                   "technique_id": i.get("technique_id"),
+                                   "collected_by": i.get("collected_by")
+                                   }
         return res
 
     def list_paws_of_running_agents(self):
         """ Returns a list of all paws of running agents """
-        return [i["paw"] for i in self.list_agents()]
+        return [i.get("paw") for i in self.list_agents()]    # 2.8.1 version
+        # return [i.paw for i in self.list_agents()]  # 4* version
 
     #  ######### Get one specific item
-
     def get_operation(self, name: str):
         """ Gets an operation by name
 
@@ -79,7 +80,7 @@ class CalderaControl(CalderaAPI):
         """
 
         for operation in self.list_operations():
-            if operation["name"] == name:
+            if operation.get("name") == name:
                 return operation
         return None
 
@@ -89,7 +90,7 @@ class CalderaControl(CalderaAPI):
         @param name: Name to look for
         """
         for adversary in self.list_adversaries():
-            if adversary["name"] == name:
+            if adversary.get("name") == name:
                 return adversary
         return None
 
@@ -99,7 +100,7 @@ class CalderaControl(CalderaAPI):
         @param name: Name to filter for
         """
         for objective in self.list_objectives():
-            if objective["name"] == name:
+            if objective.get("name") == name:
                 return objective
         return None
 
@@ -133,12 +134,17 @@ class CalderaControl(CalderaAPI):
         abilities = self.get_ability(abid)
 
         for ability in abilities:
-            if ability["platform"] == platform:
+            if ability.get("platform") == platform:
                 return True
             if platform in ability.get("supported_platforms", []):
                 return True
             if platform in ability.get("platforms", []):
                 return True
+            executors = ability.get("executors")   # For Caldera 4.*
+            if executors is not None:
+                for executor in executors:
+                    if executor.get("platform") == platform:
+                        return True
         print(self.get_ability(abid))
         return False
 
@@ -151,7 +157,7 @@ class CalderaControl(CalderaAPI):
 
         if operations is not None:
             for an_operation in operations:
-                if an_operation["id"] == op_id:
+                if an_operation.get("id") == op_id:
                     return [an_operation]
         return []
 
@@ -175,20 +181,6 @@ class CalderaControl(CalderaAPI):
 
     #  ######### View
 
-    def view_operation_report(self, opid: str):
-        """ views the operation report
-
-        @param opid: Operation id to look for
-        """
-
-        # let postData = selectedOperationId ? {'index':'operation_report', 'op_id': selectedOperationId, 'agent_output': Number(agentOutput)} : null;
-        # checking it (from snifffing protocol at the server): POST {'id': 539687}
-        payload = {"index": "operation_report",
-                   "op_id": opid,
-                   'agent_output': 1
-                   }
-        return self.__contact_server__(payload)
-
     def view_operation_output(self, opid: str, paw: str, ability_id: str):
         """ Gets the output of an executed ability
 
@@ -198,38 +190,21 @@ class CalderaControl(CalderaAPI):
         """
         orep = self.view_operation_report(opid)
 
+        # print(orep)
         if paw not in orep["steps"]:
             print("Broken operation report:")
             pprint(orep)
             print(f"Could not find {paw} in {orep['steps']}")
             raise CalderaError
         # print("oprep: " + str(orep))
-        for a_step in orep["steps"][paw]["steps"]:
-            if a_step["ability_id"] == ability_id:
+        for a_step in orep.get("steps").get(paw).get("steps"):
+            if a_step.get("ability_id") == ability_id:
                 try:
-                    return a_step["output"]
+                    return a_step.get("output")
                 except KeyError as exception:
                     raise CalderaError from exception
         # print(f"Did not find ability {ability_id} in caldera operation output")
         return None
-
-    def execute_operation(self, operation_id: str, state: str = "running"):
-        """ Executes an operation on a server
-
-        @param operation_id: The operation to modify
-        @param state: The state to set this operation into
-        """
-
-        # TODO: Change state of an operation: curl -X POST -H "KEY:ADMIN123" http://localhost:8888/api/rest -d '{"index":"operation", "op_id":123, "state":"finished"}'
-        # curl -X POST -H "KEY:ADMIN123" http://localhost:8888/api/rest -d '{"index":"operation", "op_id":123, "state":"finished"}'
-
-        if state not in ["running", "finished", "paused", "run_one_link", "cleanup"]:
-            raise ValueError
-
-        payload = {"index": "operation",
-                   "op_id": operation_id,
-                   "state": state}
-        return self.__contact_server__(payload)
 
     #  ######### Delete
 
@@ -269,12 +244,14 @@ class CalderaControl(CalderaAPI):
         # Plus: 0 as "finished"
         #
 
+        # TODO: Maybe try to get the report and continue until we have it. Could be done in addition.
+
         operation = self.get_operation_by_id(opid)
         if debug:
             print(f"Operation data {operation}")
         try:
             # print(operation[0]["state"])
-            if operation[0]["state"] == "finished":
+            if operation[0].get("state") == "finished":
                 return True
         except KeyError as exception:
             raise CalderaError from exception
@@ -348,15 +325,15 @@ class CalderaControl(CalderaAPI):
                 return False
 
         self.add_adversary(adversary_name, ability_id)
-        adid = self.get_adversary(adversary_name)["adversary_id"]
+        adid = self.get_adversary(adversary_name).get("adversary_id")
 
         logid = self.attack_logger.start_caldera_attack(source=self.url,
                                                         paw=paw,
                                                         group=group,
                                                         ability_id=ability_id,
-                                                        ttp=self.get_ability(ability_id)[0]["technique_id"],
-                                                        name=self.get_ability(ability_id)[0]["name"],
-                                                        description=self.get_ability(ability_id)[0]["description"],
+                                                        ttp=self.get_ability(ability_id)[0].get("technique_id"),
+                                                        name=self.get_ability(ability_id)[0].get("name"),
+                                                        description=self.get_ability(ability_id)[0].get("description"),
                                                         obfuscator=obfuscator,
                                                         jitter=jitter,
                                                         **kwargs
@@ -365,8 +342,8 @@ class CalderaControl(CalderaAPI):
         #  ##### Create / Run Operation
 
         self.attack_logger.vprint(f"New adversary generated. ID: {adid}, ability: {ability_id} group: {group}", 2)
-        res = self.add_operation(operation_name,
-                                 advid=adid,
+        res = self.add_operation(name=operation_name,
+                                 adversary_id=adid,
                                  group=group,
                                  obfuscator=obfuscator,
                                  jitter=jitter,
@@ -374,14 +351,14 @@ class CalderaControl(CalderaAPI):
                                  )
         self.attack_logger.vprint(pformat(res), 3)
 
-        opid = self.get_operation(operation_name)["id"]
+        opid = self.get_operation(operation_name).get("id")
         self.attack_logger.vprint("New operation created. OpID: " + str(opid), 3)
 
-        self.execute_operation(opid)
+        self.set_operation_state(opid)
         self.attack_logger.vprint("Execute operation", 3)
         retries = 30
-        ability_name = self.get_ability(ability_id)[0]["name"]
-        ability_description = self.get_ability(ability_id)[0]["description"]
+        ability_name = self.get_ability(ability_id)[0].get("name")
+        ability_description = self.get_ability(ability_id)[0].get("description")
         self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Executed attack operation{CommandlineColors.ENDC}", 1)
         self.attack_logger.vprint(f"{CommandlineColors.BACKGROUND_BLUE} PAW: {paw} Group: {group} Ability: {ability_id}  {CommandlineColors.ENDC}", 1)
         self.attack_logger.vprint(f"{CommandlineColors.BACKGROUND_BLUE} {ability_name}: {ability_description}  {CommandlineColors.ENDC}", 1)
@@ -420,16 +397,16 @@ class CalderaControl(CalderaAPI):
         self.attack_logger.vprint(self.list_facts_for_name("source_" + operation_name), 2)
 
         #  ######## Cleanup
-        self.execute_operation(opid, "cleanup")
+        self.set_operation_state(opid, "cleanup")
         self.delete_adversary(adid)
         self.delete_operation(opid)
         self.attack_logger.stop_caldera_attack(source=self.url,
                                                paw=paw,
                                                group=group,
                                                ability_id=ability_id,
-                                               ttp=self.get_ability(ability_id)[0]["technique_id"],
-                                               name=self.get_ability(ability_id)[0]["name"],
-                                               description=self.get_ability(ability_id)[0]["description"],
+                                               ttp=self.get_ability(ability_id)[0].get("technique_id"),
+                                               name=self.get_ability(ability_id)[0].get("name"),
+                                               description=self.get_ability(ability_id)[0].get("description"),
                                                obfuscator=obfuscator,
                                                jitter=jitter,
                                                logid=logid,

@@ -68,6 +68,13 @@ class Executor:
     platform: str
     command: Optional[str]
 
+    def get(self, akey, default=None):
+        """ Get a specific element out of the internal data representation, behaves like the well know 'get' """
+        if akey in self.__dict__:
+            return self.__dict__[akey]
+
+        return default
+
 
 @dataclass
 class Ability:
@@ -87,6 +94,13 @@ class Ability:
     repeatable: str
     ability_id: str
     privilege: Optional[str] = None
+
+    def get(self, akey, default=None):
+        """ Get a specific element out of the internal data representation, behaves like the well know 'get' """
+        if akey in self.__dict__:
+            return self.__dict__[akey]
+
+        return default
 
 
 @dataclass
@@ -127,6 +141,13 @@ class Adversary:
     tags: list[str]
     plugin: Optional[str] = None
 
+    def get(self, akey, default=None):
+        """ Get a specific element out of the internal data representation, behaves like the well know 'get' """
+        if akey in self.__dict__:
+            return self.__dict__[akey]
+
+        return default
+
 
 @dataclass
 class AdversaryList:
@@ -152,6 +173,13 @@ class Fact:
     value: Optional[str] = None
     technique_id: Optional[str] = None
     collected_by: Optional[str] = None
+
+    def get(self, akey, default=None):
+        """ Get a specific element out of the internal data representation, behaves like the well know 'get' """
+        if akey in self.__dict__:
+            return self.__dict__[akey]
+
+        return default
 
 
 @dataclass
@@ -231,11 +259,18 @@ class Agent:
     pending_contact: str
     privilege: Optional[str] = None  # Error, not documented
 
+    def get(self, akey, default=None):
+        """ Get a specific element out of the internal data representation, behaves like the well know 'get' """
+        if akey in self.__dict__:
+            return self.__dict__[akey]
+
+        return default
+
 
 @dataclass
 class AgentList:
     """ A list of agents """
-    agents: conlist(Agent)
+    agents: list[Agent]
 
     def get_data(self):
         return self.agents
@@ -265,6 +300,13 @@ class Source:
     relationships: list[Relationship]
     id: str  # pylint: disable=invalid-name
     adjustments: Optional[list[Adjustment]] = None
+
+    def get(self, akey, default=None):
+        """ Get a specific element out of the internal data representation, behaves like the well know 'get' """
+        if akey in self.__dict__:
+            return self.__dict__[akey]
+
+        return default
 
 
 @dataclass
@@ -315,6 +357,13 @@ class Objective:
     description: str
     id: str  # pylint: disable=invalid-name
 
+    def get(self, akey, default=None):
+        """ Get a specific element out of the internal data representation, behaves like the well know 'get' """
+        if akey in self.__dict__:
+            return self.__dict__[akey]
+
+        return default
+
 
 @dataclass
 class Operation:
@@ -337,6 +386,13 @@ class Operation:
     auto_close: bool
     chain: Optional[list] = None
 
+    def get(self, akey, default=None):
+        """ Get a specific element out of the internal data representation, behaves like the well know 'get' """
+        if akey in self.__dict__:
+            return self.__dict__[akey]
+
+        return default
+
 
 @dataclass
 class OperationList:
@@ -354,7 +410,7 @@ class ObjectiveList:
         return self.objectives
 
 
-class CalderaControl():
+class CalderaAPI():
     """ Remote control Caldera through REST api """
 
     def __init__(self, server: str, attack_logger, config=None, apikey=None):
@@ -364,7 +420,6 @@ class CalderaControl():
         @param attack_logger: The attack logger to use
         @param config: The configuration
         """
-        # print(server)
         self.url = server if server.endswith("/") else server + "/"
         self.attack_logger = attack_logger
 
@@ -383,13 +438,11 @@ class CalderaControl():
         @param method: http method to use
         """
         url = self.url + rest_path
-        print(url)
         header = {"KEY": "ADMIN123",
                   "accept": "application/json",
                   "Content-Type": "application/json"}
         if method.lower() == "post":
             j = json.dumps(payload)
-            print(j)
             request = requests.post(url, headers=header, data=j)
         elif method.lower() == "put":
             request = requests.put(url, headers=header, data=json.dumps(payload))
@@ -468,16 +521,30 @@ class CalderaControl():
 
         payload = None
         data = {"operations": self.__contact_server__(payload, method="get", rest_path="api/v2/operations")}
-        print(data)
         operations = OperationList(**data)
         return operations.get_data()
+
+    def set_operation_state(self, operation_id: str, state: str = "running"):
+        """ Executes an operation on a server
+
+        @param operation_id: The operation to modify
+        @param state: The state to set this operation into
+        """
+
+        # TODO: Change state of an operation: curl -X POST -H "KEY:ADMIN123" http://localhost:8888/api/rest -d '{"index":"operation", "op_id":123, "state":"finished"}'
+        # curl -X POST -H "KEY:ADMIN123" http://localhost:8888/api/rest -d '{"index":"operation", "op_id":123, "state":"finished"}'
+
+        if state not in ["running", "finished", "paused", "run_one_link", "cleanup"]:
+            raise ValueError
+
+        payload = {"state": state}
+        return self.__contact_server__(payload, method="patch",  rest_path=f"api/v2/operations/{operation_id}")
 
     def list_agents(self):
         """ Return all agents """
 
         payload = None
         data = {"agents": self.__contact_server__(payload, method="get", rest_path="api/v2/agents")}
-        # print(data)
         agents = AgentList(**data)
         return agents.get_data()
 
@@ -486,28 +553,17 @@ class CalderaControl():
 
         payload = None
         data = {"objectives": self.__contact_server__(payload, method="get", rest_path="api/v2/objectives")}
-        print(data)
         objectives = ObjectiveList(**data)
         return objectives.get_data()
 
-    # TODO: list_sources_for_name
-    # TODO: list_facts_for_name
-    # TODO: list_paws_of_running_agents
-    # TODO: get_operation
-    # TODO: get_adversary
-    # TODO: get_source
-    # TODO: get_ability
-    # TODO: does_ability_support_platform
-    # TODO: get_operation_by_id
-    # TODO: view_operation_report
-    # TODO: view_operation_output
-    # TODO: add_sources (maybe not needed anymore)
-    # TODO: execute_operation
-
-    # TODO is_operation_finished
-    # TODO: attack
-
     def add_adversary(self, name: str, ability: str, description: str = "created automatically"):
+        """ Adds a new adversary
+
+        :param name: Name of the adversary
+        :param ability: Ability ID to add
+        :param description: Human readable description
+        :return:
+        """
         payload = {
             #  "adversary_id": "string",
             "atomic_ordering": [
@@ -522,34 +578,58 @@ class CalderaControl():
             "description": description
         }
         data = {"agents": self.__contact_server__(payload, method="post", rest_path="api/v2/adversaries")}
-        print(data)
         # agents = AgentList(**data)
         return data
 
     def delete_adversary(self, adversary_id: str):
+        """ Deletes an adversary
+
+        :param adversary_id: The id of this adversary
+        :return:
+        """
         payload = None
         data = {"agents": self.__contact_server__(payload, method="delete", rest_path=f"api/v2/adversaries/{adversary_id}")}
-        # print(data)
-        # agents = AgentList(**data)
         return data
 
     def delete_agent(self, agent_paw: str):
+        """ Deletes an agent
+
+        :param agent_paw: the paw to delete
+        :return:
+        """
         payload = None
         data = {"agents": self.__contact_server__(payload, method="delete", rest_path=f"api/v2/agents/{agent_paw}")}
-        # print(data)
-        # agents = AgentList(**data)
         return data
 
     def kill_agent(self, agent_paw: str):
+        """ Kills an agent on the target
+
+        :param agent_paw: The paw identifying this agent
+        :return:
+        """
         payload = {"watchdog": 1,
                    "sleep_min": 3,
                    "sleep_max": 3}
         data = self.__contact_server__(payload, method="patch", rest_path=f"api/v2/agents/{agent_paw}")
-        # print(data)
-        # agents = AgentList(**data)
         return data
 
-    def add_operation(self, name, adversary_id, source_id="basic", planner_id="atomic", group="", state: str = "running", obfuscator: str = "plain-text", jitter: str = '4/8'):
+    def add_operation(self, **kwargs):
+        """ Adds a new operation
+
+        :param kwargs:
+        :return:
+        """
+
+        # name, adversary_id, source_id = "basic", planner_id = "atomic", group = "", state: str = "running", obfuscator: str = "plain-text", jitter: str = '4/8'
+
+        name: str = kwargs.get("name")
+        adversary_id: str = kwargs.get("adversary_id")
+        source_id: str = kwargs.get("source_id", "basic")
+        planner_id: str = kwargs.get("planner_id", "atomic")
+        group: str = kwargs.get("group", "")
+        state: str = kwargs.get("state", "running")
+        obfuscator: str = kwargs.get("obfuscator", "plain-text")
+        jitter: str = kwargs.get("jitter", "4/8")
 
         payload = {"name": name,
                    "group": group,
@@ -568,10 +648,30 @@ class CalderaControl():
         return operations
 
     def delete_operation(self, operation_id):
+        """ Deletes an operation
+
+        :param operation_id: The Id of the operation to delete
+        :return:
+        """
 
         payload = {}
 
         data = self.__contact_server__(payload, method="delete", rest_path=f"api/v2/operations/{operation_id}")
+
+        return data
+
+    def view_operation_report(self, operation_id):
+        """ Views the report of a finished operation
+
+        :param operation_id: The id of this operation
+        :return:
+        """
+
+        payload = {
+            "enable_agent_output": True
+        }
+
+        data = self.__contact_server__(payload, method="post", rest_path=f"api/v2/operations/{operation_id}/report")
 
         return data
 

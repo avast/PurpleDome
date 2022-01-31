@@ -4,6 +4,7 @@ from app.calderacontrol import CalderaControl
 from simplejson.errors import JSONDecodeError
 from app.exceptions import CalderaError
 from app.attack_log import AttackLog
+import pydantic
 
 # https://docs.python.org/3/library/unittest.html
 
@@ -20,8 +21,11 @@ class TestExample(unittest.TestCase):
     # list_operations
     def test_list_operations(self):
         with patch.object(self.cc, "__contact_server__", return_value=None) as mock_method:
-            self.cc.list_operations()
-        mock_method.assert_called_once_with({"index": "operations"})
+            try:
+                self.cc.list_operations()
+            except pydantic.error_wrappers.ValidationError:
+                pass
+        mock_method.assert_called_once_with(None, method='get', rest_path='api/v2/operations')
 
     # list operations gets the expected exception
     def test_list_operations_with_exception(self):
@@ -32,8 +36,11 @@ class TestExample(unittest.TestCase):
     # list_abilities
     def test_list_abilities(self):
         with patch.object(self.cc, "__contact_server__", return_value=None) as mock_method:
-            self.cc.list_abilities()
-        mock_method.assert_called_once_with({"index": "abilities"})
+            try:
+                self.cc.list_abilities()
+            except pydantic.error_wrappers.ValidationError:
+                pass
+        mock_method.assert_called_once_with(None, method='get', rest_path='api/v2/abilities')
 
     # list abilities gets the expected exception
     def test_list_abilities_with_exception(self):
@@ -44,8 +51,11 @@ class TestExample(unittest.TestCase):
     # list_agents
     def test_list_agents(self):
         with patch.object(self.cc, "__contact_server__", return_value=None) as mock_method:
-            self.cc.list_agents()
-        mock_method.assert_called_once_with({"index": "agents"})
+            try:
+                self.cc.list_agents()
+            except pydantic.error_wrappers.ValidationError:
+                pass
+        mock_method.assert_called_once_with(None, method='get', rest_path='api/v2/agents')
 
     # list agents gets the expected exception
     def test_list_agents_with_exception(self):
@@ -56,8 +66,11 @@ class TestExample(unittest.TestCase):
     # list_adversaries
     def test_list_adversaries(self):
         with patch.object(self.cc, "__contact_server__", return_value=None) as mock_method:
-            self.cc.list_adversaries()
-        mock_method.assert_called_once_with({"index": "adversaries"})
+            try:
+                self.cc.list_adversaries()
+            except pydantic.error_wrappers.ValidationError:
+                pass
+        mock_method.assert_called_once_with(None, method='get', rest_path='api/v2/adversaries')
 
     # list adversaries gets the expected exception
     def test_list_adversaries_with_exception(self):
@@ -68,8 +81,11 @@ class TestExample(unittest.TestCase):
     # list_objectives
     def test_list_objectives(self):
         with patch.object(self.cc, "__contact_server__", return_value=None) as mock_method:
-            self.cc.list_objectives()
-        mock_method.assert_called_once_with({"index": "objectives"})
+            try:
+                self.cc.list_objectives()
+            except pydantic.error_wrappers.ValidationError:
+                pass
+        mock_method.assert_called_once_with(None, method='get', rest_path='api/v2/objectives')
 
     # list objectives gets the expected exception
     def test_list_objectives_with_exception(self):
@@ -137,8 +153,11 @@ class TestExample(unittest.TestCase):
     def test_get_operation_by_id(self):
         opid = "FooBar"
         with patch.object(self.cc, "__contact_server__", return_value=None) as mock_method:
-            self.cc.get_operation_by_id(opid)
-        mock_method.assert_called_once_with({"index": "operations"})
+            try:
+                self.cc.get_operation_by_id(opid)
+            except pydantic.error_wrappers.ValidationError:
+                pass
+        mock_method.assert_called_once_with(None, method='get', rest_path='api/v2/operations')
 
     # get_linkid
     def test_get_linkid(self):
@@ -175,7 +194,7 @@ class TestExample(unittest.TestCase):
         opid = "FooBar"
         with patch.object(self.cc, "__contact_server__", return_value=None) as mock_method:
             self.cc.view_operation_report(opid)
-        mock_method.assert_called_once_with({"index": "operation_report", "op_id": opid, "agent_output": 1})
+        mock_method.assert_called_once_with({"enable_agent_output": True}, method="post", rest_path="api/v2/operations/FooBar/report")
 
     # get_result_by_id gets the expected exception
     def test_view_operation_report_with_exception(self):
@@ -220,57 +239,32 @@ class TestExample(unittest.TestCase):
         group = "test_group"
         advid = "test_id"
 
-        exp1 = {"index": "sources",
-                "name": "source_test_name",
-                "rules": [],
-                "relationships": [],
-                "facts": []
-                }
-        exp3 = {"index": "operations",
-                "name": name,
-                "state": state,
-                "autonomous": 1,
-                'obfuscator': 'plain-text',
-                'auto_close': '1',
-                'jitter': '4/8',
-                'source': 'source_test_name',
-                'visibility': '50',
-                "group": group,
-                "planner": "atomic",
-                "adversary_id": advid,
-                }
+        exp1 = {'name': 'test_name', 'group': 'test_group', 'adversary': {'adversary_id': None}, 'auto_close': False, 'state': 'test_state', 'autonomous': 1, 'planner': {'id': 'atomic'}, 'source': {'id': 'basic'}, 'use_learning_parsers': True, 'obfuscator': 'plain-text', 'jitter': '4/8', 'visibility': '51'}
+
         with patch.object(self.cc, "__contact_server__", return_value=None) as mock_method:
-            self.cc.add_operation(name, advid, group, state)
-        # mock_method.assert_called_once_with(exp, method="put")
-        mock_method.assert_has_calls([call(exp1, method="put"), call(exp3, method="put")])
+            try:
+                self.cc.add_operation(name=name,
+                                      advid=advid,
+                                      group=group,
+                                      state=state)
+            except pydantic.error_wrappers.ValidationError:
+                pass
+        mock_method.assert_has_calls([call(exp1, method='post', rest_path='api/v2/operations')])
 
     # add_operation defaults
     def test_add_operation_defaults(self):
         name = "test_name"
         advid = "test_id"
 
-        exp1 = {"index": "sources",
-                "name": "source_test_name",
-                "rules": [],
-                "relationships": [],
-                "facts": []
-                }
-        exp3 = {"index": "operations",
-                "name": name,
-                "state": "running",  # default
-                "autonomous": 1,
-                'obfuscator': 'plain-text',
-                'auto_close': '1',
-                'jitter': '4/8',
-                'source': 'source_test_name',
-                'visibility': '50',
-                "group": "red",  # default
-                "planner": "atomic",
-                "adversary_id": advid,
-                }
+        exp1 = {'name': 'test_name', 'group': '', 'adversary': {'adversary_id': None}, 'auto_close': False, 'state': 'running', 'autonomous': 1, 'planner': {'id': 'atomic'}, 'source': {'id': 'basic'}, 'use_learning_parsers': True, 'obfuscator': 'plain-text', 'jitter': '4/8', 'visibility': '51'}
+
         with patch.object(self.cc, "__contact_server__", return_value=None) as mock_method:
-            self.cc.add_operation(name, advid)
-        mock_method.assert_has_calls([call(exp1, method="put"), call(exp3, method="put")])
+            try:
+                self.cc.add_operation(name=name,
+                                      advid=advid)
+            except pydantic.error_wrappers.ValidationError:
+                pass
+        mock_method.assert_has_calls([call(exp1, method='post', rest_path='api/v2/operations')])
 
     # add_adversary
     def test_add_adversary(self):
@@ -278,31 +272,33 @@ class TestExample(unittest.TestCase):
         ability = "test_ability"
         description = "test_descritption"
 
-        exp = {"index": "adversaries",
-               "name": name,
-               "description": description,
-               "atomic_ordering": [{"id": ability}],
-               #
-               "objective": '495a9828-cab1-44dd-a0ca-66e58177d8cc'  # default objective
-               }
+        # Caldera 4
+        exp_4 = {
+            "name": name,
+            "description": description,
+            "atomic_ordering": ["test_ability"],
+            #
+            "objective": '495a9828-cab1-44dd-a0ca-66e58177d8cc'  # default objective
+        }
         with patch.object(self.cc, "__contact_server__", return_value=None) as mock_method:
             self.cc.add_adversary(name, ability, description)
-        mock_method.assert_called_once_with(exp, method="put")
+        mock_method.assert_called_once_with(exp_4, method="post", rest_path="api/v2/adversaries")
 
     def test_add_adversary_default(self):
         name = "test_name"
         ability = "test_ability"
 
-        exp = {"index": "adversaries",
-               "name": name,
-               "description": "created automatically",
-               "atomic_ordering": [{"id": ability}],
-               #
-               "objective": '495a9828-cab1-44dd-a0ca-66e58177d8cc'  # default objective
-               }
+        # Caldera 4
+        exp_4 = {
+            "name": name,
+            "description": "created automatically",
+            "atomic_ordering": ["test_ability"],
+            #
+            "objective": '495a9828-cab1-44dd-a0ca-66e58177d8cc'  # default objective
+        }
         with patch.object(self.cc, "__contact_server__", return_value=None) as mock_method:
             self.cc.add_adversary(name, ability)
-        mock_method.assert_called_once_with(exp, method="put")
+        mock_method.assert_called_once_with(exp_4, method="post", rest_path="api/v2/adversaries")
 
     # execute_operation
     def test_execute_operation(self):
@@ -313,7 +309,7 @@ class TestExample(unittest.TestCase):
                "op_id": operation_id,
                "state": state}
         with patch.object(self.cc, "__contact_server__", return_value=None) as mock_method:
-            self.cc.execute_operation(operation_id, state)
+            self.cc.set_operation_state(operation_id, state)
         mock_method.assert_called_once_with(exp)
 
     # not supported state
@@ -323,7 +319,7 @@ class TestExample(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             with patch.object(self.cc, "__contact_server__", return_value=None):
-                self.cc.execute_operation(operation_id, state)
+                self.cc.set_operation_state(operation_id, state)
 
     def test_execute_operation_default(self):
         operation_id = "test_opid"
@@ -333,28 +329,24 @@ class TestExample(unittest.TestCase):
                "state": "running"  # default
                }
         with patch.object(self.cc, "__contact_server__", return_value=None) as mock_method:
-            self.cc.execute_operation(operation_id)
+            self.cc.set_operation_state(operation_id)
         mock_method.assert_called_once_with(exp)
 
     # delete_operation
     def test_delete_operation(self):
         opid = "test_opid"
 
-        exp = {"index": "operations",
-               "id": opid}
         with patch.object(self.cc, "__contact_server__", return_value=None) as mock_method:
             self.cc.delete_operation(opid)
-        mock_method.assert_called_once_with(exp, method="delete")
+        mock_method.assert_called_once_with({}, method="delete", rest_path="api/v2/operations/test_opid")
 
     # delete_adversary
     def test_delete_adversary(self):
         adid = "test_adid"
 
-        exp = {"index": "adversaries",
-               "adversary_id": [{"adversary_id": adid}]}
         with patch.object(self.cc, "__contact_server__", return_value=None) as mock_method:
             self.cc.delete_adversary(adid)
-        mock_method.assert_called_once_with(exp, method="delete")
+        mock_method.assert_called_once_with(None, method="delete", rest_path="api/v2/adversaries/test_adid")
 
     # is_operation_finished
     def test_is_operation_finished_true(self):
@@ -372,14 +364,6 @@ class TestExample(unittest.TestCase):
         with patch.object(self.cc, "get_operation_by_id", return_value=opdata):
             res = self.cc.is_operation_finished(opid)
         self.assertEqual(res, False)
-
-    def test_is_operation_finished_exception(self):
-        opdata = [{"chain": [{"statusa": 1}]}]
-        opid = "does not matter"
-
-        with self.assertRaises(CalderaError):
-            with patch.object(self.cc, "get_operation_by_id", return_value=opdata):
-                self.cc.is_operation_finished(opid)
 
     def test_is_operation_finished_exception2(self):
         opdata = []

@@ -6,7 +6,7 @@ import argparse
 from pprint import pprint
 
 # from app.calderacontrol import CalderaControl
-from app.calderaapi_4 import CalderaControl
+from app.calderaapi_4 import CalderaAPI
 
 
 from app.attack_log import AttackLog
@@ -32,6 +32,7 @@ def agents(calcontrol, arguments):  # pylint: disable=unused-argument
 
     if arguments.list:
         print(calcontrol.list_agents())
+        print([i["paw"] for i in calcontrol.list_agents()])
     if arguments.delete:
         print(calcontrol.delete_agent(arguments.paw))
     if arguments.kill:
@@ -176,7 +177,14 @@ def operations(calcontrol, arguments):
         if arguments.name is None:
             raise CmdlineArgumentException("Adding an operation requires a name for it")
 
-        ops = calcontrol.add_operation(arguments.name, arguments.adversary_id, arguments.source_id, arguments.planner_id, arguments.group, arguments.state, arguments.obfuscator, arguments.jitter)
+        ops = calcontrol.add_operation(name=arguments.name,
+                                       adversary_id=arguments.adversary_id,
+                                       source_id=arguments.source_id,
+                                       planner_id=arguments.planner_id,
+                                       group=arguments.group,
+                                       state=arguments.state,
+                                       obfuscator=arguments.obfuscator,
+                                       jitter=arguments.jitter)
         print(ops)
 
     if arguments.delete:
@@ -184,6 +192,12 @@ def operations(calcontrol, arguments):
             raise CmdlineArgumentException("Deleting an operation requires its id")
         ops = calcontrol.delete_operation(arguments.id)
         print(ops)
+
+    if arguments.view_report:
+        if arguments.id is None:
+            raise CmdlineArgumentException("Viewing an operation report requires an operation id")
+        report = calcontrol.view_operation_report(arguments.id)
+        print(report)
 
 
 def attack(calcontrol, arguments):
@@ -272,6 +286,8 @@ def create_parser():
                                    help="Add a new operations")
     parser_operations.add_argument("--delete", default=False, action="store_true",
                                    help="Delete an operation")
+    parser_operations.add_argument("--view_report", default=False, action="store_true",
+                                   help="View the report of a finished operation")
     parser_operations.add_argument("--name", default=None, help="Name of the operation")
     parser_operations.add_argument("--adversary_id", "--advid", default=None, help="Adversary ID")
     parser_operations.add_argument("--source_id", "--sourceid", default="basic", help="'Source' ID")
@@ -308,7 +324,7 @@ if __name__ == "__main__":
     print(args.caldera_url)
 
     attack_logger = AttackLog(args.verbose)
-    caldera_control = CalderaControl(args.caldera_url, attack_logger, config=None, apikey=args.apikey)
+    caldera_control = CalderaAPI(args.caldera_url, attack_logger, config=None, apikey=args.apikey)
     print("Caldera Control ready")
     try:
         str(args.func(caldera_control, args))
