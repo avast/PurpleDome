@@ -300,20 +300,17 @@ class TestExample(unittest.TestCase):
             self.cc.add_adversary(name, ability)
         mock_method.assert_called_once_with(exp_4, method="post", rest_path="api/v2/adversaries")
 
-    # execute_operation
-    def test_execute_operation(self):
+    # set_operation_state
+    def test_set_operation_state(self):
         operation_id = "test_opid"
         state = "paused"
 
-        exp = {"index": "operation",
-               "op_id": operation_id,
-               "state": state}
         with patch.object(self.cc, "__contact_server__", return_value=None) as mock_method:
             self.cc.set_operation_state(operation_id, state)
-        mock_method.assert_called_once_with(exp)
+        mock_method.assert_called_once_with({'state': 'paused'}, method='patch', rest_path='api/v2/operations/test_opid')
 
     # not supported state
-    def test_execute_operation_not_supported(self):
+    def test_set_operation_state_not_supported(self):
         operation_id = "test_opid"
         state = "not supported"
 
@@ -321,16 +318,12 @@ class TestExample(unittest.TestCase):
             with patch.object(self.cc, "__contact_server__", return_value=None):
                 self.cc.set_operation_state(operation_id, state)
 
-    def test_execute_operation_default(self):
+    def test_set_operation_state_default(self):
         operation_id = "test_opid"
 
-        exp = {"index": "operation",
-               "op_id": operation_id,
-               "state": "running"  # default
-               }
         with patch.object(self.cc, "__contact_server__", return_value=None) as mock_method:
             self.cc.set_operation_state(operation_id)
-        mock_method.assert_called_once_with(exp)
+        mock_method.assert_called_once_with({'state': 'running'}, method='patch', rest_path='api/v2/operations/test_opid')
 
     # delete_operation
     def test_delete_operation(self):

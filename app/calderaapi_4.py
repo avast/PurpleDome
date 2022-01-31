@@ -538,7 +538,7 @@ class CalderaAPI():
             raise ValueError
 
         payload = {"state": state}
-        return self.__contact_server__(payload, method="patch",  rest_path=f"api/v2/operations/{operation_id}")
+        return self.__contact_server__(payload, method="patch", rest_path=f"api/v2/operations/{operation_id}")
 
     def list_agents(self):
         """ Return all agents """
