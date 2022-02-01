@@ -26,3 +26,6 @@ types-PyYAML==5.4.6
 types-requests==2.25.6
 types-simplejson==3.17.0
 types-paramiko==2.7.0
+
+# Argcomplete. See README.md
+argcomplete==2.0.0
