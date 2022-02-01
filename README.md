@@ -184,3 +184,11 @@ Code review will be happening on github. If everything is nice, you should squas
 git rebase --interactive
 git push --force
 ```
+
+### Argcomplete
+
+https://kislyuk.github.io/argcomplete/
+
+Is a argparse extension that registers the command line arguments for bash. It requires a command line command to register it globally. This is added to init.sh
+
+The configuration will be set in /etc/bash_completion.d/ . Keep in mind: It will require a shell restart to be activated

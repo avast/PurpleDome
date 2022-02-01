@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
+# PYTHON_ARGCOMPLETE_OK
 """ Demo program to set up and control the machines """
 
 import argparse
+import argcomplete
 
 import yaml
 
@@ -89,7 +91,7 @@ def create_parser():
 if __name__ == "__main__":
 
     parser = create_parser()
-
+    argcomplete.autocomplete(parser)
     args = parser.parse_args()
 
     args.func(args)

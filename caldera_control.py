@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-
+# PYTHON_ARGCOMPLETE_OK
 """ A command line tool to control a caldera server """
 
 import argparse
 from pprint import pprint
+import argcomplete
 
 # from app.calderacontrol import CalderaControl
 from app.calderaapi_4 import CalderaAPI
@@ -319,6 +320,7 @@ def create_parser():
 
 if __name__ == "__main__":
     parser = create_parser()
+    argcomplete.autocomplete(parser)
     args = parser.parse_args()
 
     print(args.caldera_url)

@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
+# PYTHON_ARGCOMPLETE_OK
 """ Managing plugins """
 
 import argparse
 import sys
+import argcomplete
 
 from app.pluginmanager import PluginManager
 from app.attack_log import AttackLog
@@ -66,7 +68,7 @@ def create_parser():
 if __name__ == "__main__":
 
     parser = create_parser()
-
+    argcomplete.autocomplete(parser)
     args = parser.parse_args()
 
     exval = args.func(args)
