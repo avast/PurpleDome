@@ -4,6 +4,8 @@ Configuration
 
 Configuration is contained in yaml files. The example shipped with the code is *template.yaml*.
 
+For your first experiments use *hello_world.yaml* which will run a simple attack on a simulated system.
+
 To define the VMs there are also *Vagrantfiles* and associated scripts. The example shipped with the code is in the *systems* folder. Using Vagrant is optional.
 
 Machines
@@ -25,6 +27,8 @@ You can install vulnerabilities and weaknesses in the targets to allow your atta
 Sensors
 =======
 
+Sensors are all kinds of technology monitoring system events and collecting data required to detect an attack. Either while it happens or as a forensic experiment.
+
 Each machine can have a list of sensors to run on it. In addition there is the global *sensor_conf* setting to configure the sensors.
 
 Sensors are implemented as plugins.
@@ -37,7 +41,7 @@ caldera_attacks
 
 Caldera attacks (called abilities) are identified by a unique ID. Some abilities are built to target several OS-es.
 
-All Caldera abilities are available. As some will need parameters and Caldera does not offer the option to configure those in the YAML, some caldera attacks might not work without implementing a plugin.
+All Caldera abilities are available. As some will need parameters and PurpleDome does not offer the option to configure those in the YAML, some caldera attacks might not work without implementing a plugin.
 
 In the YAML file you will find two sub-categories under caldera_attacks: linux and windows. There you just list the ids of the caldera attacks to run on those systems.
 

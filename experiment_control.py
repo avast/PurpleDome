@@ -42,7 +42,7 @@ def create_parser():
     subparsers = lparser.add_subparsers(help="sub-commands")
 
     lparser.set_defaults(func=explain)
-    lparser.add_argument('--verbose', '-v', action='count', default=0)
+    lparser.add_argument('--verbose', '-v', action='count', default=0, help="Verbosity level")
 
     # Sub parser for machine creation
     parser_run = subparsers.add_parser("run", help="run experiments")

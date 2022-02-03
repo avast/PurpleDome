@@ -1,0 +1,12 @@
+
+
+
+
+TODO: What sensors are pre-installed ?
+TODO: How to attack it ?
+TODO: How to contact the servers (ssh/...) ? Scriptable
+TODO: How to run it without sudo ?
+TODO: Which data is collected ? How to access it ? How to get data dumps out ?
+TODO: Add Linux Server
+TODO: Add Mac Server
+
