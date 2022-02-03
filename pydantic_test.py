@@ -22,7 +22,7 @@ def create_parser():
     """ Creates the parser for the command line arguments"""
     lparser = argparse.ArgumentParser("Parse a config file and verifies it")
 
-    lparser.add_argument('--filename', default="experiment_ng.yaml")
+    lparser.add_argument('--filename', default="experiment_ng.yaml", help="Config file to verify")
 
     return lparser
 

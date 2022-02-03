@@ -7,6 +7,7 @@ from pprint import pprint
 import argcomplete
 
 # from app.calderacontrol import CalderaControl
+# from app.calderacontrol import CalderaControl
 from app.calderaapi_4 import CalderaAPI
 
 
@@ -40,36 +41,22 @@ def agents(calcontrol, arguments):  # pylint: disable=unused-argument
         print(calcontrol.kill_agent(arguments.paw))
 
 
-def list_facts(calcontrol, arguments):  # pylint: disable=unused-argument
-    """ Call list fact stores ("sources") in caldera control
+def facts(calcontrol, arguments):
+    """ Deal with fact stores ("sources") in caldera control
 
     @param calcontrol: Connection to the caldera server
     @param arguments: Parser command line arguments
     """
 
-    printme = "No found"
+    if arguments.list:
+        if arguments.name is None:
+            raise CmdlineArgumentException("Listing facts by name requires a name")
 
-    if arguments.name:
-        printme = calcontrol.list_facts_for_name(arguments.name)
-    else:
-        printme = calcontrol.list_sources()
-
-    print(f"Stored facts: {printme}")
+        print_me = calcontrol.list_facts_for_name(arguments.name)
+        print(f"Stored facts: {print_me}")
 
 
-def add_facts(calcontrol, arguments):  # pylint: disable=unused-argument
-    """ Generate new facts in caldera
-
-    @param calcontrol: Connection to the caldera server
-    @param arguments: Parser command line arguments
-    """
-    name = "Test"
-    data = {"foo": "bar"}
-
-    print(f'Created fact: {calcontrol.add_sources(name, data)}')
-
-
-def list_abilities(calcontrol, arguments):
+def abilities(calcontrol, arguments):
     """ Call list abilities in caldera control
 
     @param calcontrol: Connection to the caldera server
@@ -77,11 +64,11 @@ def list_abilities(calcontrol, arguments):
     """
 
     if arguments.list:
-        abilities = calcontrol.list_abilities()
-        abi_ids = [aid.ability_id for aid in abilities]
+        ability_list = calcontrol.list_abilities()
+        abi_ids = [aid.ability_id for aid in ability_list]
         print(abi_ids)
 
-        for abi in abilities:
+        for abi in ability_list:
             for executor in abi.executors:
                 for a_parser in executor.parsers:
                     pprint(a_parser.relationships)
@@ -202,7 +189,7 @@ def operations(calcontrol, arguments):
 
 
 def attack(calcontrol, arguments):
-    """ Calling attack
+    """ Starting an attack
 
     @param calcontrol: Connection to the caldera server
     @param arguments: Parser command line arguments
@@ -217,56 +204,57 @@ def attack(calcontrol, arguments):
 def create_parser():
     """ Creates the parser for the command line arguments"""
 
-    main_parser = argparse.ArgumentParser("Controls a Caldera server to attack other systems")
+    main_parser = argparse.ArgumentParser("Controls a Caldera server. Use this to test your Caldera setup or the Caldera API.")
     main_parser.add_argument('--verbose', '-v', action='count', default=0)
 
     subparsers = main_parser.add_subparsers(help="sub-commands")
 
     # Sub parser for attacks
-    parser_attack = subparsers.add_parser("attack", help="attack system")
+    parser_attack = subparsers.add_parser("attack", help="Attack system")
     parser_attack.set_defaults(func=attack)
-    parser_attack.add_argument("--paw", default="kickme", help="paw to attack and get specific results for")
-    parser_attack.add_argument("--group", default="red", help="target group to attack")
+    parser_attack.add_argument("--paw", default="kickme", help="Paw to attack and get specific results for")
+    parser_attack.add_argument("--group", default="red", help="Target group to attack")
     parser_attack.add_argument("--ability_id", default="bd527b63-9f9e-46e0-9816-b8434d2b8989",
                                help="The ability to use for the attack")
 
     # Sub parser to list abilities
-    parser_abilities = subparsers.add_parser("abilities", help="abilities")
+    parser_abilities = subparsers.add_parser("abilities", help="Control Caldera abilities ( aka exploits)")
     # parser_abilities.add_argument("--abilityid", default=None, help="Id of the ability to list")
-    parser_abilities.set_defaults(func=list_abilities)
-    parser_abilities.add_argument("--ability_ids", default=[], nargs="+",
-                                  help="The abilities to look up. One or more ids")
+    parser_abilities.set_defaults(func=abilities)
+    # parser_abilities.add_argument("--ability_ids", default=[], nargs="+",
+    #                               help="The abilities to look up. One or more ids")
     parser_abilities.add_argument("--list", default=False, action="store_true",
                                   help="List all abilities")
 
-    parser_agents = subparsers.add_parser("agents", help="agents")
+    parser_agents = subparsers.add_parser("agents", help="Control Caldera agents ( aka implants)")
     parser_agents.set_defaults(func=agents)
     parser_agents.add_argument("--list", default=False, action="store_true", help="List all agents")
-    parser_agents.add_argument("--delete", default=False, action="store_true", help="Delete agent")
-    parser_agents.add_argument("--kill", default=False, action="store_true", help="Delete agent")
-    parser_agents.add_argument("--paw", default=None, help="PAW to delete. if not set it will delete all agents")
+    parser_agents.add_argument("--delete", default=False, action="store_true", help="Delete agent from database")
+    parser_agents.add_argument("--kill", default=False, action="store_true", help="Kill agent on target system")
+    parser_agents.add_argument("--paw", default=None, help="PAW to delete or kill. If this is not set it will delete all agents")
 
     parser_facts = subparsers.add_parser("facts", help="facts")
-    parser_facts.set_defaults(func=list_facts)
+    parser_facts.set_defaults(func=facts)
+    parser_facts.add_argument("--list", default=False, action="store_true", help="List facts")
     parser_facts.add_argument("--name", default=None, help="Name of a fact source to focus on")
 
-    parser_facts = subparsers.add_parser("add_facts", help="facts")
-    parser_facts.set_defaults(func=add_facts)
+    # parser_facts = subparsers.add_parser("add_facts", help="facts")
+    # parser_facts.set_defaults(func=add_facts)
 
     # Sub parser for obfuscators
-    parser_obfuscators = subparsers.add_parser("obfuscators", help="obfuscators")
+    parser_obfuscators = subparsers.add_parser("obfuscators", help="Obfuscator interface. Hide the attack")
     parser_obfuscators.set_defaults(func=obfuscators)
     parser_obfuscators.add_argument("--list", default=False, action="store_true",
                                     help="List all obfuscators")
 
     # Sub parser for objectives
-    parser_objectives = subparsers.add_parser("objectives", help="objectives")
+    parser_objectives = subparsers.add_parser("objectives", help="Objectives interface")
     parser_objectives.set_defaults(func=objectives)
     parser_objectives.add_argument("--list", default=False, action="store_true",
                                    help="List all objectives")
 
     # Sub parser for adversaries
-    parser_adversaries = subparsers.add_parser("adversaries", help="adversaries")
+    parser_adversaries = subparsers.add_parser("adversaries", help="Adversary interface. Adversaries are attacker archetypes")
     parser_adversaries.set_defaults(func=adversaries)
     parser_adversaries.add_argument("--list", default=False, action="store_true",
                                     help="List all adversaries")
@@ -279,7 +267,7 @@ def create_parser():
     parser_adversaries.add_argument("--adversary_id", "--advid", default=None, help="Adversary ID")
 
     # Sub parser for operations
-    parser_operations = subparsers.add_parser("operations", help="operations")
+    parser_operations = subparsers.add_parser("operations", help="Attack operation interface")
     parser_operations.set_defaults(func=operations)
     parser_operations.add_argument("--list", default=False, action="store_true",
                                    help="List all operations")
@@ -291,7 +279,7 @@ def create_parser():
                                    help="View the report of a finished operation")
     parser_operations.add_argument("--name", default=None, help="Name of the operation")
     parser_operations.add_argument("--adversary_id", "--advid", default=None, help="Adversary ID")
-    parser_operations.add_argument("--source_id", "--sourceid", default="basic", help="'Source' ID")
+    parser_operations.add_argument("--source_id", "--sourceid", default="basic", help="Source ID")
     parser_operations.add_argument("--planner_id", "--planid", default="atomic", help="Planner ID")
     parser_operations.add_argument("--group", default="", help="Caldera group to run the operation on (we are targeting groups, not PAWs)")
     parser_operations.add_argument("--state", default="running", help="State to start the operation in")
@@ -300,20 +288,20 @@ def create_parser():
     parser_operations.add_argument("--id", default=None, help="ID of operation to delete")
 
     # Sub parser for sources
-    parser_sources = subparsers.add_parser("sources", help="sources")
+    parser_sources = subparsers.add_parser("sources", help="Data source management")
     parser_sources.set_defaults(func=sources)
     parser_sources.add_argument("--list", default=False, action="store_true",
                                 help="List all sources")
 
     # Sub parser for planners
-    parser_sources = subparsers.add_parser("planners", help="planners")
+    parser_sources = subparsers.add_parser("planners", help="Planner management. They define the pattern of attack steps")
     parser_sources.set_defaults(func=planners)
     parser_sources.add_argument("--list", default=False, action="store_true",
                                 help="List all planners")
 
     # For all parsers
-    main_parser.add_argument("--caldera_url", help="caldera url, including port", default="http://localhost:8888/")
-    main_parser.add_argument("--apikey", help="caldera api key", default="ADMIN123")
+    main_parser.add_argument("--caldera_url", help="The Caldera url, including port and protocol (http://)", default="http://localhost:8888/")
+    main_parser.add_argument("--apikey", help="Caldera api key", default="ADMIN123")
 
     return main_parser
 

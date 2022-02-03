@@ -8,8 +8,8 @@
 .. Autodoc part
 .. https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#module-sphinx.ext.autodoc
 
-Welcome to the Purple Dome documentation!
-=========================================
+Welcome to the Purple Dome documentation
+========================================
 
 .. toctree::
    :maxdepth: 3
