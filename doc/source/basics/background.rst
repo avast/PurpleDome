@@ -6,15 +6,15 @@ Purple Dome is a simulated and automated environment to experiment with hacking 
 
 PurpleDome is relevant for you:
 
-* If you develop sensors for bolt on security
-* If you want to test detection logic for your bolt on security
-* If you want to stress test mitigation around your vulnerable apps
-* Experiment with hardening your OS or software
-* Want to forensically analyse a system after an attack
-* Do some blue team exercises
-* Want to train ML on data from real attacks
+* If you develop **sensors** for bolt on security
+* If you want to test **detection logic** for your bolt on security
+* If you want to stress test **mitigation** around your vulnerable apps
+* Experiment with **hardening** your OS or software
+* Want to **forensically** analyse a system after an attack
+* Do some **blue team exercises**
+* Want to **train ML** on data from real attacks
 
-PurpleDome simulates a small busniess network. It generates an attacker VM and target VMs. Automated attacks are then run against the targets.
+PurpleDome simulates a small business network. It generates an attacker VM and target VMs. Automated attacks are then run against the targets.
 
 Depending on which sensors you picked you will get their logs. And the logs from the attacks. Perfect to compare them side-by-side.
 
@@ -52,54 +52,18 @@ The experiments are configured in YAML files, the format is described in the *co
 
 If you want to modify Purple Dome and contribute to it I can point you to the *Extending* chapter. Thanks to a plugin interface this is quite simple.
 
-
-
-
-
-TODO: What sensors are pre-installed ?
-TODO: How to attack it ?
-TODO: How to contact the servers (ssh/...) ? Scriptable
-TODO: How to run it without sudo ?
-TODO: Which data is collected ? How to access it ? How to get data dumps out ?
-TODO: Add Linux Server
-TODO: Add Mac Server
-
-
-
 Data aggregator
 ---------------
 
 We currently can use logstash
 
-There are several options for data aggregators:
-
-* Fleet OSQuery aggregator: https://github.com/kolide/fleet
-* The Hive
-
-
-Sensors on Targets (most are Windows)
--------------------------------------
-
-Those sensors are not integrated but could be nice to play with:
-
-Palantir Windows Event forwarding: https://github.com/palantir/windows-event-forwarding
-
-Autorun monitoring: https://github.com/palantir/windows-event-forwarding/tree/master/AutorunsToWinEventLog
-
-Palantir OSquery: https://github.com/palantir/osquery-configuration
-
-SwiftOnSecurity Sysmon config: https://github.com/SwiftOnSecurity/sysmon-config
-
-
-Palantir OSQuery is mixed OS: Windows/Mac Endpoints, Linux Servers
-
 
 Caldera
 -------
 
-Attack framework.
+Caldera is an attack framework. Especially useful for pen testing and blue team training.
 
-Starting: *python3 server.py --insecure*
+Starting it: *python3 server.py --insecure*
 
 Web UI on *http://localhost:8888/*
 
@@ -114,40 +78,25 @@ server="http://192.168.178.45:8888";curl -s -X POST -H "file:sandcat.go" -H "pla
 Filebeat
 --------
 
-Filebeat has a set of modules:
+Filebeat collects logs on the target system.
+
+It has a set of modules:
 
 https://www.elastic.co/guide/en/beats/filebeat/6.8/filebeat-modules-overview.html
 
-List modules: *filebeat modules list*
+You can view a list of modules using: *filebeat modules list*
 
-%% TODO: Add OSQueryD https://osquery.readthedocs.io/en/latest/introduction/using-osqueryd/
 
 Logstash
 --------
+
+Logstash is used to aggregate the data from filebeat into a json file.
 
 Logstash uses all .conf files in /etc/logstash/conf.d
 
 https://www.elastic.co/guide/en/logstash/current/config-setting-files.html
 
-Alternative: The Hive
----------------------
-
-Sander Spierenburg (SOC Teamlead) seems to be interested in The Hive. So it is back in the game
-
-
-
 Repos
 -----
 
-* The main part: https://git.int.avast.com/ai-research/purpledome
-* Caldera fork to fix bugs: TBD
-* Caldera Plugin for statistics: <add public git/avast folder>
-
-
-Links
------
-
-* Others detecting this kind of things
-
-    - https://redcanary.com/blog/how-one-hospital-thwarted-a-ryuk-ransomware-outbreak/
-
+PurpleDome can be found on github: https://git.int.avast.com/ai-research/purpledome

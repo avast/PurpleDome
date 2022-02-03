@@ -1,25 +1,45 @@
 #!/usr/bin/env python3
-
+# PYTHON_ARGCOMPLETE_OK
 """ Generate human readable document describing the attack based on an attack log """
 
 import argparse
+import argcomplete
 from app.doc_generator import DocGenerator
 
-DEFAULT_ATTACK_LOG = "removeme/loot/2021_09_08___07_41_35/attack.json"  # FIN 7 first run on environment
+
+class CmdlineArgumentException(Exception):
+    """ An error in the user supplied command line """
+
+
+def create(arguments):
+    """ Create a document """
+
+    if arguments.attack_log is None:
+        raise CmdlineArgumentException("Creating a new document requires an attack_log")
+
+    doc_get = DocGenerator()
+    doc_get.generate(arguments.attack_log, arguments.outfile)
 
 
 def create_parser():
     """ Creates the parser for the command line arguments"""
-    parser = argparse.ArgumentParser("Controls an experiment on the configured systems")
+    lparser = argparse.ArgumentParser("Manage attack documentation")
+    subparsers = lparser.add_subparsers(help="sub-commands")
+    parser_create = subparsers.add_parser("create", help="Create a new human readable document")
+    parser_create.set_defaults(func=create)
+    parser_create.add_argument("--attack_log", default=None, help="The attack log the document is based on")
+    parser_create.add_argument("--outfile", default="tools/human_readable_documentation/source/contents.rst", help="The default output file")
 
-    parser.add_argument("--attack_log", default=DEFAULT_ATTACK_LOG, help="The attack log the document is based on")
-    parser.add_argument("--outfile", default="tools/human_readable_documentation/source/contents.rst", help="The default output file")
-
-    return parser
+    return lparser
 
 
 if __name__ == "__main__":
-    arguments = create_parser().parse_args()
+    parser = create_parser()
+    argcomplete.autocomplete(parser)
+    args = parser.parse_args()
 
-    dg = DocGenerator()
-    dg.generate(arguments.attack_log, arguments.outfile)
+    try:
+        str(args.func(args))
+    except CmdlineArgumentException as ex:
+        parser.print_help()
+        print(f"\nCommandline error: {ex}")

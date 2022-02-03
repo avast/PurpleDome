@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
+# PYTHON_ARGCOMPLETE_OK
 """ The main tool to run experiments """
 
 import argparse
+import argcomplete
 
 from app.experimentcontrol import Experiment
 
@@ -36,11 +38,11 @@ def run(args):
 
 def create_parser():
     """ Creates the parser for the command line arguments"""
-    parser = argparse.ArgumentParser("Controls an experiment on the configured systems")
-    subparsers = parser.add_subparsers(help="sub-commands")
+    lparser = argparse.ArgumentParser("Controls an experiment on the configured systems")
+    subparsers = lparser.add_subparsers(help="sub-commands")
 
-    parser.set_defaults(func=explain)
-    parser.add_argument('--verbose', '-v', action='count', default=0)
+    lparser.set_defaults(func=explain)
+    lparser.add_argument('--verbose', '-v', action='count', default=0, help="Verbosity level")
 
     # Sub parser for machine creation
     parser_run = subparsers.add_parser("run", help="run experiments")
@@ -49,9 +51,11 @@ def create_parser():
     parser_run.add_argument("--caldera_attack", default=None, help="The id of a specific caldera attack to run, will override experiment configuration for attacks")
     parser_run.add_argument("--caldera_attack_file", default=None, help="The file name containing a list of caldera attacks to run, will override experiment configuration for attacks")
 
-    return parser
+    return lparser
 
 
 if __name__ == "__main__":
-    arguments = create_parser().parse_args()
+    parser = create_parser()
+    argcomplete.autocomplete(parser)
+    arguments = parser.parse_args()
     arguments.func(arguments)

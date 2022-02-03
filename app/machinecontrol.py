@@ -390,7 +390,8 @@ class Machine():
         # TODO: Caldera implant
         # TODO: Metasploit implant
 
-    def install_caldera_server(self, cleanup=False, version="2.8.1"):
+    # options for version: 4.0.0-alpha.2   2.8.1
+    def install_caldera_server(self, cleanup=False, version="4.0.0-alpha.2"):
         """ Installs the caldera server on the VM
 
         @param cleanup: Remove the old caldera version. Slow but reduces side effects
@@ -404,7 +405,7 @@ class Machine():
         else:
             cleanupcmd = ""
 
-        cmd = f"cd {self.caldera_basedir}; {cleanupcmd}  git clone https://github.com/mitre/caldera.git --recursive --branch {version}; cd caldera; pip3 install -r requirements.txt"
+        cmd = f"cd {self.caldera_basedir}; {cleanupcmd} git clone https://github.com/mitre/caldera.git --recursive --branch {version}; cd caldera; git checkout {version}; pip3 install -r requirements.txt"
         self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Caldera server installed {CommandlineColors.ENDC}", 1)
         res = self.vm_manager.__call_remote_run__(cmd)
         return "Result installing caldera server " + str(res)

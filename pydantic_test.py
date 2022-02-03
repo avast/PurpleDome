@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-
+# PYTHON_ARGCOMPLETE_OK
 """ A command line tool to verify PurpleDome configuration files """
 
 import argparse
 from pprint import pprint
 import sys
+import argcomplete
+
 import yaml
 from app.config_verifier import MainConfig
 
@@ -18,15 +20,17 @@ def load(filename):
 
 def create_parser():
     """ Creates the parser for the command line arguments"""
-    parser = argparse.ArgumentParser("Parse a config file and verifies it")
+    lparser = argparse.ArgumentParser("Parse a config file and verifies it")
 
-    parser.add_argument('--filename', default="experiment_ng.yaml")
+    lparser.add_argument('--filename', default="experiment_ng.yaml", help="Config file to verify")
 
-    return parser
+    return lparser
 
 
 if __name__ == "__main__":
-    arguments = create_parser().parse_args()
+    parser = create_parser()
+    argcomplete.autocomplete(parser)
+    arguments = parser.parse_args()
     try:
         r = load(arguments.filename)
     except TypeError as e:
