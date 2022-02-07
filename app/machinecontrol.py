@@ -24,9 +24,9 @@ class Machine():
     def __init__(self, config, attack_logger, calderakey="ADMIN123",):
         """
 
-        @param config: The machine configuration as dict
-        @param attack_logger: The attack logger to use
-        @param calderakey: Key to the caldera controller
+        :param config: The machine configuration as dict
+        :param attack_logger: The attack logger to use
+        :param calderakey: Key to the caldera controller
         """
 
         self.vm_manager = None
@@ -94,7 +94,7 @@ class Machine():
     def create(self, reboot=True):
         """ Create a VM
 
-        @param reboot: Reboot the VM during installation. Required if you want to install software
+        :param reboot: Reboot the VM during installation. Required if you want to install software
         """
 
         self.vm_manager.__call_create__(reboot)
@@ -143,8 +143,8 @@ class Machine():
     def remote_run(self, cmd, disown=False):
         """ Simplifies connect and run
 
-        @param cmd: Command to run as shell command
-        @param disown: run in background
+        :param cmd: Command to run as shell command
+        :param disown: run in background
         """
 
         return self.vm_manager.__call_remote_run__(cmd, disown)
@@ -247,7 +247,7 @@ class Machine():
 
         A machine can have several sensors running. Those are defined in a list in the config. This collects the data from the sensors
 
-        @param lootdir: Fresh created directory for loot
+        :param lootdir: Fresh created directory for loot
         """
 
         machine_specific_path = os.path.join(lootdir, self.config.vmname())
@@ -336,39 +336,39 @@ class Machine():
 
     ############
 
-    def get_ip(self):
+    def get_ip(self) -> str:
         """ Returns the IP of the main ethernet interface of this machine """
 
         # TODO: Find a smarter way to get the ip
 
         return self.vm_manager.get_ip()
 
-    def get_name(self):
+    def get_name(self) -> str:
         """ Returns the machine name """
 
         return self.config.vmname()
 
-    def get_nicknames(self):
+    def get_nicknames(self) -> list[str]:
         """ Returns the machine name """
 
         return self.config.get_nicknames()
 
-    def get_playground(self):
+    def get_playground(self) -> str:
         """ Return this machine's playground """
 
         return self.vm_manager.get_playground()
 
-    def get_machine_path_external(self):
+    def get_machine_path_external(self) -> str:
         """ Returns the external path for this machine """
 
         return self.vm_manager.get_machine_path_external()
 
-    def put(self, src, dst):
+    def put(self, src: str, dst: str):
         """ Send a file to the machine """
 
         return self.vm_manager.put(src, dst)
 
-    def get(self, src, dst):
+    def get(self, src: str, dst: str):
         """ Get a file from a machine """
 
         return self.vm_manager.get(src, dst)
@@ -390,12 +390,12 @@ class Machine():
         # TODO: Caldera implant
         # TODO: Metasploit implant
 
-    # options for version: 4.0.0-alpha.2   2.8.1
+    # options for version: "4.0.0-alpha.2" and   "2.8.1"
     def install_caldera_server(self, cleanup=False, version="4.0.0-alpha.2"):
         """ Installs the caldera server on the VM
 
-        @param cleanup: Remove the old caldera version. Slow but reduces side effects
-        @param version: Caldera version to use. Check Caldera git for potential branches to use
+        :param cleanup: Remove the old caldera version. Slow but reduces side effects
+        :param version: Caldera version to use. Check Caldera git for potential branches to use
         """
         # https://github.com/mitre/caldera.git
         self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Installing Caldera server {CommandlineColors.ENDC}", 1)
@@ -413,7 +413,7 @@ class Machine():
     def wait_for_caldera_server(self, timeout=6):
         """ Ping caldera server. return as soon as it is responding
 
-        @param timeout: timeout in seconds
+        :param timeout: timeout in seconds
         """
         for i in range(timeout):
             time.sleep(10)
@@ -575,7 +575,7 @@ START {playground}{filename} -server {url} -group {self.config.caldera_group()} 
     def set_attack_logger(self, attack_logger):
         """ Configure the attack logger for this server
 
-        @param attack_logger: The attack logger to set
+        :param attack_logger: The attack logger to set
         """
 
         self.attack_logger = attack_logger

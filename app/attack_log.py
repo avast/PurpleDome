@@ -27,7 +27,7 @@ class AttackLog():
     def __init__(self, verbosity: int = 0):
         """
 
-        @param verbosity: verbosity setting from 0 to 3 for stdout printing
+        :param verbosity: verbosity setting from 0 to 3 for stdout printing
         """
         self.log: list[dict] = []
         self.machines: list[dict] = []
@@ -38,7 +38,7 @@ class AttackLog():
     def __add_to_log__(self, item: dict):
         """ internal command to add a item to the log
 
-        @param item: data chunk to add
+        :param item: data chunk to add
         """
 
         self.log.append(item)
@@ -158,11 +158,11 @@ class AttackLog():
     def start_caldera_attack(self, source: str, paw: str, group: str, ability_id: str, ttp: str = None, **kwargs):
         """ Mark the start of a caldera attack
 
-        @param source: source of the attack. Attack IP
-        @param paw: Caldera paw of the targets being attacked
-        @param group: Caldera group of the targets being attacked
-        @param ability_id: Caldera ability id of the attack
-        @param ttp: TTP of the attack (as stated by Caldera internal settings)
+        :param source: source of the attack. Attack IP
+        :param paw: Caldera paw of the targets being attacked
+        :param group: Caldera group of the targets being attacked
+        :param ability_id: Caldera ability id of the attack
+        :param ttp: TTP of the attack (as stated by Caldera internal settings)
         """
 
         timestamp = self.__get_timestamp__()
@@ -201,15 +201,15 @@ class AttackLog():
     def stop_caldera_attack(self, source: str, paw: str, group: str, ability_id: str, ttp: str = None, **kwargs):
         """ Mark the end of a caldera attack
 
-        @param source: source of the attack. Attack IP
-        @param paw: Caldera oaw of the targets being attacked
-        @param group: Caldera group of the targets being attacked
-        @param ability_id: Caldera ability id of the attack
-        @param ttp: TTP of the attack (as stated by Caldera internal settings)
-        @param name: Name of the attack. Data source is Caldera internal settings
-        @param description: Descirption of the attack. Caldera is the source
-        @param obfuscator: C&C obfuscator being used
-        @param jitter: Jitter being used
+        :param source: source of the attack. Attack IP
+        :param paw: Caldera oaw of the targets being attacked
+        :param group: Caldera group of the targets being attacked
+        :param ability_id: Caldera ability id of the attack
+        :param ttp: TTP of the attack (as stated by Caldera internal settings)
+        :param name: Name of the attack. Data source is Caldera internal settings
+        :param description: Descirption of the attack. Caldera is the source
+        :param obfuscator: C&C obfuscator being used
+        :param jitter: Jitter being used
         """
 
         data = {"timestamp": self.__get_timestamp__(),
@@ -233,9 +233,9 @@ class AttackLog():
     def start_file_write(self, source: str, target: str, file_name: str):
         """ Mark the start of a file being written to the target (payload !)
 
-        @param source: source of the attack. Attack IP (empty if written from controller)
-        @param target: Target machine of the attack
-        @param file_name: Name of the file being written
+        :param source: source of the attack. Attack IP (empty if written from controller)
+        :param target: Target machine of the attack
+        :param file_name: Name of the file being written
         """
 
         timestamp = self.__get_timestamp__()
@@ -257,11 +257,11 @@ class AttackLog():
     def stop_file_write(self, source: str, target: str, file_name: str, **kwargs):
         """ Mark the stop of a file being written to the target (payload !)
 
-        @param source: source of the attack. Attack IP (empty if written from controller)
-        @param target: Target machine of the attack
-        @param attack_name: Name of the attack. From plugin
-        @param file_name: Name of the file being written
-        @param logid: logid of the corresponding start command
+        :param source: source of the attack. Attack IP (empty if written from controller)
+        :param target: Target machine of the attack
+        :param attack_name: Name of the attack. From plugin
+        :param file_name: Name of the file being written
+        :param logid: logid of the corresponding start command
 
         kwargs: logid to link to start_file_write
         """
@@ -281,9 +281,9 @@ class AttackLog():
     def start_execute_payload(self, source: str, target: str, command: str):
         """ Mark the start of a payload being executed
 
-        @param source: source of the attack. Attack IP (empty if written from controller)
-        @param target: Target machine of the attack
-        @param command:
+        :param source: source of the attack. Attack IP (empty if written from controller)
+        :param target: Target machine of the attack
+        :param command:
         """
 
         timestamp = self.__get_timestamp__()
@@ -306,11 +306,11 @@ class AttackLog():
     def stop_execute_payload(self, source: str, target: str, command: str, **kwargs):
         """ Mark the stop of a payload being executed
 
-        @param source: source of the attack. Attack IP (empty if written from controller)
-        @param target: Target machine of the attack
-        @param command: Name of the attack. From plugin
-        @param file_name: Name of the file being written
-        @param kwargs: logid to link to start_file_write
+        :param source: source of the attack. Attack IP (empty if written from controller)
+        :param target: Target machine of the attack
+        :param command: Name of the attack. From plugin
+        :param file_name: Name of the file being written
+        :param kwargs: logid to link to start_file_write
         """
 
         data = {"timestamp": self.__get_timestamp__(),
@@ -327,10 +327,10 @@ class AttackLog():
     def start_kali_attack(self, source: str, target: str, attack_name: str, ttp: str = None, **kwargs):
         """ Mark the start of a Kali based attack
 
-        @param source: source of the attack. Attack IP
-        @param target: Target machine of the attack
-        @param attack_name: Name of the attack. From plugin
-        @param ttp: TTP of the attack. From plugin
+        :param source: source of the attack. Attack IP
+        :param target: Target machine of the attack
+        :param attack_name: Name of the attack. From plugin
+        :param ttp: TTP of the attack. From plugin
         """
 
         timestamp = self.__get_timestamp__()
@@ -366,10 +366,10 @@ class AttackLog():
     def stop_kali_attack(self, source: str, target: str, attack_name: str, ttp: str = None, **kwargs):
         """ Mark the end of a Kali based attack
 
-        @param source: source of the attack. Attack IP
-        @param target: Target machine of the attack
-        @param attack_name: Name of the attack. From plugin
-        @param ttp: TTP of the attack. From plugin
+        :param source: source of the attack. Attack IP
+        :param target: Target machine of the attack
+        :param attack_name: Name of the attack. From plugin
+        :param ttp: TTP of the attack. From plugin
         """
 
         data = {"timestamp": self.__get_timestamp__(),
@@ -389,7 +389,7 @@ class AttackLog():
         """ Add some user defined narration. Can be used in plugins to describe the situation before and after the attack, ...
         At the moment there is no stop narration command. I do not think we need one. But I want to stick to the structure
 
-        @param text: Text of the narration
+        :param text: Text of the narration
         """
 
         timestamp = self.__get_timestamp__()
@@ -407,7 +407,7 @@ class AttackLog():
     def start_attack_step(self, text: str):
         """ Mark the start of an attack step (several attacks in a chunk)
 
-        @param text: description of the attack step being started
+        :param text: description of the attack step being started
         """
 
         timestamp = self.__get_timestamp__()
@@ -428,7 +428,7 @@ class AttackLog():
     def stop_attack_step(self, text: str, **kwargs):
         """ Mark the end of an attack step (several attacks in a chunk)
 
-        @param text: description of the attack step being stopped
+        :param text: description of the attack step being stopped
         """
 
         data = {"timestamp": self.__get_timestamp__(),
@@ -443,10 +443,10 @@ class AttackLog():
     def start_build(self, **kwargs):
         """ Mark the start of a tool building/compilation process
 
-        @param source: source of the attack. Attack IP
-        @param target: Target machine of the attack
-        @param attack_name: Name of the attack. From plugin
-        @param ttp: TTP of the attack. From plugin
+        :param source: source of the attack. Attack IP
+        :param target: Target machine of the attack
+        :param attack_name: Name of the attack. From plugin
+        :param ttp: TTP of the attack. From plugin
         """
 
         timestamp = self.__get_timestamp__()
@@ -483,10 +483,10 @@ class AttackLog():
     def stop_build(self, **kwargs):
         """ Mark the end of a tool building/compilation process
 
-        @param source: source of the attack. Attack IP
-        @param target: Target machine of the attack
-        @param attack_name: Name of the attack. From plugin
-        @param ttp: TTP of the attack. From plugin
+        :param source: source of the attack. Attack IP
+        :param target: Target machine of the attack
+        :param attack_name: Name of the attack. From plugin
+        :param ttp: TTP of the attack. From plugin
         """
 
         data = {"timestamp": self.__get_timestamp__(),
@@ -500,10 +500,10 @@ class AttackLog():
     def start_metasploit_attack(self, source: str, target: str, metasploit_command: str, ttp: str = None, **kwargs):
         """ Mark the start of a Metasploit based attack
 
-        @param source: source of the attack. Attack IP
-        @param target: Target machine of the attack
-        @param metasploit_command: The command to metasploit
-        @param ttp: TTP of the attack. From plugin
+        :param source: source of the attack. Attack IP
+        :param target: Target machine of the attack
+        :param metasploit_command: The command to metasploit
+        :param ttp: TTP of the attack. From plugin
         """
 
         timestamp = self.__get_timestamp__()
@@ -538,10 +538,10 @@ class AttackLog():
     def stop_metasploit_attack(self, source: str, target: str, metasploit_command: str, ttp: str = None, **kwargs):
         """ Mark the start of a Metasploit based attack
 
-        @param source: source of the attack. Attack IP
-        @param target: Target machine of the attack
-        @param metasploit_command: The command to metasploit
-        @param ttp: TTP of the attack. From plugin
+        :param source: source of the attack. Attack IP
+        :param target: Target machine of the attack
+        :param metasploit_command: The command to metasploit
+        :param ttp: TTP of the attack. From plugin
         """
 
         data = {"timestamp": self.__get_timestamp__(),
@@ -560,10 +560,10 @@ class AttackLog():
     def start_attack_plugin(self, source: str, target: str, plugin_name: str, ttp: str = None):
         """ Mark the start of an attack plugin
 
-        @param source: source of the attack. Attack IP
-        @param target: Target machine of the attack
-        @param plugin_name: Name of the plugin
-        @param ttp: TTP of the attack. From plugin
+        :param source: source of the attack. Attack IP
+        :param target: Target machine of the attack
+        :param plugin_name: Name of the plugin
+        :param ttp: TTP of the attack. From plugin
         """
 
         timestamp = self.__get_timestamp__()
@@ -590,11 +590,11 @@ class AttackLog():
     def stop_attack_plugin(self, source: str, target: str, plugin_name: str, **kwargs):
         """ Mark the end of an attack plugin
 
-        @param source: source of the attack. Attack IP
-        @param target: Target machine of the attack
-        @param plugin_name: Name of the plugin
-        @param logid: logid of the corresponding start command
-        @param kwargs: *ttp*, *logid*
+        :param source: source of the attack. Attack IP
+        :param target: Target machine of the attack
+        :param plugin_name: Name of the plugin
+        :param logid: logid of the corresponding start command
+        :param kwargs: *ttp*, *logid*
         """
 
         data = {"timestamp": self.__get_timestamp__(),
@@ -612,7 +612,7 @@ class AttackLog():
     def write_json(self, filename: str):
         """ Write the json data for this log
 
-        @param filename: Name of the json file
+        :param filename: Name of the json file
         """
         with open(filename, "wt") as fh:
             json.dump(self.get_dict(), fh)
@@ -663,8 +663,8 @@ class AttackLog():
         2: Detailed progress information
         3: Debug logs, data dumps, everything
 
-        @param text: The text to print
-        @param verbosity: the verbosity level the text has.
+        :param text: The text to print
+        :param verbosity: the verbosity level the text has.
         """
 
         if verbosity <= self.verbosity:

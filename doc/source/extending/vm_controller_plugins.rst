@@ -2,7 +2,7 @@
 VM Controller plugins
 *********************
 
-The experiment being run handles the machines. Those machines can be targets or attacker machines. Different types of machine controllers are covered by those plugins.
+The experiment being run handles the machines. Those machines can be targets or attacker machines. Different types of machine controllers are covered by plugins of the type "MachineryPlugin".
 
 A VM plugin handles several things:
 
@@ -32,42 +32,44 @@ The boilerplate contains some basics:
 * description. A human readable description for this plugin.
 * required_files: A list. If you ship files with your plugin, listing them here will cause them to be installed on plugin init.
 
-Some relevant methods that must be implemented (even if they will not contain code) are:
 
-up
---
+There are two sets of commands to implement for machines
 
-Starts the machine
+Basic handling:
 
-create
-------
+* up
+* create
+* halt
+* destroy
+* get_state
+* get_ip
 
-Creates the machine. Vagrant for example can create machines based on config files.
+Communication:
 
-halt
-----
+* connect
+* remote_run
+* disconnect
+* put
+* get
 
-Stop the machine
+The communication commands are already implemented in *ssh_features.py* and you can use them they way the vagrant_plugin.py is doing. At least as long as you want to use SSH to communicate (recommended !).
 
-destroy
--------
 
-Destroy the machine
-
-get_state
----------
-
-Get the machines state. The class MachineStates contains potential return values
-
-get_ip
-------
-
-Get the ip of the machine. If the machine is registered at the system resolver (/etc/hosts, dns, ...) a machine name would also be a valid response. As long as the network layer can reach it, everything is fine.
-
-The plugin class
-================
+The machinery plugin
+====================
 
 For a full list of methods read on:
 
 .. autoclass:: plugins.base.machinery.MachineryPlugin
-   :members:
+    :members:
+    :member-order: bysource
+    :show-inheritance:
+
+
+The SSH mixin
+=============
+
+.. autoclass:: plugins.base.ssh_features.SSHFeatures
+    :members:
+    :member-order: bysource
+    :show-inheritance:

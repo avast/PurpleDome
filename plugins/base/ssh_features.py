@@ -65,8 +65,8 @@ class SSHFeatures(BasePlugin):
     def remote_run(self, cmd: str, disown: bool = False):
         """ Connects to the machine and runs a command there
 
-        @param cmd: The command to execute
-        @param disown: Send the connection into background
+        :param cmd: The command to execute
+        :param disown: Send the connection into background
         """
 
         if cmd is None:
@@ -109,8 +109,8 @@ class SSHFeatures(BasePlugin):
     def put(self, src: str, dst: str):
         """ Send a file to a machine
 
-        @param src: source dir
-        @param dst: destination
+        :param src: source dir
+        :param dst: destination
         """
         self.connect()
 
@@ -153,8 +153,8 @@ class SSHFeatures(BasePlugin):
     def get(self, src: str, dst: str):
         """ Get a file to a machine
 
-        @param src: source dir
-        @param dst: destination
+        :param src: source dir
+        :param dst: destination
         """
         self.connect()
         res = None

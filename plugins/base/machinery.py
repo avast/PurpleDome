@@ -4,7 +4,7 @@
 
 from enum import Enum
 import os
-from typing import Optional
+# from typing import Optional
 from app.config import MachineConfig
 from app.interface_sfx import CommandlineColors
 from plugins.base.plugin_base import BasePlugin
@@ -27,9 +27,9 @@ class MachineryPlugin(BasePlugin):
     """ Class to control virtual machines, vagrant, .... """
 
     # Boilerplate
-    name: Optional[str] = None
+    # name: Optional[str] = None
 
-    required_files: list[str] = []
+    # required_files: list[str] = []
 
     ###############
     # This is stuff you might want to implement
@@ -42,7 +42,7 @@ class MachineryPlugin(BasePlugin):
     def create(self, reboot: bool = True):
         """ Create a machine
 
-        @param reboot: Optionally reboot the machine after creation
+        @param reboot: Reboot the machine after creation
         """
         raise NotImplementedError
 
@@ -59,36 +59,49 @@ class MachineryPlugin(BasePlugin):
         raise NotImplementedError
 
     def connect(self):
-        """ Connect to a machine """
+        """ Connect to a machine
+
+        If you want to use SSH, check out the class SSHFeatures, it is already implemented there
+
+        """
         raise NotImplementedError
 
     def remote_run(self, cmd: str, disown: bool = False):
         """ Connects to the machine and runs a command there
 
+        If you want to use SSH, check out the class SSHFeatures, it is already implemented there
 
-        @param cmd: command to run int he machine's shell
-        @param disown: Send the connection into background
+        :param cmd: command to run int he machine's shell
+        :param disown: Send the connection into background
         """
 
         raise NotImplementedError
 
     def disconnect(self):
-        """ Disconnect from a machine """
+        """ Disconnect from a machine
+
+        If you want to use SSH, check out the class SSHFeatures, it is already implemented there
+
+        """
         raise NotImplementedError
 
     def put(self, src: str, dst: str):
         """ Send a file to a machine
 
-        @param src: source dir
-        @param dst: destination
+        If you want to use SSH, check out the class SSHFeatures, it is already implemented there
+
+        :param src: source dir
+        :param dst: destination
         """
         raise NotImplementedError
 
     def get(self, src: str, dst: str):
         """ Get a file to a machine
 
-        @param src: source dir
-        @param dst: destination
+        If you want to use SSH, check out the class SSHFeatures, it is already implemented there
+
+        :param src: source dir
+        :param dst: destination
         """
         raise NotImplementedError
 
@@ -96,12 +109,16 @@ class MachineryPlugin(BasePlugin):
         """ Returns if the machine is running """
         return self.get_state() == MachineStates.RUNNING
 
-    def get_state(self):
+    def get_state(self) -> MachineStates:
         """ Get detailed state of a machine """
         raise NotImplementedError
 
-    def get_ip(self):
-        """ Return the IP of the machine. If there are several it should be the one accepting ssh or similar. If a resolver is running, a domain is also ok. """
+    def get_ip(self) -> str:
+        """ Return the IP of the machine.
+            If there are several it should be the one accepting ssh or similar. If a resolver is running, a machine name is also ok as return value.
+
+            :returns: machine name or ip. Some handle we can use to get a network connection to this machine
+            """
         raise NotImplementedError
 
     def get_playground(self):

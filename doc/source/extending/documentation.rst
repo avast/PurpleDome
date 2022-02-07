@@ -1,6 +1,6 @@
-===========================
-Extending the documentation
-===========================
+=================================
+Contributing to the documentation
+=================================
 
 The documentation is Sphinx based.
 

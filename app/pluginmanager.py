@@ -145,7 +145,7 @@ class PluginManager():
     def check(self, plugin):
         """ Checks a plugin for valid implementation
 
-        @returns: A list of issues
+        :returns: A list of issues
         """
 
         issues = []

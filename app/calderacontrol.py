@@ -22,13 +22,14 @@ from app.calderaapi_4 import CalderaAPI
 class CalderaControl(CalderaAPI):
     """ Remote control Caldera through REST api """
 
-    def fetch_client(self, platform: str = "windows", file: str = "sandcat.go", target_dir: str = ".", extension: str = ""):
+    def fetch_client(self, platform: str = "windows", file: str = "sandcat.go", target_dir: str = ".", extension: str = "") -> str:
         """ Downloads the appropriate Caldera client
 
-        @param platform: Platform to download the agent for
-        @param file: file to download from caldera. This defines the agent type
-        @param target_dir: directory to drop the new file into
-        @param extension: File extension to add to the downloaded file
+        :param platform: Platform to download the agent for
+        :param file: file to download from caldera. This defines the agent type
+        :param target_dir: directory to drop the new file into
+        :param extension: File extension to add to the downloaded file
+        :returns: filename of the client
         """
         header = {"platform": platform,
                   "file": file}
@@ -40,18 +41,23 @@ class CalderaControl(CalderaAPI):
         # print(r.headers)
         return filename
 
-    def list_sources_for_name(self, name: str):
-        """ List facts in a source pool with a specific name """
+    def list_sources_for_name(self, name: str) -> Optional[dict]:
+        """ List facts in a source pool with a specific name
+
+        :param name: The name of the source pool
+        :returns: The source data or None
+        """
 
         for i in self.list_sources():
             if i.get("name") == name:
                 return i
         return None
 
-    def list_facts_for_name(self, name: str):
+    def list_facts_for_name(self, name: str) -> dict:
         """ Pretty format for facts
 
-        @param name: Name of the source ot look into
+        :param name: Name of the source ot look into
+        :returns: A pretty dict with facts
         """
 
         source = self.list_sources_for_name(name)
@@ -67,16 +73,20 @@ class CalderaControl(CalderaAPI):
                                    }
         return res
 
-    def list_paws_of_running_agents(self):
-        """ Returns a list of all paws of running agents """
+    def list_paws_of_running_agents(self) -> list[str]:
+        """ Returns a list of all paws of running agents
+
+        :returns: A list of running agents (or better: the list of their paws)
+        """
         return [i.get("paw") for i in self.list_agents()]    # 2.8.1 version
         # return [i.paw for i in self.list_agents()]  # 4* version
 
     #  ######### Get one specific item
-    def get_operation(self, name: str):
+    def get_operation(self, name: str) -> Optional[dict]:
         """ Gets an operation by name
 
-        @param name: Name of the operation to look for
+        :param name: Name of the operation to look for
+        :returns: The operation as dict
         """
 
         for operation in self.list_operations():
@@ -84,30 +94,33 @@ class CalderaControl(CalderaAPI):
                 return operation
         return None
 
-    def get_adversary(self, name: str):
+    def get_adversary(self, name: str) -> Optional[dict]:
         """ Gets a specific adversary by name
 
-        @param name: Name to look for
+        :param name: Name to look for
+        :returns: The adversary as dict
         """
         for adversary in self.list_adversaries():
             if adversary.get("name") == name:
                 return adversary
         return None
 
-    def get_objective(self, name: str):
+    def get_objective(self, name: str) -> Optional[dict]:
         """ Returns an objective with a given name
 
-        @param name: Name to filter for
+        :param name: Name to filter for
+        :returns: The objective as dict
         """
         for objective in self.list_objectives():
             if objective.get("name") == name:
                 return objective
         return None
 
-    def get_ability(self, abid: str):
-        """" Return an ability by id
+    def get_ability(self, abid: str) -> list[dict]:
+        """ Return an ability by id
 
-        @param abid: Ability id
+        :param abid: Ability id
+        :returns: a list of abilities
         """
 
         res = []
@@ -125,8 +138,9 @@ class CalderaControl(CalderaAPI):
     def does_ability_support_platform(self, abid: str, platform: str) -> bool:
         """ Checks if an ability supports a specific os
 
-        @param abid: ability id.
-        @param platform: os string to match for
+        :param abid: ability id.
+        :param platform: os string to match for
+        :returns: True if platform is supported
         """
 
         # caldera knows the os-es "windows", "linux" and "darwin"
@@ -148,10 +162,11 @@ class CalderaControl(CalderaAPI):
         print(self.get_ability(abid))
         return False
 
-    def get_operation_by_id(self, op_id: str):
+    def get_operation_by_id(self, op_id: str) -> list[dict]:
         """ Get operation by id
 
-        @param op_id: Operation id
+        :param op_id: Operation id
+        :returns: a list of operations matching the id
         """
         operations = self.list_operations()
 
@@ -161,12 +176,13 @@ class CalderaControl(CalderaAPI):
                     return [an_operation]
         return []
 
-    def get_linkid(self, op_id: str, paw: str, ability_id: str):
+    def get_linkid(self, op_id: str, paw: str, ability_id: str) -> Optional[dict]:
         """ Get the id of a link identified by paw and ability_id
 
-        @param op_id: Operation id
-        @param paw: Paw of the agent
-        @param ability_id: Ability id to filter for
+        :param op_id: Operation id
+        :param paw: Paw of the agent
+        :param ability_id: Ability id to filter for
+        :returns: The ability
         """
         operation = self.get_operation_by_id(op_id)
 
@@ -181,12 +197,13 @@ class CalderaControl(CalderaAPI):
 
     #  ######### View
 
-    def view_operation_output(self, opid: str, paw: str, ability_id: str):
+    def view_operation_output(self, opid: str, paw: str, ability_id: str) -> Optional[dict]:
         """ Gets the output of an executed ability
 
-        @param opid: Id of the operation to look for
-        @param paw: Paw of the agent to look up
-        @param ability_id: if of the ability to extract the output from
+        :param opid: Id of the operation to look for
+        :param paw: Paw of the agent to look up
+        :param ability_id: if of the ability to extract the output from
+        :returns: The output
         """
         orep = self.view_operation_report(opid)
 
@@ -228,11 +245,12 @@ class CalderaControl(CalderaAPI):
 
     #  Link, chain and stuff
 
-    def is_operation_finished(self, opid: str, debug: bool = False):
+    def is_operation_finished(self, opid: str, debug: bool = False) -> bool:
         """ Checks if an operation finished - finished is not necessary successful !
 
-        @param opid: Operation id to check
-        @param debug: Additional debug output
+        :param opid: Operation id to check
+        :param debug: Additional debug output
+        :returns: True if the operation is finished
         """
         # An operation can run several Abilities vs several targets (agents). Each one is a link in the chain (see opperation report).
         # Those links can have the states:
@@ -260,12 +278,13 @@ class CalderaControl(CalderaAPI):
 
         return False
 
-    def is_operation_finished_multi(self, opid: str):
+    def is_operation_finished_multi(self, opid: str) -> bool:
         """ Checks if an operation finished - finished is not necessary successful ! On several targets.
 
         All links (~ abilities) on all targets must have the status 0 for this to be True.
 
-        @param opid: Operation id to check
+        :param opid: Operation id to check
+        :returns: True if the operation is finished
         """
         # An operation can run several Abilities vs several targets (agents). Each one is a link in the chain (see opperation report).
         # Those links can have the states:
@@ -291,16 +310,16 @@ class CalderaControl(CalderaAPI):
     #  ######## All inclusive methods
 
     def attack(self, paw: str = "kickme", ability_id: str = "bd527b63-9f9e-46e0-9816-b8434d2b8989",
-               group: str = "red", target_platform: Optional[str] = None, parameters: Optional[str] = None, **kwargs):
+               group: str = "red", target_platform: Optional[str] = None, parameters: Optional[str] = None, **kwargs) -> bool:
         """ Attacks a system and returns results
 
-        @param paw: Paw to attack
-        @param group: Group to attack. Paw must be in the group
-        @param ability_id: Ability to run against the target
-        @param target_platform: Platform of the target machine. Optional. Used for quick-outs
-        @param parameters: Dict containing key-values of parameters to pass to the ability
+        :param paw: Paw to attack
+        :param group: Group to attack. Paw must be in the group
+        :param ability_id: Ability to run against the target
+        :param target_platform: Platform of the target machine. Optional. Used for quick-outs
+        :param parameters: Dict containing key-values of parameters to pass to the ability
 
-        @:return : True if the attack was executed. False if it was not. For example the target os is not supported by this attack
+        :returns: True if the attack was executed. False if it was not. For example the target os is not supported by this attack
         """
 
         # Tested obfuscators (with sandcat):
@@ -417,7 +436,7 @@ class CalderaControl(CalderaAPI):
     def pretty_print_ability(self, abi):
         """ Pretty pritns an ability
 
-        @param abi: A ability dict
+        :param abi: A ability dict
         """
 
         print("""
