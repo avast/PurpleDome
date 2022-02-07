@@ -31,6 +31,8 @@ Welcome to the Purple Dome documentation
 
    extending/vm_controller_plugins
 
+   extending/base_plugins
+
    extending/extending
 
    extending/documentation

@@ -12,10 +12,10 @@ import app.exceptions  # type: ignore
 class BasePlugin():
     """ Base class for plugins """
 
-    required_files: list[str] = []   # a list of files shipped with the plugin to be installed
-    name: str = ""  # The name of the plugin
-    alternative_names: list[str] = []  # The is an optional list of alternative names
-    description: Optional[str] = None  # The description of this plugin
+    required_files: list[str] = []   #: a list of files shipped with the plugin to be installed
+    name: Optional[str] = None  #: The name of the plugin
+    alternative_names: list[str] = []  #: An optional list of alternative names
+    description: Optional[str] = None  #: The description of this plugin
 
     def __init__(self) -> None:
         # self.machine = None
@@ -27,20 +27,68 @@ class BasePlugin():
 
         self.default_config_name = "default_config.yaml"
 
-    def get_filename(self):
-        """ Returns the current filename.  """
+    def run_cmd(self, command: str, disown: bool = False):
+        """ Execute a command on the vm using the connection
+
+         :param command: Command to execute
+         :param disown: Run in background
+         """
+
+        if self.machine_plugin is None:
+            raise PluginError("machine to run command on is not registered")
+
+        self.vprint(f"      Plugin running command {command}", 3)
+
+        res = self.machine_plugin.__call_remote_run__(command, disown=disown)
+        return res
+
+    def copy_to_machine(self, filename: str):
+        """ Copies a file shipped with the plugin to the machine share folder
+
+        :param filename: File from the plugin folder to copy to the machine share.
+        """
+
+        if self.machine_plugin is not None:
+            self.machine_plugin.put(filename, self.machine_plugin.get_playground())
+        else:
+            raise PluginError("Missing machine")
+
+    def get_from_machine(self, src: str, dst: str):
+        """ Get a file from the machine
+
+        :param src: source file name on the machine
+        :param dst: destination filename on the host
+        """
+        if self.machine_plugin is not None:
+            self.machine_plugin.get(src, dst)  # nosec
+        else:
+            raise PluginError("Missing machine")
+
+    def get_filename(self) -> str:
+        """ Returns the current filename. This can be used for debugging
+
+        :meta private:
+
+        :returns: Filename of currenty executed py file
+
+        """
         cf = currentframe()  # pylint: disable=invalid-name
         return cf.f_back.filename
 
-    def get_linenumber(self):
-        """ Returns the current linenumber.  """
+    def get_linenumber(self) -> int:
+        """ Returns the current linenumber.  This can be used for debugging
+
+        :returns: currently executed linenumber
+        """
         cf = currentframe()  # pylint: disable=invalid-name
         return cf.f_back.f_lineno
 
-    def get_playground(self):
-        """ Returns the machine specific playground
+    def get_playground(self) -> str:
+        """ Returns the machine specific playground path name
 
-         Which is the folder on the machine where we run our tasks in
+         This is the folder on the machine where we run our tasks in
+
+         :returns: playground path on the target machine
          """
 
         if self.machine_plugin is None:
@@ -49,21 +97,38 @@ class BasePlugin():
         return self.machine_plugin.get_playground()
 
     def set_logger(self, attack_logger):
-        """ Set the attack logger for this machine """
+        """ Set the attack logger for this machine
+
+        :meta private:
+
+        :param attack_logger: Attack logger object
+        """
         self.attack_logger = attack_logger
 
     def process_templates(self):  # pylint: disable=no-self-use
-        """ A method you can optionally implement to transfer your jinja2 templates into the files yo want to send to the target. See 'required_files' """
+        """ A method you can optionally implement to transfer your jinja2 templates into the files yo want to send to the target. See 'required_files'
+
+        :meta private:
+
+        """
 
         return
 
     def copy_to_attacker_and_defender(self):  # pylint: disable=no-self-use
-        """ Copy attacker/defender specific files to the machines """
+        """ Copy attacker/defender specific files to the machines
+
+        :meta private:
+
+        """
 
         return
 
     def setup(self):
-        """ Prepare everything for the plugin """
+        """ Prepare everything for the plugin
+
+        :meta private:
+
+        """
 
         self.process_templates()
 
@@ -77,7 +142,9 @@ class BasePlugin():
     def set_machine_plugin(self, machine_plugin):
         """ Set the machine plugin class to communicate with
 
-        @param machine_plugin: Machine plugin to communicate with
+        :meta private:
+
+        :param machine_plugin: Machine plugin to communicate with
         """
 
         self.machine_plugin = machine_plugin
@@ -85,7 +152,9 @@ class BasePlugin():
     def set_sysconf(self, config):   # pylint:disable=unused-argument
         """ Set system config
 
-        @param config: A dict with system configuration relevant for all plugins
+        :meta private:
+
+        :param config: A dict with system configuration relevant for all plugins
         """
 
         # self.sysconf["abs_machinepath_internal"] = config["abs_machinepath_internal"]
@@ -95,55 +164,34 @@ class BasePlugin():
     def process_config(self, config: dict):
         """ process config and use defaults if stuff is missing
 
-        @param config: The config dict
+        :meta private:
+
+        :param config: The config dict
         """
 
         # TODO: Move to python 3.9 syntax z = x | y
 
         self.conf = {**self.conf, **config}
 
-    def copy_to_machine(self, filename: str):
-        """ Copies a file shipped with the plugin to the machine share folder
+    def get_name(self) -> str:
+        """ Returns the name of the plugin
 
-        @param filename: File from the plugin folder to copy to the machine share.
+        This method checks the boilerplate for the name
+
+        :returns: The plugin name
         """
-
-        if self.machine_plugin is not None:
-            self.machine_plugin.put(filename, self.machine_plugin.get_playground())
-        else:
-            raise PluginError("Missing machine")
-
-    def get_from_machine(self, src: str, dst: str):
-        """ Get a file from the machine """
-        if self.machine_plugin is not None:
-            self.machine_plugin.get(src, dst)  # nosec
-        else:
-            raise PluginError("Missing machine")
-
-    def run_cmd(self, command: str, disown: bool = False):
-        """ Execute a command on the vm using the connection
-
-         @param command: Command to execute
-         @param disown: Run in background
-         """
-
-        if self.machine_plugin is None:
-            raise PluginError("machine to run command on is not registered")
-
-        self.vprint(f"      Plugin running command {command}", 3)
-
-        res = self.machine_plugin.__call_remote_run__(command, disown=disown)
-        return res
-
-    def get_name(self):
-        """ Returns the name of the plugin, please set in boilerplate """
         if self.name:
             return self.name
 
         raise NotImplementedError
 
     def get_names(self) -> list[str]:
-        """ Adds the name of the plugin to the alternative names and returns the list """
+        """ Returns a list of names and nicknames for a plugin.
+
+         Please set that in the boilerplate
+
+         :returns: A list of potential names
+         """
 
         res = set()
 
@@ -158,25 +206,42 @@ class BasePlugin():
 
         raise NotImplementedError
 
-    def get_description(self):
-        """ Returns the description of the plugin, please set in boilerplate """
+    def get_description(self) -> str:
+        """ Returns the description of the plugin, please set it in boilerplate
+
+        :returns: The description of the plugin
+        """
         if self.description:
             return self.description
 
         raise NotImplementedError
 
-    def get_plugin_path(self):
-        """ Returns the path the plugin file(s) are stored in """
+    def get_plugin_path(self) -> str:
+        """ Returns the path the plugin file(s) are stored in
+
+        :meta private:
+
+        :returns: The path with the plugin code
+        """
 
         return os.path.join(os.path.dirname(self.plugin_path))
 
-    def get_default_config_filename(self):
-        """ Generate the default filename of the default configuration file """
+    def get_default_config_filename(self) -> str:
+        """ Generate the default filename of the default configuration file
+
+        :meta private:
+
+        :returns: The filename of the default config
+        """
 
         return os.path.join(self.get_plugin_path(), self.default_config_name)
 
-    def get_raw_default_config(self):
-        """ Returns the default config as string. Usable as an example and for documentation """
+    def get_raw_default_config(self) -> str:
+        """ Returns the default config as string. Usable as an example and for documentation
+
+        :meta private:
+
+        """
 
         if os.path.isfile(self.get_default_config_filename()):
             with open(self.get_default_config_filename(), "rt") as fh:
@@ -185,7 +250,11 @@ class BasePlugin():
             return f"# The plugin {self.get_name()} does not support configuration"
 
     def load_default_config(self):
-        """ Reads and returns the default config as dict """
+        """ Reads and returns the default config as dict
+
+        :meta private:
+
+        """
 
         filename = self.get_default_config_filename()
 
@@ -202,12 +271,22 @@ class BasePlugin():
     def get_config_section_name(self) -> str:
         """ Returns the name for the config sub-section to use for this plugin.
 
-        Defaults to the name of the plugin. This method should be overwritten if it gets more complicated """
+        :meta private:
+
+        Defaults to the name of the plugin. This method should be overwritten if it gets more complicated
+
+        :returns: The name of the config section
+        """
 
         return self.get_name()
 
     def main_path(self) -> str:  # pylint:disable=no-self-use
-        """ Returns the main path of the Purple Dome installation """
+        """ Returns the main path of the Purple Dome installation
+
+        :meta private:
+        :returns: the main path
+
+        """
         app_dir = os.path.dirname(app.exceptions.__file__)
 
         return os.path.split(app_dir)[0]
@@ -220,8 +299,8 @@ class BasePlugin():
         2: Detailed progress information
         3: Debug logs, data dumps, everything
 
-        @param text: The text to print
-        @param verbosity: the verbosity level the text has.
+        :param text: The text to print
+        :param verbosity: the verbosity level the text has.
         """
         if self.attack_logger is not None:
             self.attack_logger.vprint(text, verbosity)

@@ -7,11 +7,11 @@ Attack features of PurpleDome can be extended using a plugin system. Those attac
 
 An example plugin is in the file *hydra_plugin.py*. It contains a plugin class that **MUST** be based on the *AttackPlugin* class.
 
-::
+.. attention::
 
-    Important: This projects goal is to improve defense. Adding any attack must be done with this goal. To guarantee that:
+    This projects goal is to improve defense. Adding any attack must be done with this goal in mind. To guarantee that:
 
-    * Only add attacks that are already in the wild
+    * Only add attacks that are already used by malware and attackers
     * Link to blog posts describing this attack
     * Maybe already drop some ideas how to detect and block
     * Or even add code to detect and block it
@@ -20,8 +20,6 @@ Usage
 =====
 
 To create a new plugin, start a sub-folder in *plugins*. The python file in there must contain a class that inherits from *AttackPlugin*.
-
-There is an example plugin *hydra.py* that you can use as template.
 
 Boilerplate
 -----------
@@ -33,7 +31,9 @@ The boilerplate contains some basics:
 * ttp: The TTP number of this kali attack. See https://attack.mitre.org/ "???" if it is unknown "multiple" if it covers several TTPs
 * references. A list of urls to blog posts or similar describing the attack
 * required_files: A list. If you ship files with your plugin, listing them here will cause them to be installed on plugin init.
+
 Better than using required_files is to use:
+
 * required_files_attacker: required files to send to the attacker
 * required_files_target: required files to send to the target
 
@@ -49,4 +49,6 @@ The plugin class
 ================
 
 .. autoclass:: plugins.base.attack.AttackPlugin
-   :members:
+    :members:
+    :member-order: bysource
+    :show-inheritance:

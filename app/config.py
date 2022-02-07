@@ -22,7 +22,7 @@ class MachineConfig():
     def __init__(self, machinedata):
         """ Init machine control config
 
-        @param machinedata: dict containing machine data
+        :param machinedata: dict containing machine data
         """
         if machinedata is None:
             raise ConfigurationError
@@ -148,7 +148,7 @@ class ExperimentConfig():
     def __init__(self, configfile: str):
         """ Init the config, process the file
 
-        @param configfile: The configuration file to process
+        :param configfile: The configuration file to process
         """
 
         self.raw_config: MainConfig = None
@@ -162,7 +162,7 @@ class ExperimentConfig():
     def load(self, configfile: str):
         """ Loads the configuration file
 
-        @param configfile: The configuration file to process
+        :param configfile: The configuration file to process
         """
 
         with open(configfile) as fh:
@@ -199,7 +199,7 @@ class ExperimentConfig():
     def attacker(self, mid: int) -> MachineConfig:
         """ Return config for attacker as MachineConfig objects
 
-        @param mid: id of the attacker, 0 is main attacker
+        :param mid: id of the attacker, 0 is main attacker
         """
 
         return self.attackers()[mid]
@@ -227,7 +227,7 @@ class ExperimentConfig():
     def attack_conf(self, attack: str) -> dict:
         """ Get kali config for a specific kali attack
 
-        @param attack: Name of the attack to look up config for
+        :param attack: Name of the attack to look up config for
         """
 
         if self.raw_config is None:
@@ -267,7 +267,7 @@ class ExperimentConfig():
     def get_plugin_based_attacks(self, for_os: str) -> list[str]:
         """ Get the configured kali attacks to run for a specific OS
 
-        @param for_os: The os to query the registered attacks for
+        :param for_os: The os to query the registered attacks for
         """
 
         if self.raw_config is None:
@@ -285,7 +285,7 @@ class ExperimentConfig():
     def get_caldera_attacks(self, for_os: str) -> list:
         """ Get the configured caldera attacks to run for a specific OS
 
-        @param for_os: The os to query the registered attacks for
+        :param for_os: The os to query the registered attacks for
         """
 
         if self.raw_config is None:
@@ -314,7 +314,7 @@ class ExperimentConfig():
     def get_sensor_config(self, name: str) -> dict:
         """ Return the config for a specific sensor
 
-        @param name: name of the sensor
+        :param name: name of the sensor
         """
 
         if self.raw_config is None:

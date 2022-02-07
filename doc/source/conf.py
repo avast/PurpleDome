@@ -31,6 +31,10 @@ author = 'Thorsten Sick'
 # ones.
 extensions = ['sphinx.ext.autodoc']
 
+autodoc_default_options = {
+    'member-order': 'bysource',
+}
+
 # Sphinx argparse https://sphinx-argparse.readthedocs.io/en/latest/install.html
 extensions += ['sphinxarg.ext']
 

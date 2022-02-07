@@ -26,12 +26,12 @@ from plugins.base.attack import AttackPlugin
 class Experiment():
     """ Class handling experiments """
 
-    def __init__(self, configfile, verbosity=0, caldera_attacks: list = None):
+    def __init__(self, configfile: str, verbosity=0, caldera_attacks: list = None):
         """
 
-        @param configfile: Path to the configfile to load
-        @param verbosity: verbosity level between 0 and 3
-        @param caldera_attacks: an optional argument to override caldera attacks in the config file and run just this one caldera attack. A list of caldera ID
+        :param configfile: Path to the configfile to load
+        :param verbosity: verbosity level between 0 and 3
+        :param caldera_attacks: an optional argument to override caldera attacks in the config file and run just this one caldera attack. A list of caldera ID
         """
         self.attacker_1: Optional[Machine] = None
 
@@ -244,9 +244,9 @@ class Experiment():
     def attack(self, target, attack):
         """ Pick an attack and run it
 
-        @param attack: Name of the attack to run
-        @param target: IP address of the target
-        @returns: The output of the cmdline attacking tool
+        :param attack: Name of the attack to run
+        :param target: IP address of the target
+        :returns: The output of the cmdline attacking tool
         """
 
         for plugin in self.plugin_manager.get_plugins(AttackPlugin, [attack]):
@@ -282,43 +282,6 @@ class Experiment():
         # For automation purpose we copy the file into a standard file name
         defaultname = os.path.join(self.lootdir, "..", "most_recent.zip")
         shutil.copyfile(filename, defaultname)
-
-    # @staticmethod
-    # def __get_results_files(root):
-    #    """ Yields a list of potential result files
-
-    #    @param root: Root dir of the machine to collect data from
-    #    """
-    #    # TODO: Properly implement. Get proper root parameter
-
-    #    total = [os.path.join(root, "logstash", "filebeat.json")]
-    #    for a_file in total:
-    #        if os.path.exists(a_file):
-    #            yield a_file
-
-    # def __clean_result_files(self, root):
-    #     """ Deletes result files
-
-    #     @param root: Root dir of the machine to collect data from
-    #     """
-
-        # TODO: Properly implement. Get proper root parameter
-
-    #     for a_file in self.__get_results_files(root):
-    #         os.remove(a_file)
-
-    # def __collect_loot(self, root):
-    #     """ Collect results into loot dir
-
-    #     @param root: Root dir of the machine to collect data from
-    #     """
-
-    #     try:
-    #         os.makedirs(os.path.abspath(self.experiment_config.loot_dir()))
-    #     except FileExistsError:
-    #         pass
-    #     for a_file in self.__get_results_files(root):
-    #        self.attack_logger.vprint("Copy {} {}".format(a_file, os.path.abspath(self.experiment_config.loot_dir())), 3)
 
     def __start_attacker(self):
         """ Start the attacking VM """

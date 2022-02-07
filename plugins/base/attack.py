@@ -22,18 +22,16 @@ class AttackPlugin(BasePlugin):
     """ Class to execute a command on a kali system targeting another system """
 
     # Boilerplate
-    name: Optional[str] = None
-    description: Optional[str] = None
-    ttp: Optional[str] = None
-    references = None
+    # name: Optional[str] = None
+    # description: Optional[str] = None
+    ttp: Optional[str] = None  #: TTP of this attack. Or ??? if unknown
+    references = None  # A list of urls or other references
 
     required_files: list[str] = []  # Better use the other required_files features
-    required_files_attacker: list[str] = []  # a list of files to automatically install to the attacker
-    required_files_target: list[str] = []    # a list of files to automatically copy to the targets
+    required_files_attacker: list[str] = []  #: A list of files to automatically install to the attacker
+    required_files_target: list[str] = []    #: A list of files to automatically copy to the targets
 
-    requirements: Optional[list[Requirement]] = []  # Requirements to run this plugin
-
-    # TODO: parse results
+    requirements: Optional[list[Requirement]] = []  #: Requirements to run this plugin, Available are METASPLOIT and CALDERA at the moment
 
     def __init__(self):
         super().__init__()
@@ -48,20 +46,48 @@ class AttackPlugin(BasePlugin):
         self.metasploit_user: str = "user"
         self.metasploit = None
 
+    def run(self, targets: list[str]):
+        """ The attack is ran here. This method **must be implemented**
+
+        @param targets: A list of targets, ip addresses will do
+        """
+        raise NotImplementedError
+
+    def install(self):  # pylint: disable=no-self-use
+        """ Install and setup requirements for the attack
+
+        This step is *optional*
+
+        """
+
+        return None
+
     def needs_caldera(self) -> bool:
-        """ Returns True if this plugin has Caldera in the requirements """
+        """ Returns True if this plugin has Caldera in the requirements
+
+        :meta private:
+
+        :returns: True if this plugin requires Caldera
+        """
         if Requirement.CALDERA in self.requirements:
             return True
         return False
 
     def needs_metasploit(self) -> bool:
-        """ Returns True if this plugin has Metasploit in the requirements """
+        """ Returns True if this plugin has Metasploit in the requirements
+
+        :meta private:
+        :returns: True if this plugin requires Metasploit
+        """
         if Requirement.METASPLOIT in self.requirements:
             return True
         return False
 
     def connect_metasploit(self):
-        """ Inits metasploit """
+        """ Inits metasploit
+
+        :meta private:
+        """
 
         if self.needs_metasploit():
             self.metasploit = MetasploitInstant(self.metasploit_password,
@@ -71,7 +97,11 @@ class AttackPlugin(BasePlugin):
         # If metasploit requirements are not set, self.metasploit stay None and using metasploit from a plugin not having the requirements will trigger an exception
 
     def copy_to_attacker_and_defender(self):
-        """ Copy attacker/defender specific files to the machines. Called by setup, do not call it yourself. template processing happens before """
+        """ Copy attacker/defender specific files to the machines. Called by setup, do not call it yourself. template processing happens before
+
+        :meta private:
+
+        """
 
         for a_file in self.required_files_attacker:
             src = os.path.join(os.path.dirname(self.plugin_path), a_file)
@@ -81,14 +111,18 @@ class AttackPlugin(BasePlugin):
         # TODO: add target(s)
 
     def teardown(self):
-        """ Cleanup afterwards """
+        """ Cleanup afterwards
+
+        This is an *optional* method which is called after the attack. If you want to do some cleanup in your plugin, implement it.
+
+        """
         pass  # pylint: disable=unnecessary-pass
 
     def attacker_run_cmd(self, command: str, disown: bool = False) -> str:
         """ Execute a command on the attacker
 
-         @param command: Command to execute
-         @param disown: Run in background
+         :param command: Command to execute
+         :param disown: Run in background
          """
 
         if self.attacker_machine_plugin is None:
@@ -102,8 +136,8 @@ class AttackPlugin(BasePlugin):
     def targets_run_cmd(self, command: str, disown: bool = False) -> str:
         """ Execute a command on the target
 
-         @param command: Command to execute
-         @param disown: Run in background
+         :param command: Command to execute
+         :param disown: Run in background
          """
 
         if self.target_machine_plugin is None:
@@ -117,7 +151,7 @@ class AttackPlugin(BasePlugin):
     def set_target_machines(self, machine: MachineryPlugin):
         """ Set the machine to target
 
-        @param machine: Machine plugin to communicate with
+        :param machine: Machine plugin to communicate with
         """
 
         self.target_machine_plugin = machine.vm_manager
@@ -125,7 +159,7 @@ class AttackPlugin(BasePlugin):
     def set_attacker_machine(self, machine: MachineryPlugin):
         """ Set the machine plugin class to target
 
-        @param machine: Machine to communicate with
+        :param machine: Machine to communicate with
         """
 
         self.attacker_machine_plugin = machine.vm_manager
@@ -142,9 +176,9 @@ class AttackPlugin(BasePlugin):
     def caldera_attack(self, target: MachineryPlugin, ability_id: str, parameters=None, **kwargs):
         """ Attack a single target using caldera
 
-        @param target: Target machine object
-        @param ability_id: Ability or caldera ability to run
-        @param parameters: parameters to pass to the ability
+        :param target: Target machine object
+        :param ability_id: Ability or caldera ability to run
+        :param parameters: parameters to pass to the ability
         """
 
         if not self.needs_caldera():
@@ -158,10 +192,12 @@ class AttackPlugin(BasePlugin):
                             **kwargs
                             )
 
-    def get_attacker_playground(self):
+    def get_attacker_playground(self) -> str:
         """ Returns the attacker machine specific playground
 
-         Which is the folder on the machine where we run our tasks in
+         This is the folder on the machine where we run our tasks in
+
+         :returns: playground on the attacker (path, str)
          """
 
         if self.attacker_machine_plugin is None:
@@ -169,21 +205,10 @@ class AttackPlugin(BasePlugin):
 
         return self.attacker_machine_plugin.get_playground()
 
-    def run(self, targets: list[str]):
-        """ Run the command
-
-        @param targets: A list of targets, ip addresses will do
-        """
-        raise NotImplementedError
-
-    def install(self):  # pylint: disable=no-self-use
-        """ Install and setup requirements for the attack
-        """
-
-        return None
-
     def __execute__(self, targets):
         """ Execute the plugin. This is called by the code
+
+        :meta private:
 
         @param targets: A list of targets => machines
         """
@@ -198,14 +223,22 @@ class AttackPlugin(BasePlugin):
         return res
 
     def get_ttp(self):
-        """ Returns the ttp of the plugin, please set in boilerplate """
+        """ Returns the ttp of the plugin, please set in boilerplate
+
+        :meta private:
+
+        """
         if self.ttp:
             return self.ttp
 
         raise NotImplementedError
 
     def get_references(self):
-        """ Returns the references of the plugin, please set in boilerplate """
+        """ Returns the references of the plugin, please set in boilerplate
+
+        :meta private:
+
+        """
         if self.references:
             return self.references
 
