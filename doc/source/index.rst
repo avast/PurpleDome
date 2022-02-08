@@ -23,6 +23,8 @@ Welcome to the Purple Dome documentation
 
    basics/windows_targets
 
+   extending/structure
+
    extending/vulnerability_plugins
 
    extending/sensor_plugins
