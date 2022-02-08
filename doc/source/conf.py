@@ -45,6 +45,14 @@ extensions += ['sphinx_pyreverse']
 extensions += ['sphinxcontrib.autoyaml']
 autoyaml_level = 5
 
+## Graphviz
+extensions += [
+    "sphinx.ext.graphviz"
+]
+
+# -- GraphViz configuration ----------------------------------
+graphviz_output_format = 'svg'
+
 # Pydantic plugin for sphinx. Another way to generate config documentation
 # extensions += ['sphinx-pydantic']
 # This has bugs and is not properly maintained
