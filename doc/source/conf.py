@@ -45,7 +45,7 @@ extensions += ['sphinx_pyreverse']
 extensions += ['sphinxcontrib.autoyaml']
 autoyaml_level = 5
 
-## Graphviz
+# Graphviz
 extensions += [
     "sphinx.ext.graphviz"
 ]
