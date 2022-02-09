@@ -192,3 +192,16 @@ https://kislyuk.github.io/argcomplete/
 Is a argparse extension that registers the command line arguments for bash. It requires a command line command to register it globally. This is added to init.sh
 
 The configuration will be set in /etc/bash_completion.d/ . Keep in mind: It will require a shell restart to be activated
+
+## BibTeX
+
+When doing scientific research using Purple Dome, please use this BibTeX snippet in your paper:
+
+```
+@misc{PurpleDome:internet,
+author = {Thorsten Sick},
+title = {GitHub - avast/PurpleDome: Simulation environment for attacks on computer networks},
+note = {(visited on 09.02.2022)},
+howpublished = "\url{https://github.com/avast/PurpleDome}",
+}
+```
