@@ -199,7 +199,7 @@ When doing scientific research using Purple Dome, please use this BibTeX snippet
 
 ```
 @misc{PurpleDome:internet,
-author = {Thorsten Sick},
+author = {Thorsten Sick and Fabrizio Biondi},
 title = {GitHub - avast/PurpleDome: Simulation environment for attacks on computer networks},
 note = {(visited on 09.02.2022)},
 howpublished = "\url{https://github.com/avast/PurpleDome}",
