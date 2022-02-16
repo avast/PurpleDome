@@ -18,6 +18,7 @@ sphinx-argparse==0.2.5
 sphinxcontrib-autoyaml==0.6.1
 sphinx-pyreverse==0.0.13
 sphinxcontrib.asciinema==0.3.2
+sphinx-revealjs
 # sphinx-pydantic    # This one has issues that must be fixed upstream first
 
 # Mypy stuff

@@ -61,6 +61,15 @@ evince tools/human_readable_documentation/build/latex/purpledomesimulation.pdf
 
 (which is included in the zip as well)
 
+### Potential issues here
+
+The vagrant configuration file systems/Vagrantfile defines a bridged network shared between the VirtualBox VMs. If you do not have one or yours has a different name, please create one and change the config. Currently every machine uses:
+
+```
+attacker.vm.network "public_network", bridge: "enp4s0"
+```
+
+
 ## Fixing issues
 
 ### Machine creation
