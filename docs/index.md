@@ -1,37 +1,24 @@
-## Welcome to PurpleDome Pages
+## PurpleDome Research
 
-You can use the [editor on GitHub](https://github.com/avast/PurpleDome/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+Spin up a virtual environment and run automated attacks in there, log traces, create detection, countermeasures, mitigations and harden your systems. This is the core of PurpleDome. 
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+PurpleDome is a platform for IT security research. This page is to collect all PurpleDome based research projects. Finished and ongoing ones. And to allow everyone to benefit from them, contribute or connect to them.
 
-### Markdown
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+### Universities
 
-```markdown
-Syntax highlighted code block
+A list of Universities and their projects
 
-# Header 1
-## Header 2
-### Header 3
+### Publications
 
-- Bulleted
-- List
+Publications based on PurpleDome
 
-1. Numbered
-2. List
+### Project partnerships
 
-**Bold** and _Italic_ and `Code` text
+Project cooperation
 
-[Link](url) and ![Image](src)
-```
+### Presentations
 
-For more details see [Basic writing and formatting syntax](https://docs.github.com/en/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax).
+Presentations covering PurpleDome
 
-### Jekyll Themes
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/avast/PurpleDome/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
