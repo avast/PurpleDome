@@ -21,4 +21,8 @@ Project cooperation
 
 Presentations covering PurpleDome
 
+### Blog posts
+
+* [Avast: Purple Dome project on attacks without malware](https://decoded.avast.io/thorstensick/purple-dome-project-on-attacks-without-malware/)
+
 
