@@ -11,9 +11,9 @@ check: tox.ini
 # Manual tests
 test: tox.ini
 	tox;
-	pylint --rcfile=pylint.rc  *.py app/*.py plugins/base/*.py
 	coverage html;
 	coverage report;
+	pylint --rcfile=pylint.rc  *.py app/*.py plugins/base/*.py
 
 shipit: test
 	cd doc; make zip; cd ..

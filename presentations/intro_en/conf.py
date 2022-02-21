@@ -36,6 +36,11 @@ extensions += [
     "sphinx_revealjs",
 ]
 
+# Graphviz
+extensions += [
+    "sphinx.ext.graphviz"
+]
+
 # -- Options for Reveal.js output ---------------------------------------------
 revealjs_static_path = ["_static"]
 revealjs_google_fonts = ["M PLUS 1p", ]
@@ -66,10 +71,6 @@ revealjs_css_files = [
     "custom.css",
 ]
 
-# Graphviz
-extensions += [
-    "sphinx.ext.graphviz"
-]
 
 # -- GraphViz configuration ----------------------------------
 graphviz_output_format = 'svg'
