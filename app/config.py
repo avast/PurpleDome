@@ -151,7 +151,7 @@ class ExperimentConfig():
         :param configfile: The configuration file to process
         """
 
-        self.raw_config: MainConfig = None
+        self.raw_config: Optional[MainConfig] = None
         self._targets: list[MachineConfig] = []
         self._attackers: list[MachineConfig] = []
         self.load(configfile)
@@ -232,9 +232,10 @@ class ExperimentConfig():
 
         if self.raw_config is None:
             raise ConfigurationError("Config file is empty")
-
+        res = {}
         try:
-            res = self.raw_config.attack_conf[attack]
+            if self.raw_config.attack_conf is not None:
+                res = self.raw_config.attack_conf[attack]
         except KeyError:
             res = {}
         if res is None:

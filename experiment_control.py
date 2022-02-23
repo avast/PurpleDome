@@ -27,13 +27,15 @@ def run(args):
             for line in fh:
                 line = line.strip()
                 print(f"Running calder attack {line}")
-                Experiment(args.configfile, args.verbose, [line])
+                exp = Experiment(args.configfile, args.verbose)
+                exp.run([line])
 
     else:
         caldera_attack = None
         if args.caldera_attack:
             caldera_attack = [args.caldera_attack]
-        Experiment(args.configfile, args.verbose, caldera_attack)
+        exp = Experiment(args.configfile, args.verbose)
+        exp.run(caldera_attack)
 
 
 def create_parser():

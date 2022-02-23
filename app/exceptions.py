@@ -28,3 +28,7 @@ class MetasploitError(Exception):
 
 class RequirementError(Exception):
     """ Plugin requirements not fulfilled """
+
+
+class MachineError(Exception):
+    """ A virtual machine has issues"""

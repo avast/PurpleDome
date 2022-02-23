@@ -5,7 +5,7 @@
 import json
 
 from pprint import pformat
-from typing import Optional, Union
+from typing import Optional, Union, Annotated
 import requests
 import simplejson
 from pydantic.dataclasses import dataclass
@@ -19,13 +19,13 @@ from pydantic import conlist  # pylint: disable=no-name-in-module
 # TODO: Support all Caldera agents: "Sandcat (GoLang)","Elasticat (Blue Python/ Elasticsearch)","Manx (Reverse Shell TCP)","Ragdoll (Python/HTML)"
 
 @dataclass
-class Variation:
+class Variation:  # pylint: disable=missing-class-docstring
     description: str
     command: str
 
 
 @dataclass
-class ParserConfig:
+class ParserConfig:  # pylint: disable=missing-class-docstring
     source: str
     edge: str
     target: str
@@ -33,27 +33,27 @@ class ParserConfig:
 
 
 @dataclass
-class Parser:
+class Parser:  # pylint: disable=missing-class-docstring
     module: str
     relationships: list[ParserConfig]  # undocumented ! Needs improvement ! TODO
     parserconfigs: Optional[list[ParserConfig]] = None
 
 
 @dataclass
-class Requirement:
+class Requirement:  # pylint: disable=missing-class-docstring
     module: str
     relationship_match: list[dict]
 
 
 @dataclass
-class AdditionalInfo:
+class AdditionalInfo:  # pylint: disable=missing-class-docstring
     additionalProp1: Optional[str] = None  # pylint: disable=invalid-name
     additionalProp2: Optional[str] = None  # pylint: disable=invalid-name
     additionalProp3: Optional[str] = None  # pylint: disable=invalid-name
 
 
 @dataclass
-class Executor:
+class Executor:  # pylint: disable=missing-class-docstring
     build_target: Optional[str]  # Why can this be None ?
     language: Optional[str]  # Why can this be None ?
     payloads: list[str]
@@ -106,9 +106,10 @@ class Ability:
 @dataclass
 class AbilityList:
     """ A list of exploits """
-    abilities: conlist(Ability, min_items=1)
+    abilities: Annotated[list, conlist(Ability, min_items=1)]
 
     def get_data(self):
+        """ Get a specific element out of the internal data representation, behaves like the well know 'get' """
         return self.abilities
 
 
@@ -123,9 +124,10 @@ class Obfuscator:
 @dataclass
 class ObfuscatorList:
     """ A list of obfuscators """
-    obfuscators: conlist(Obfuscator, min_items=1)
+    obfuscators: Annotated[list, conlist(Obfuscator, min_items=1)]
 
     def get_data(self):
+        """ Get a specific element out of the internal data representation, behaves like the well know 'get' """
         return self.obfuscators
 
 
@@ -152,14 +154,15 @@ class Adversary:
 @dataclass
 class AdversaryList:
     """ A list of adversary """
-    adversaries: conlist(Adversary, min_items=1)
+    adversaries: Annotated[list, conlist(Adversary, min_items=1)]
 
     def get_data(self):
+        """ Get a specific element out of the internal data representation, behaves like the well know 'get' """
         return self.adversaries
 
 
 @dataclass
-class Fact:
+class Fact:  # pylint: disable=missing-class-docstring
     unique: str
     name: str
     score: int
@@ -183,7 +186,7 @@ class Fact:
 
 
 @dataclass
-class Relationship:
+class Relationship:  # pylint: disable=missing-class-docstring
     target: Fact
     unique: str
     score: int
@@ -193,13 +196,13 @@ class Relationship:
 
 
 @dataclass
-class Visibility:
+class Visibility:  # pylint: disable=missing-class-docstring
     score: int
     adjustments: list[int]
 
 
 @dataclass
-class Link:
+class Link:  # pylint: disable=missing-class-docstring
     pin: int
     ability: Ability
     paw: str
@@ -273,18 +276,19 @@ class AgentList:
     agents: list[Agent]
 
     def get_data(self):
+        """ Get a specific element out of the internal data representation, behaves like the well know 'get' """
         return self.agents
 
 
 @dataclass
-class Rule:
+class Rule:  # pylint: disable=missing-class-docstring
     match: str
     trait: str
     action: Optional[str] = None
 
 
 @dataclass
-class Adjustment:
+class Adjustment:  # pylint: disable=missing-class-docstring
     offset: int
     trait: str
     value: str
@@ -292,7 +296,7 @@ class Adjustment:
 
 
 @dataclass
-class Source:
+class Source:  # pylint: disable=missing-class-docstring
     name: str
     plugin: str
     facts: list[Fact]
@@ -310,10 +314,11 @@ class Source:
 
 
 @dataclass
-class SourceList:
+class SourceList:  # pylint: disable=missing-class-docstring
     sources: list[Source]
 
     def get_data(self):
+        """ Get a specific element out of the internal data representation, behaves like the well know 'get' """
         return self.sources
 
 
@@ -334,14 +339,16 @@ class Planner:
 
 @dataclass
 class PlannerList:
+    """ A list of planners"""
     planners: list[Planner]
 
     def get_data(self):
+        """ Get a specific element out of the internal data representation, behaves like the well know 'get' """
         return self.planners
 
 
 @dataclass
-class Goal:
+class Goal:  # pylint: disable=missing-class-docstring
     target: str
     count: int
     achieved: bool
@@ -350,7 +357,7 @@ class Goal:
 
 
 @dataclass
-class Objective:
+class Objective:  # pylint: disable=missing-class-docstring
     percentage: int
     name: str
     goals: list[Goal]
@@ -396,17 +403,20 @@ class Operation:
 
 @dataclass
 class OperationList:
-    operations: conlist(Operation)
+    """ A list of operations """
+    operations: Annotated[list, conlist(Operation)]
 
     def get_data(self):
+        """ Get a specific element out of the internal data representation, behaves like the well know 'get' """
         return self.operations
 
 
 @dataclass
-class ObjectiveList:
-    objectives: conlist(Objective)
+class ObjectiveList:  # pylint: disable=missing-class-docstring
+    objectives: Annotated[list, conlist(Objective)]
 
     def get_data(self):
+        """ Get a specific element out of the internal data representation, behaves like the well know 'get' """
         return self.objectives
 
 

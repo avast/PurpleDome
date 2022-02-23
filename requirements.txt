@@ -22,7 +22,7 @@ sphinx-revealjs
 # sphinx-pydantic    # This one has issues that must be fixed upstream first
 
 # Mypy stuff
-mypy==0.910
+mypy==0.931
 types-PyYAML==5.4.6
 types-requests==2.25.6
 types-simplejson==3.17.0

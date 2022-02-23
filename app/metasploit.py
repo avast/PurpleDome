@@ -7,7 +7,7 @@ import os
 import random
 import requests
 
-from pymetasploit3.msfrpc import MsfRpcClient
+from pymetasploit3.msfrpc import MsfRpcClient  # type: ignore
 # from app.machinecontrol import Machine
 from app.attack_log import AttackLog
 from app.interface_sfx import CommandlineColors
@@ -28,9 +28,9 @@ class Metasploit():
         :param kwargs: Relevant ones: uri, port, server, username
         """
 
-        self.password = password
-        self.attack_logger = attack_logger
-        self.username = kwargs.get("username", None)
+        self.password: str = password
+        self.attack_logger: AttackLog = attack_logger
+        self.username: str = kwargs.get("username", None)
         self.kwargs = kwargs
         self.client = None
 
@@ -65,12 +65,15 @@ class Metasploit():
         print(res)
         return res
 
+    def __msfrpcd_cmd__(self):
+        return f"killall msfrpcd; nohup msfrpcd -P {self.password} -U {self.username} -S &"
+
     def start_msfrpcd(self):
         """ Starts the msfrpcs on the attacker. Metasploit must alredy be installed there ! """
 
-        cmd = f"killall msfrpcd; nohup msfrpcd -P {self.password} -U {self.username} -S &"
+        # cmd = f"killall msfrpcd; nohup msfrpcd -P {self.password} -U {self.username} -S &"
 
-        self.attacker.remote_run(cmd, disown=True)
+        self.attacker.remote_run(self.__msfrpcd_cmd__(), disown=True)
         # print("msfrpcd started")
         # breakpoint()
         time.sleep(3)
@@ -97,7 +100,7 @@ class Metasploit():
                 self.start_msfrpcd()
                 time.sleep(sleeptime)
                 sleeptime += 5
-                print("Failed getting connection to msfrpcd. Retries left: {retries}")
+                print(f"Failed getting connection to msfrpcd. Retries left: {retries}")
             retries -= 1
 
         if self.client is None:
