@@ -69,8 +69,9 @@ class AttackPlugin(BasePlugin):
 
         :returns: True if this plugin requires Caldera
         """
-        if Requirement.CALDERA in self.requirements:
-            return True
+        if self.requirements is not None:
+            if Requirement.CALDERA in self.requirements:
+                return True
         return False
 
     def needs_metasploit(self) -> bool:
@@ -79,8 +80,9 @@ class AttackPlugin(BasePlugin):
         :meta private:
         :returns: True if this plugin requires Metasploit
         """
-        if Requirement.METASPLOIT in self.requirements:
-            return True
+        if self.requirements is not None:
+            if Requirement.METASPLOIT in self.requirements:
+                return True
         return False
 
     def connect_metasploit(self):
@@ -130,7 +132,7 @@ class AttackPlugin(BasePlugin):
 
         self.vprint(f"      Plugin running command {command}", 3)
 
-        res = self.attacker_machine_plugin.__call_remote_run__(command, disown=disown)
+        res = self.attacker_machine_plugin.remote_run(command, disown=disown)
         return res
 
     def targets_run_cmd(self, command: str, disown: bool = False) -> str:
@@ -145,7 +147,7 @@ class AttackPlugin(BasePlugin):
 
         self.vprint(f"      Plugin running command {command}", 3)
 
-        res = self.target_machine_plugin.__call_remote_run__(command, disown=disown)
+        res = self.target_machine_plugin.remote_run(command, disown=disown)
         return res
 
     def set_target_machines(self, machine: MachineryPlugin):
@@ -154,7 +156,7 @@ class AttackPlugin(BasePlugin):
         :param machine: Machine plugin to communicate with
         """
 
-        self.target_machine_plugin = machine.vm_manager
+        self.target_machine_plugin = machine
 
     def set_attacker_machine(self, machine: MachineryPlugin):
         """ Set the machine plugin class to target
@@ -162,7 +164,7 @@ class AttackPlugin(BasePlugin):
         :param machine: Machine to communicate with
         """
 
-        self.attacker_machine_plugin = machine.vm_manager
+        self.attacker_machine_plugin = machine
 
     def set_caldera(self, caldera: CalderaControl):
         """ Set the caldera control to be used for caldera attacks

@@ -7,7 +7,7 @@ import os
 import random
 import requests
 
-from pymetasploit3.msfrpc import MsfRpcClient
+from pymetasploit3.msfrpc import MsfRpcClient  # type: ignore
 # from app.machinecontrol import Machine
 from app.attack_log import AttackLog
 from app.interface_sfx import CommandlineColors

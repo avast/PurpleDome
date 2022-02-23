@@ -17,6 +17,7 @@ from plugins.base.sensor import SensorPlugin
 from plugins.base.vulnerability_plugin import VulnerabilityPlugin
 from app.interface_sfx import CommandlineColors
 from app.attack_log import AttackLog
+from app.exceptions import PluginError
 
 # from app.interface_sfx import CommandlineColors
 
@@ -89,8 +90,11 @@ class PluginManager():
         plugins = self.get_plugins(subclass, name_filter)
         res = 0
         for plugin in plugins:
-            if plugin.needs_caldera():
-                res += 1
+            if isinstance(plugin, AttackPlugin):
+                if plugin.needs_caldera():
+                    res += 1
+            else:
+                raise PluginError("Wrong plugin type. Expected AttackPlugin")
 
         return res
 
@@ -103,8 +107,11 @@ class PluginManager():
         plugins = self.get_plugins(subclass, name_filter)
         res = 0
         for plugin in plugins:
-            if plugin.needs_metasploit():
-                res += 1
+            if isinstance(plugin, AttackPlugin):
+                if plugin.needs_metasploit():
+                    res += 1
+            else:
+                raise PluginError("Wrong plugin type. Expected AttackPlugin")
 
         return res
 

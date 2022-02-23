@@ -510,6 +510,15 @@ class AttackLog():
         logid = timestamp + "_" + str(randint(1, 100000))
 
         cframe = currentframe()
+        default_sourcefile = ""
+        if cframe is not None:
+            if cframe.f_back is not None:
+                default_sourcefile = getsourcefile(cframe.f_back) or ""
+
+        default_sourceline = -1
+        if cframe is not None:
+            if cframe.f_back is not None:
+                default_sourceline = cframe.f_back.f_lineno
 
         data = {"timestamp": timestamp,
                 "timestamp_end": None,
@@ -528,8 +537,8 @@ class AttackLog():
                 "situation_description": kwargs.get("situation_description", None),  # Description for the situation this attack was run in. Set by the plugin or attacker emulation
                 "countermeasure": kwargs.get("countermeasure", None),  # Set by the attack
                 "result": None,
-                "sourcefile": kwargs.get("sourcefile", getsourcefile(cframe.f_back)),
-                "sourceline": kwargs.get("sourceline", cframe.f_back.f_lineno)
+                "sourcefile": kwargs.get("sourcefile", default_sourcefile),
+                "sourceline": kwargs.get("sourceline", default_sourceline)
                 }
         self.__add_to_log__(data)
 

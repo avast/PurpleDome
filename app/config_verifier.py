@@ -106,7 +106,7 @@ class Target:
     ssh_user: Optional[str] = None
     ssh_password: Optional[str] = None
     ssh_keyfile: Optional[str] = None
-    vulnerabilities: list[str] = None
+    vulnerabilities: Optional[list[str]] = None
 
     def has_key(self, keyname):
         """ Checks if a key exists
@@ -182,8 +182,8 @@ class Results:
 class MainConfig:
     """ Central configuration for PurpleDome """
     caldera: CalderaConfig
-    attackers: conlist(Attacker, min_items=1)
-    targets: conlist(Target, min_items=1)
+    attackers: conlist(Attacker, min_items=1)  # type: ignore
+    targets: conlist(Target, min_items=1)  # type: ignore
     attacks: AttackConfig
     caldera_attacks: AttackList
     plugin_based_attacks: AttackList

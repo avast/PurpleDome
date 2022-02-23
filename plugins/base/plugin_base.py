@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """ Base class for all plugin types """
 
-from inspect import currentframe
+from inspect import currentframe, getframeinfo
 import os
 from typing import Optional
 import yaml
 from app.exceptions import PluginError  # type: ignore
-import app.exceptions  # type: ignore
+import app.exceptions                   # type: ignore
 
 
 class BasePlugin():
@@ -73,7 +73,11 @@ class BasePlugin():
 
         """
         cf = currentframe()  # pylint: disable=invalid-name
-        return cf.f_back.filename
+        if cf is None:
+            raise PluginError("can not get current frame")
+        if cf.f_back is None:
+            raise PluginError("can not get current frame")
+        return getframeinfo(cf.f_back).filename
 
     def get_linenumber(self) -> int:
         """ Returns the current linenumber.  This can be used for debugging
@@ -81,6 +85,10 @@ class BasePlugin():
         :returns: currently executed linenumber
         """
         cf = currentframe()  # pylint: disable=invalid-name
+        if cf is None:
+            raise PluginError("can not get current frame")
+        if cf.f_back is None:
+            raise PluginError("can not get current frame")
         return cf.f_back.f_lineno
 
     def get_playground(self) -> str:
@@ -223,6 +231,9 @@ class BasePlugin():
 
         :returns: The path with the plugin code
         """
+
+        if self.plugin_path is None:
+            raise PluginError("Non existing plugin path")
 
         return os.path.join(os.path.dirname(self.plugin_path))
 

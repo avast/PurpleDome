@@ -5,8 +5,8 @@ import socket
 import time
 import paramiko
 
-from fabric import Connection
-from invoke.exceptions import UnexpectedExit
+from fabric import Connection  # type: ignore
+from invoke.exceptions import UnexpectedExit  # type: ignore
 from app.exceptions import NetworkError
 from plugins.base.plugin_base import BasePlugin
 
@@ -175,7 +175,7 @@ class SSHFeatures(BasePlugin):
                 self.vprint(f"SSH GET: No valid connection. Errors: {error.errors}", 1)
                 do_retry = True
             except FileNotFoundError as error:
-                self.vprint(error, 0)
+                self.vprint(str(error), 0)
                 break
             except OSError:
                 self.vprint("SSH GET: Obscure OSError, ignoring (file should have been copied)", 1)

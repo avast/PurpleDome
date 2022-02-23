@@ -5,7 +5,7 @@
 import json
 
 from pprint import pformat
-from typing import Optional, Union
+from typing import Optional, Union, Annotated
 import requests
 import simplejson
 from pydantic.dataclasses import dataclass
@@ -104,9 +104,9 @@ class Ability:
 
 
 @dataclass
-class AbilityList:
+class AbilityList():
     """ A list of exploits """
-    abilities: conlist(Ability, min_items=1)
+    abilities: Annotated[list, conlist(Ability, min_items=1)]
 
     def get_data(self):
         return self.abilities
@@ -123,7 +123,7 @@ class Obfuscator:
 @dataclass
 class ObfuscatorList:
     """ A list of obfuscators """
-    obfuscators: conlist(Obfuscator, min_items=1)
+    obfuscators: Annotated[list, conlist(Obfuscator, min_items=1)]
 
     def get_data(self):
         return self.obfuscators
@@ -152,7 +152,7 @@ class Adversary:
 @dataclass
 class AdversaryList:
     """ A list of adversary """
-    adversaries: conlist(Adversary, min_items=1)
+    adversaries: Annotated[list, conlist(Adversary, min_items=1)]
 
     def get_data(self):
         return self.adversaries
@@ -396,7 +396,7 @@ class Operation:
 
 @dataclass
 class OperationList:
-    operations: conlist(Operation)
+    operations: Annotated[list, conlist(Operation)]
 
     def get_data(self):
         return self.operations
@@ -404,7 +404,7 @@ class OperationList:
 
 @dataclass
 class ObjectiveList:
-    objectives: conlist(Objective)
+    objectives: Annotated[list, conlist(Objective)]
 
     def get_data(self):
         return self.objectives

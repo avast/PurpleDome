@@ -121,6 +121,19 @@ class MachineryPlugin(BasePlugin):
             """
         raise NotImplementedError
 
+    def get_paw(self):
+        """ Returns the paw of the current machine """
+        return self.config.caldera_paw()
+
+    def get_group(self):
+        """ Returns the group of the current machine """
+        return self.config.caldera_group()
+
+    def get_os(self):
+        """ Returns the OS of the machine """
+
+        return self.config.os()
+
     def get_playground(self):
         """ Path on the machine  where all the attack tools will be copied to. """
 

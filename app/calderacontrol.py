@@ -66,11 +66,14 @@ class CalderaControl(CalderaAPI):
             return {}
 
         res = {}
-        for i in source.get("facts"):
-            res[i.get("trait")] = {"value": i.get("value"),
-                                   "technique_id": i.get("technique_id"),
-                                   "collected_by": i.get("collected_by")
-                                   }
+        if source is not None:
+            facts = source.get("facts")
+            if facts is not None:
+                for fact in facts:
+                    res[fact.get("trait")] = {"value": fact.get("value"),
+                                              "technique_id": fact.get("technique_id"),
+                                              "collected_by": fact.get("collected_by")
+                                              }
         return res
 
     def list_paws_of_running_agents(self) -> list[str]:
@@ -344,7 +347,12 @@ class CalderaControl(CalderaAPI):
                 return False
 
         self.add_adversary(adversary_name, ability_id)
-        adid = self.get_adversary(adversary_name).get("adversary_id")
+        adversary = self.get_adversary(adversary_name)
+        if adversary is None:
+            raise CalderaError("Could not get adversary")
+        adid = adversary.get("adversary_id", None)
+        if adid is None:
+            raise CalderaError("Could not get adversary by id")
 
         logid = self.attack_logger.start_caldera_attack(source=self.url,
                                                         paw=paw,
@@ -370,7 +378,12 @@ class CalderaControl(CalderaAPI):
                                  )
         self.attack_logger.vprint(pformat(res), 3)
 
-        opid = self.get_operation(operation_name).get("id")
+        operation = self.get_operation(operation_name)
+        if operation is None:
+            raise CalderaError("Was not able to get operation")
+        opid = operation.get("id")
+        if opid is None:
+            raise CalderaError("Was not able to get operation. Broken ID")
         self.attack_logger.vprint("New operation created. OpID: " + str(opid), 3)
 
         self.set_operation_state(opid)
