@@ -588,8 +588,7 @@ class CalderaAPI():
             #  ],
             "description": description
         }
-        # TODO Check this return value
-        data = {"agents": self.__contact_server__(payload, method="post", rest_path="api/v2/adversaries")}
+        data = self.__contact_server__(payload, method="post", rest_path="api/v2/adversaries")
         # agents = AgentList(**data)
         return data
 
@@ -600,8 +599,7 @@ class CalderaAPI():
         :return:
         """
         payload = None
-        # TODO Check this return value
-        data = {"agents": self.__contact_server__(payload, method="delete", rest_path=f"api/v2/adversaries/{adversary_id}")}
+        data = self.__contact_server__(payload, method="delete", rest_path=f"api/v2/adversaries/{adversary_id}")
         return data
 
     def delete_agent(self, agent_paw: str) -> dict:
@@ -611,8 +609,7 @@ class CalderaAPI():
         :return:
         """
         payload = None
-        # TODO Check this return value
-        data = {"agents": self.__contact_server__(payload, method="delete", rest_path=f"api/v2/agents/{agent_paw}")}
+        data = self.__contact_server__(payload, method="delete", rest_path=f"api/v2/agents/{agent_paw}")
         return data
 
     def kill_agent(self, agent_paw: str) -> dict:
