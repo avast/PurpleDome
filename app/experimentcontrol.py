@@ -13,7 +13,7 @@ from typing import Optional
 from app.attack_log import AttackLog
 from app.config import ExperimentConfig
 from app.interface_sfx import CommandlineColors
-from app.exceptions import ServerError, CalderaError, MachineError
+from app.exceptions import ServerError, CalderaError, MachineError, PluginError
 from app.pluginmanager import PluginManager
 from app.doc_generator import DocGenerator
 from app.calderacontrol import CalderaControl
@@ -26,7 +26,7 @@ from plugins.base.attack import AttackPlugin
 class Experiment():
     """ Class handling experiments """
 
-    def __init__(self, configfile: str, verbosity=0):
+    def __init__(self, configfile: str, verbosity: int = 0) -> None:
         """
 
         :param configfile: Path to the configfile to load
@@ -43,7 +43,7 @@ class Experiment():
         self.attack_logger = AttackLog(verbosity)
         self.plugin_manager = PluginManager(self.attack_logger)
 
-    def run(self, caldera_attacks: list = None):
+    def run(self, caldera_attacks: list = None) -> None:
         """
         Run the experiment
 
@@ -118,7 +118,7 @@ class Experiment():
         zip_this += document_generator.get_outfile_paths()
         self.zip_loot(zip_this)
 
-    def run_plugin_attacks(self):
+    def run_plugin_attacks(self) -> None:
         """ Run plugin based attacks
 
         """
@@ -137,7 +137,7 @@ class Experiment():
                 time.sleep(self.experiment_config.get_nap_time())
         self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Finished attack plugins{CommandlineColors.ENDC}", 1)
 
-    def run_caldera_attacks(self, caldera_attacks: Optional[list[str]] = None):
+    def run_caldera_attacks(self, caldera_attacks: Optional[list[str]] = None) -> None:
         """ Run caldera based attacks
 
 
@@ -203,17 +203,21 @@ class Experiment():
                         # End of fix
         self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Finished Caldera attacks{CommandlineColors.ENDC}", 1)
 
-    def add_running_machines_to_log(self):
+    def add_running_machines_to_log(self) -> None:
         """ Add machine infos for targets and attacker to the log """
         for target in self.targets:
+            if target is None:
+                raise MachineError("Target machine configured to None or whatever happened")
             i = target.get_machine_info()
             i["role"] = "target"
             self.attack_logger.add_machine_info(i)
+        if self.attacker_1 is None:
+            raise MachineError("Attacker machine gone")
         i = self.attacker_1.get_machine_info()
         i["role"] = "attacker"
         self.attack_logger.add_machine_info(i)
 
-    def wait_until_all_targets_have_caldera_implants(self, caldera_url: str, caldera_attacks: Optional[list[str]] = None):
+    def wait_until_all_targets_have_caldera_implants(self, caldera_url: str, caldera_attacks: Optional[list[str]] = None) -> None:
         """
 
         :param caldera_attacks: a list of command line defined caldera attacks
@@ -236,7 +240,7 @@ class Experiment():
                 time.sleep(120)  # Was 30, but maybe there are timing issues
                 running_agents = self.caldera_control.list_paws_of_running_agents()
 
-    def first_start_of_caldera_implants(self, caldera_attacks: Optional[list[str]] = None):
+    def first_start_of_caldera_implants(self, caldera_attacks: Optional[list[str]] = None) -> None:
         """ Start caldera implant on the targets
 
         :param caldera_attacks: a list of command line defined caldera attacks
@@ -253,7 +257,7 @@ class Experiment():
             time.sleep(20)  # Wait for all the clients to contact the caldera server
         # TODO: Smarter wait
 
-    def install_sensor_plugins(self):
+    def install_sensor_plugins(self) -> None:
         """ Installs sensor plugins on the targets
 
         """
@@ -262,7 +266,7 @@ class Experiment():
             a_target.install_sensors()
             a_target.start_sensors()
 
-    def install_vulnerabilities(self):
+    def install_vulnerabilities(self) -> None:
         """ Install vulnerabilities on the targets
 
         """
@@ -271,7 +275,7 @@ class Experiment():
             a_target.install_vulnerabilities()
             a_target.start_vulnerabilities()
 
-    def start_target_machines(self, caldera_attacks: Optional[list[str]] = None):
+    def start_target_machines(self, caldera_attacks: Optional[list[str]] = None) -> None:
         """ Start target machines
 
         :param caldera_attacks: Caldera attacks as defined on the command line
@@ -309,7 +313,7 @@ class Experiment():
             self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Target is up: {tname}  {CommandlineColors.ENDC}", 1)
             self.targets.append(target_1)
 
-    def machine_needs_caldera(self, target, caldera_from_cmdline: Optional[list[str]] = None) -> int:
+    def machine_needs_caldera(self, target: Machine, caldera_from_cmdline: Optional[list[str]] = None) -> int:
         """ Counts the attacks and plugins needing caldera that are registered for this machine
 
         :param target: Target machine we will check the config file for assigned caldera attacks for
@@ -328,7 +332,7 @@ class Experiment():
 
         return c_cmdline + c_conffile + c_plugins
 
-    def attack(self, target, attack):
+    def attack(self, target: Machine, attack: str) -> None:
         """ Pick an attack and run it
 
         :param attack: Name of the attack to run
@@ -338,20 +342,24 @@ class Experiment():
 
         for plugin in self.plugin_manager.get_plugins(AttackPlugin, [attack]):
             name = plugin.get_name()
+            if isinstance(plugin, AttackPlugin):
+                self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Running Attack plugin {name}{CommandlineColors.ENDC}", 2)
+                plugin.process_config(self.experiment_config.attack_conf(plugin.get_config_section_name()))
+                plugin.set_attacker_machine(self.attacker_1)
+                plugin.set_sysconf({})
+                plugin.set_logger(self.attack_logger)
+                if self.caldera_control is None:
+                    raise CalderaError("Caldera control not initialised")
+                plugin.set_caldera(self.caldera_control)
+                plugin.connect_metasploit()
+                plugin.install()
 
-            self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Running Attack plugin {name}{CommandlineColors.ENDC}", 2)
-            plugin.process_config(self.experiment_config.attack_conf(plugin.get_config_section_name()))
-            plugin.set_attacker_machine(self.attacker_1)
-            plugin.set_sysconf({})
-            plugin.set_logger(self.attack_logger)
-            plugin.set_caldera(self.caldera_control)
-            plugin.connect_metasploit()
-            plugin.install()
+                # plugin.__set_logger__(self.attack_logger)
+                plugin.__execute__([target])
+            else:
+                raise PluginError("AttackPlugin is not really an AttackPlugin type")
 
-            # plugin.__set_logger__(self.attack_logger)
-            plugin.__execute__([target])
-
-    def zip_loot(self, zip_this: list[str]):
+    def zip_loot(self, zip_this: list[str]) -> None:
         """ Zip the loot together
 
         :param zip_this: A list of file paths to add to the zip file
@@ -373,7 +381,7 @@ class Experiment():
         default_name = os.path.join(self.loot_dir, "..", "most_recent.zip")
         shutil.copyfile(filename, default_name)
 
-    def __start_attacker(self):
+    def __start_attacker(self) -> None:
         """ Start the attacking VM """
 
         # Preparing attacker
@@ -401,6 +409,8 @@ class Experiment():
             raise ServerError
         # self.attacker_1.set_attack_logger(self.attack_logger)
 
-    def __stop_attacker(self):
+    def __stop_attacker(self) -> None:
         """ Stop the attacking VM """
+        if self.attacker_1 is None:
+            raise MachineError("Attacker machine not initialised")
         self.attacker_1.halt()
