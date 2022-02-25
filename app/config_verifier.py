@@ -3,7 +3,7 @@
 """ Pydantic verifier for config structure """
 
 from enum import Enum
-from typing import Optional
+from typing import Optional, Any
 from pydantic.dataclasses import dataclass
 from pydantic import conlist  # pylint: disable=no-name-in-module
 
@@ -28,7 +28,7 @@ class CalderaConfig:
     """ Configuration for the Caldera server """
     apikey: str
 
-    def has_key(self, keyname):
+    def has_key(self, keyname: str) -> bool:
         """ Checks if a key exists
         Required for compatibility with DotMap which is used in Unit tests
         """
@@ -44,7 +44,7 @@ class VMController:
     vagrantfilepath: str
     ip: Optional[str] = ""  # pylint: disable=invalid-name
 
-    def has_key(self, keyname):
+    def has_key(self, keyname: str) -> bool:
         """ Checks if a key exists
             Required for compatibility with DotMap which is used in Unit tests
         """
@@ -70,7 +70,7 @@ class Attacker:
     use_existing_machine: bool = False
     playground: Optional[str] = None
 
-    def has_key(self, keyname):
+    def has_key(self, keyname: str) -> bool:
         """ Checks if a key exists
             Required for compatibility with DotMap which is used in Unit tests
         """
@@ -78,7 +78,7 @@ class Attacker:
             return True
         return False
 
-    def get(self, keyname, default=None):
+    def get(self, keyname: str, default: Any = None) -> Any:
         """ Returns the value of a specific key
             Required for compatibility with DotMap which is used in Unit tests
         """
@@ -108,7 +108,7 @@ class Target:
     ssh_keyfile: Optional[str] = None
     vulnerabilities: Optional[list[str]] = None
 
-    def has_key(self, keyname):
+    def has_key(self, keyname: str) -> bool:
         """ Checks if a key exists
             Required for compatibility with DotMap which is used in Unit tests
         """
@@ -116,7 +116,7 @@ class Target:
             return True
         return False
 
-    def get(self, keyname, default=None):
+    def get(self, keyname: str, default: Any = None) -> Any:
         """ Returns the value of a specific key
             Required for compatibility with DotMap which is used in Unit tests
         """
@@ -132,7 +132,7 @@ class AttackConfig:
     caldera_jitter: str = "4/8"
     nap_time: int = 5
 
-    def has_key(self, keyname):
+    def has_key(self, keyname: str) -> bool:
         """ Checks if a key exists
             Required for compatibility with DotMap which is used in Unit tests
         """
@@ -147,7 +147,7 @@ class AttackList:
     linux: Optional[list[str]]
     windows: Optional[list[str]]
 
-    def has_key(self, keyname):
+    def has_key(self, keyname: str) -> bool:
         """ Checks if a key exists
             Required for compatibility with DotMap which is used in Unit tests
         """
@@ -155,7 +155,7 @@ class AttackList:
             return True
         return False
 
-    def get(self, keyname, default=None):
+    def get(self, keyname: str, default: Any = None) -> Any:
         """ Returns the value of a specific key
             Required for compatibility with DotMap which is used in Unit tests
         """
@@ -169,7 +169,7 @@ class Results:
     """ What to do with the results """
     loot_dir: str
 
-    def has_key(self, keyname):
+    def has_key(self, keyname: str) -> bool:
         """ Checks if a key exists
             Required for compatibility with DotMap which is used in Unit tests
         """
@@ -193,7 +193,7 @@ class MainConfig:
     attack_conf: Optional[dict]
     sensor_conf: Optional[dict]
 
-    def has_key(self, keyname):
+    def has_key(self, keyname: str) -> bool:
         """ Checks if a key exists
             Required for compatibility with DotMap which is used in Unit tests
         """

@@ -7,6 +7,7 @@ import unittest
 from app.config import ExperimentConfig, MachineConfig
 from app.exceptions import ConfigurationError
 from dotmap import DotMap
+from app.config_verifier import Target
 
 # https://docs.python.org/3/library/unittest.html
 
@@ -365,15 +366,23 @@ class TestMachineConfig(unittest.TestCase):
     def test_sensors_set(self):
         """ Testing empty sensor config """
 
-        mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                                   "os": "linux",
-                                   "halt_needs_force": True,
-                                   "vm_controller": {
-                                       "vm_type": "vagrant",
-                                   },
-                                   "vm_name": "target1",
-                                   "use_existing_machine": False,
-                                   "sensors": ["linux_foo", "test_sensor"]}))
+        conf = {
+            "os": "linux",
+            "name": "Foo",
+            "paw": "Foo_paw",
+            "group": "Foo_group",
+            "machinepath": "The_machinepath",
+            "nicknames": ["a", "b"],
+            "halt_needs_force": True,
+            "vm_controller": {
+                "vm_type": "vagrant",
+                "vagrantfilepath": "system",
+            },
+            "vm_name": "target1",
+            "use_existing_machine": False,
+            "sensors": ["linux_foo", "test_sensor"]}
+
+        mc = MachineConfig(Target(**conf))
         self.assertEqual(mc.sensors(), ["linux_foo", "test_sensor"])
 
     def test_vulnerabilities_empty(self):
@@ -392,15 +401,23 @@ class TestMachineConfig(unittest.TestCase):
     def test_vulnerabilities_set(self):
         """ Testing empty vulnerabilities config """
 
-        mc = MachineConfig(DotMap({"root": "systems/attacker1",
-                                   "os": "linux",
-                                   "halt_needs_force": True,
-                                   "vm_controller": {
-                                       "vm_type": "vagrant",
-                                   },
-                                   "vm_name": "target1",
-                                   "use_existing_machine": False,
-                                   "vulnerabilities": ["PEBKAC", "USER"]}))
+        conf = {  # "root": "systems/attacker1",
+            "os": "linux",
+            "name": "Foo",
+            "paw": "Foo_paw",
+            "group": "Foo_group",
+            "machinepath": "The_machinepath",
+            "nicknames": ["a", "b"],
+            "halt_needs_force": True,
+            "vm_controller": {
+                "vm_type": "vagrant",
+                "vagrantfilepath": "system",
+            },
+            "vm_name": "target1",
+            "use_existing_machine": False,
+            "vulnerabilities": ["PEBKAC", "USER"],
+            "sensors": ["linux_foo", "test_sensor"]}
+        mc = MachineConfig(Target(**conf))
         self.assertEqual(mc.vulnerabilities(), ["PEBKAC", "USER"])
 
     def test_active_not_set(self):

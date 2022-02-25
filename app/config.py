@@ -2,9 +2,9 @@
 
 """ Configuration loader for PurpleDome """
 
-from typing import Optional
+from typing import Optional, Union
 import yaml
-from app.config_verifier import MainConfig
+from app.config_verifier import MainConfig, Attacker, Target
 
 from app.exceptions import ConfigurationError
 
@@ -19,7 +19,7 @@ from app.exceptions import ConfigurationError
 class MachineConfig():
     """ Sub config for a specific machine"""
 
-    def __init__(self, machinedata):
+    def __init__(self, machinedata: Union[Attacker, Target]):
         """ Init machine control config
 
         :param machinedata: dict containing machine data
@@ -60,7 +60,9 @@ class MachineConfig():
             return self.vmname()
 
         try:
-            return self.raw_config.vm_controller.ip
+            if self.raw_config.vm_controller.ip is not None:
+                return self.raw_config.vm_controller.ip
+            return self.vmname()
         except KeyError:
             return self.vmname()
 
@@ -127,13 +129,15 @@ class MachineConfig():
     def sensors(self) -> list[str]:
         """ Return a list of sensors configured for this machine """
         if self.raw_config.has_key("sensors"):
-            return self.raw_config.sensors or []
+            if isinstance(self.raw_config, Target):
+                return self.raw_config.sensors or []
         return []
 
     def vulnerabilities(self) -> list[str]:
         """ Return a list of vulnerabilities configured for this machine """
         if self.raw_config.has_key("vulnerabilities"):
-            return self.raw_config.vulnerabilities or []
+            if isinstance(self.raw_config, Target):
+                return self.raw_config.vulnerabilities or []
         return []
 
     def is_active(self) -> bool:
@@ -159,7 +163,7 @@ class ExperimentConfig():
         # Test essential data that is a hard requirement. Should throw errors if anything is wrong
         self.loot_dir()
 
-    def load(self, configfile: str):
+    def load(self, configfile: str) -> None:
         """ Loads the configuration file
 
         :param configfile: The configuration file to process

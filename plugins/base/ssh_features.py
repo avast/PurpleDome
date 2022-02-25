@@ -3,10 +3,12 @@
 import os.path
 import socket
 import time
-import paramiko
+from typing import Any
 
+import paramiko
 from fabric import Connection  # type: ignore
 from invoke.exceptions import UnexpectedExit  # type: ignore
+
 from app.exceptions import NetworkError
 from plugins.base.plugin_base import BasePlugin
 
@@ -23,7 +25,7 @@ class SSHFeatures(BasePlugin):
         """ Get the IP of a machine, must be overwritten in the machinery class """
         raise NotImplementedError
 
-    def connect(self):
+    def connect(self) -> Connection:
         """ Connect to a machine """
 
         if self.connection is not None:
@@ -62,11 +64,12 @@ class SSHFeatures(BasePlugin):
         self.vprint("SSH network error", 0)
         raise NetworkError
 
-    def remote_run(self, cmd: str, disown: bool = False):
+    def remote_run(self, cmd: str, disown: bool = False) -> str:
         """ Connects to the machine and runs a command there
 
         :param cmd: The command to execute
         :param disown: Send the connection into background
+        :returns: The results as string
         """
 
         if cmd is None:
@@ -106,7 +109,7 @@ class SSHFeatures(BasePlugin):
 
         return ""
 
-    def put(self, src: str, dst: str):
+    def put(self, src: str, dst: str) -> Any:
         """ Send a file to a machine
 
         :param src: source dir
@@ -150,7 +153,7 @@ class SSHFeatures(BasePlugin):
         self.vprint("SSH network error on PUT command", 0)
         raise NetworkError
 
-    def get(self, src: str, dst: str):
+    def get(self, src: str, dst: str) -> Any:
         """ Get a file to a machine
 
         :param src: source dir
