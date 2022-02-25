@@ -4,24 +4,33 @@ Spin up a virtual environment and run automated attacks in there, log traces, cr
 
 PurpleDome is a platform for IT security research. This page is to collect all PurpleDome based research projects. Finished and ongoing ones. And to allow everyone to benefit from them, contribute or connect to them.
 
+### The Purple Dome community and eco system
 
-### Universities
+#### Universities
 
-A list of Universities and their projects
+A list of Universities and their projects related to Purple Dome
+
+* [Kings College London (KCL)](https://www.kcl.ac.uk/)
+
+#### CTF teams and hackers
+
+* [Phish'n'Chips](https://blog.phishnchips.co.uk/)
 
 ### Publications
 
+#### Projects
+
+Projects based on Purple Dome
+
+#### Scientific publications
+
 Publications based on PurpleDome
 
-### Project partnerships
-
-Project cooperation
-
-### Presentations
+#### Presentations
 
 Presentations covering PurpleDome
 
-### Blog posts
+#### Blog posts
 
 * [Avast: Purple Dome project on attacks without malware](https://decoded.avast.io/thorstensick/purple-dome-project-on-attacks-without-malware/)
 
