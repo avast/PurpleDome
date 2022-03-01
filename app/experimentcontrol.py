@@ -303,9 +303,13 @@ class Experiment():
             if self.machine_needs_caldera(target_1, caldera_attacks):
                 target_1.install_caldera_service()
             target_1.up()
+            print("before reboot")
             target_1.reboot()  # Kernel changes on system creation require a reboot
+            print("after reboot")
             needs_reboot = target_1.prime_vulnerabilities()
+            print("after prime vulns")
             needs_reboot |= target_1.prime_sensors()
+            print("after prime sens")
             if needs_reboot:
                 self.attack_logger.vprint(
                     f"{CommandlineColors.OKBLUE}rebooting target {tname} ....{CommandlineColors.ENDC}", 1)

@@ -3,7 +3,7 @@
 import os.path
 import socket
 import time
-from typing import Any
+from typing import Any, Optional
 
 import paramiko
 from fabric import Connection  # type: ignore
@@ -38,7 +38,7 @@ class SSHFeatures(BasePlugin):
             try:
                 if self.config.os() == "linux":
                     uhp = self.get_ip()
-                    self.vprint(f"Connecting to {uhp}", 3)
+                    self.vprint(f"SSH connecting to {uhp}", 3)
                     self.connection = Connection(uhp, connect_timeout=timeout)
 
                 if self.config.os() == "windows":
@@ -64,11 +64,12 @@ class SSHFeatures(BasePlugin):
         self.vprint("SSH network error", 0)
         raise NetworkError
 
-    def remote_run(self, cmd: str, disown: bool = False) -> str:
+    def remote_run(self, cmd: str, disown: bool = False, must_succeed: bool = False) -> str:
         """ Connects to the machine and runs a command there
 
         :param cmd: The command to execute
         :param disown: Send the connection into background
+        :param must_succeed: Throw an exception if the command being run fails.
         :returns: The results as string
         """
 
@@ -82,34 +83,48 @@ class SSHFeatures(BasePlugin):
         self.vprint("Disown: " + str(disown), 3)
         # self.vprint("Connection: " + self.connection, 1)
         result = None
-        retry = 2
-        while retry > 0:
+        retry = 10
+        while retry >= 0:
             do_retry = False
             try:
+                print(f"Running cmd {cmd}")
                 result = self.connection.run(cmd, disown=disown)
                 print(result)
                 # paramiko.ssh_exception.SSHException in the next line is needed for windows openssh
-            except (paramiko.ssh_exception.NoValidConnectionsError, UnexpectedExit, paramiko.ssh_exception.SSHException) as error:
+            except (paramiko.ssh_exception.NoValidConnectionsError, paramiko.ssh_exception.SSHException) as error:
                 if retry <= 0:
                     raise NetworkError from error
                 do_retry = True
+            except UnexpectedExit as error:
+                if must_succeed:
+                    if retry <= 0:
+                        raise NetworkError from error
+                    do_retry = True
+                else:
+                    # breakpoint()
+                    break
+            except Exception as error:
+                raise NetworkError from error
             if do_retry:
+                time.sleep(5)
                 self.disconnect()
+                time.sleep(5)
                 self.connect()
                 retry -= 1
-                self.vprint("Got some SSH errors. Retrying", 2)
+                self.vprint(f"Got some SSH errors. Retrying {retry}", 2)
             else:
                 break
 
         if result and result.stderr:
             self.vprint("Debug: Stderr: " + str(result.stderr.strip()), 0)
+            return result.stderr.strip()
 
         if result:
             return result.stdout.strip()
 
         return ""
 
-    def put(self, src: str, dst: str) -> Any:
+    def put(self, src: str, dst: Optional[str]) -> Any:
         """ Send a file to a machine
 
         :param src: source dir

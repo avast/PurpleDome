@@ -12,6 +12,7 @@ from app.exceptions import ConfigurationError
 # from invoke.exceptions import UnexpectedExit
 # import paramiko
 from plugins.base.ssh_features import SSHFeatures
+from typing import Any
 
 # Experiment with paramiko instead of fabric. Seems fabric has some issues with the "put" command to Windows. There seems no fix (just my workarounds). Maybe paramiko is better.
 
@@ -75,7 +76,7 @@ class VagrantPlugin(SSHFeatures, MachineryPlugin):
         """ Destroy a machine """
         self.v.destroy(vm_name=self.config.vmname())
 
-    def connect(self):
+    def connect(self) -> Any:
         """ Connect to a machine. If there is already a connection we keep it """
 
         # For linux we are using Vagrant style
@@ -84,8 +85,9 @@ class VagrantPlugin(SSHFeatures, MachineryPlugin):
                 return self.connection
 
             uhp = self.v.user_hostname_port(vm_name=self.config.vmname())
-            self.vprint(f"Connecting to {uhp}", 3)
+            self.vprint(f"Vagrant connecting to {uhp} ({self.get_vm_name()}/{self.config.vmname()})", 3)
             self.connection = Connection(uhp, connect_kwargs={"key_filename": self.v.keyfile(vm_name=self.config.vmname())})
+            self.vprint(f"Vagrant connection: {self.connection.is_connected}", 3)
             return self.connection
 
         else:

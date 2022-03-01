@@ -68,13 +68,14 @@ class MachineryPlugin(BasePlugin):
         """
         raise NotImplementedError
 
-    def remote_run(self, cmd: str, disown: bool = False) -> str:
+    def remote_run(self, cmd: str, disown: bool = False, must_succeed: bool = False) -> str:
         """ Connects to the machine and runs a command there
 
         If you want to use SSH, check out the class SSHFeatures, it is already implemented there
 
         :param cmd: command to run int he machine's shell
         :param disown: Send the connection into background
+        :param must_succeed: Throw an exception if the command being run fails.
         :returns: the results as string
         """
 
@@ -88,7 +89,7 @@ class MachineryPlugin(BasePlugin):
         """
         raise NotImplementedError
 
-    def put(self, src: str, dst: str) -> Any:
+    def put(self, src: str, dst: Optional[str]) -> Any:
         """ Send a file to a machine
 
         If you want to use SSH, check out the class SSHFeatures, it is already implemented there
@@ -203,21 +204,22 @@ class MachineryPlugin(BasePlugin):
         self.config = config
         self.process_config(config.raw_config.__dict__)
 
-    def __call_remote_run__(self, cmd: str, disown: bool = False) -> str:
+    def __call_remote_run__(self, cmd: str, disown: bool = False, must_succeed: bool = False) -> str:
         """ Simplifies connect and run
 
-        @param cmd: Command to run as shell command
-        @param disown: run in background
+        :param cmd: Command to run as shell command
+        :param disown: run in background
+        :param must_succeed: Throw an exception if the command being run fails.
         """
 
-        return self.remote_run(cmd, disown)
+        return self.remote_run(cmd, disown, must_succeed)
 
     def __call_disconnect__(self) -> None:
         """ Command connection dis-connect """
 
         self.disconnect()
 
-    def __call_connect__(self) -> None:
+    def __call_connect__(self) -> Any:
         """ command connection. establish it """
 
         return self.connect()
