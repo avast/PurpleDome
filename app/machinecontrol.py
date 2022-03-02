@@ -5,21 +5,20 @@
 import os
 import socket
 import time
+from typing import Any, Optional, Union
 
 import requests
 
-from app.config import MachineConfig
-from app.exceptions import ServerError, ConfigurationError, PluginError
-from app.pluginmanager import PluginManager
-from app.calderacontrol import CalderaControl
-from app.interface_sfx import CommandlineColors
 from app.attack_log import AttackLog
+from app.calderacontrol import CalderaControl
+from app.config import MachineConfig
+from app.config_verifier import Attacker, Target
+from app.exceptions import ServerError, ConfigurationError, PluginError
+from app.interface_sfx import CommandlineColors
+from app.pluginmanager import PluginManager
 from plugins.base.machinery import MachineryPlugin
 from plugins.base.sensor import SensorPlugin
 from plugins.base.vulnerability_plugin import VulnerabilityPlugin
-from app.config_verifier import Attacker, Target
-
-from typing import Any, Optional, Union
 
 
 class Machine():
@@ -47,7 +46,6 @@ class Machine():
         elif isinstance(config, Target):
             self.config = MachineConfig(config)
         else:
-            print(type(config))
             raise ConfigurationError("unknown type")
 
         self.plugin_manager = PluginManager(self.attack_logger)
@@ -173,7 +171,7 @@ class Machine():
 
         return self.vm_manager.__call_connect__()
 
-    def disconnect(self, connection: Any) -> None:
+    def disconnect(self, connection: Any) -> None:  # pylint: disable=unused-argument
         """ Command connection dis-connect """
 
         if self.vm_manager is None:
@@ -208,8 +206,9 @@ class Machine():
             plugin.__call_process_config__(self.config)
             self.vm_manager = plugin
             if self.attack_logger is not None:
-                self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Installed machinery: {name}{CommandlineColors.ENDC}",
-                                      1)
+                self.attack_logger.vprint(
+                    f"{CommandlineColors.OKGREEN}Installed machinery: {name}{CommandlineColors.ENDC}",
+                    1)
             break
 
     def prime_sensors(self) -> bool:
@@ -633,7 +632,7 @@ class Machine():
             raise ConfigurationError("machine path external is not set")
 
         if self.attack_logger is None:
-            raise
+            raise ConfigurationError("Missing attack logger")
 
         if self.get_os() == "linux":
             return f"""
@@ -691,4 +690,3 @@ START {playground}{filename} -server {url} -group {self.config.caldera_group()} 
     def set_caldera_server(self, server: str) -> None:
         """ Set the local caldera server config """
         self.caldera_server = server
-

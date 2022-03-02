@@ -13,7 +13,7 @@ from typing import Optional
 from app.attack_log import AttackLog
 from app.config import ExperimentConfig
 from app.interface_sfx import CommandlineColors
-from app.exceptions import ServerError, CalderaError, MachineError, PluginError
+from app.exceptions import ServerError, CalderaError, MachineError, PluginError, ConfigurationError
 from app.pluginmanager import PluginManager
 from app.doc_generator import DocGenerator
 from app.calderacontrol import CalderaControl
@@ -157,9 +157,15 @@ class Experiment():
                     self.attack_logger.vprint(f"Attacking machine with PAW: {target_1.get_paw()} with {attack}", 2)
                     if self.caldera_control is None:
                         raise CalderaError("Caldera control not initialised")
-                    it_worked = self.caldera_control.attack(paw=target_1.get_paw(),
+                    paw = target_1.get_paw()
+                    group = target_1.get_group()
+                    if paw is None:
+                        raise ConfigurationError("PAW configuration is required for Caldera attacks")
+                    if group is None:
+                        raise ConfigurationError("Group configuration is required for Caldera attacks")
+                    it_worked = self.caldera_control.attack(paw=paw,
                                                             ability_id=attack,
-                                                            group=target_1.get_group(),
+                                                            group=group,
                                                             target_platform=target_1.get_os()
                                                             )
 
@@ -349,6 +355,8 @@ class Experiment():
             if isinstance(plugin, AttackPlugin):
                 self.attack_logger.vprint(f"{CommandlineColors.OKBLUE}Running Attack plugin {name}{CommandlineColors.ENDC}", 2)
                 plugin.process_config(self.experiment_config.attack_conf(plugin.get_config_section_name()))
+                if self.attacker_1 is None:
+                    raise PluginError("Attacker not properly configured")
                 plugin.set_attacker_machine(self.attacker_1)
                 plugin.set_sysconf({})
                 plugin.set_logger(self.attack_logger)

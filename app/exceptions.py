@@ -32,3 +32,7 @@ class RequirementError(Exception):
 
 class MachineError(Exception):
     """ A virtual machine has issues"""
+
+
+class SSHError(Exception):
+    """ A ssh based error """

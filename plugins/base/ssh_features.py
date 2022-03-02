@@ -9,6 +9,8 @@ import paramiko
 from fabric import Connection  # type: ignore
 from invoke.exceptions import UnexpectedExit  # type: ignore
 
+from app.exceptions import ConfigurationError, SSHError
+from app.config import MachineConfig
 from app.exceptions import NetworkError
 from plugins.base.plugin_base import BasePlugin
 
@@ -16,12 +18,12 @@ from plugins.base.plugin_base import BasePlugin
 class SSHFeatures(BasePlugin):
     """ A Mixin class to add SSH features to all kind of VM machinery """
 
-    def __init__(self):
-        self.config = None
+    def __init__(self) -> None:
+        self.config: Optional[MachineConfig] = None
         super().__init__()
         self.connection = None
 
-    def get_ip(self):
+    def get_ip(self) -> str:
         """ Get the IP of a machine, must be overwritten in the machinery class """
         raise NotImplementedError
 
@@ -30,6 +32,9 @@ class SSHFeatures(BasePlugin):
 
         if self.connection is not None:
             return self.connection
+
+        if self.config is None:
+            raise ConfigurationError("Missing config")
 
         retries = 10
         retry_sleep = 10
@@ -48,7 +53,7 @@ class SSHFeatures(BasePlugin):
                         args["key_filename"] = self.config.ssh_keyfile()
                     if self.config.ssh_password():
                         args["password"] = self.config.ssh_password()
-                    self.vprint(args, 3)
+                    self.vprint(str(args), 3)
                     uhp = self.get_ip()
                     self.vprint(f"IP to connect to: {uhp}", 3)
                     self.connection = Connection(uhp, connect_timeout=timeout, user=self.config.ssh_user(), connect_kwargs=args)
@@ -88,6 +93,8 @@ class SSHFeatures(BasePlugin):
             do_retry = False
             try:
                 print(f"Running cmd {cmd}")
+                if self.connection is None:
+                    raise SSHError("Connection broken")
                 result = self.connection.run(cmd, disown=disown)
                 print(result)
                 # paramiko.ssh_exception.SSHException in the next line is needed for windows openssh
@@ -141,6 +148,8 @@ class SSHFeatures(BasePlugin):
         while retries > 0:
             do_retry = False
             try:
+                if self.connection is None:
+                    raise SSHError("Connection broken")
                 res = self.connection.put(src, dst)
             except (paramiko.ssh_exception.SSHException, socket.timeout, UnexpectedExit):
                 self.vprint("SSH PUT: Failed to connect", 1)
@@ -184,6 +193,8 @@ class SSHFeatures(BasePlugin):
         while retry > 0:
             do_retry = False
             try:
+                if self.connection is None:
+                    raise SSHError("Connection broken")
                 res = self.connection.get(src, dst)
             except (UnexpectedExit) as error:
                 if retry <= 0:
@@ -208,7 +219,7 @@ class SSHFeatures(BasePlugin):
 
         return res
 
-    def disconnect(self):
+    def disconnect(self) -> None:
         """ Disconnect from a machine """
         if self.connection:
             self.connection.close()

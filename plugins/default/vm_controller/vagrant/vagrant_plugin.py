@@ -111,7 +111,7 @@ class VagrantPlugin(SSHFeatures, MachineryPlugin):
 
         return mapping[vstate]
 
-    def get_ip(self):
+    def get_ip(self) -> str:
         """ Return the machine ip """
 
         filename = os.path.join(self.get_machine_path_external(), "ip4.txt")
