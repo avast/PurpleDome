@@ -5,17 +5,18 @@
 import json
 
 from pprint import pformat
-from typing import Optional, Union, Annotated
+from typing import Optional, Union, Annotated, Any
 import requests
 import simplejson
 from pydantic.dataclasses import dataclass
 from pydantic import conlist  # pylint: disable=no-name-in-module
+from app.attack_log import AttackLog
+from app.config import ExperimentConfig
 
 # from app.exceptions import CalderaError
 # from app.interface_sfx import CommandlineColors
 
 
-# TODO: Ability deserves an own class.
 # TODO: Support all Caldera agents: "Sandcat (GoLang)","Elasticat (Blue Python/ Elasticsearch)","Manx (Reverse Shell TCP)","Ragdoll (Python/HTML)"
 
 @dataclass
@@ -68,7 +69,7 @@ class Executor:  # pylint: disable=missing-class-docstring
     platform: str
     command: Optional[str]
 
-    def get(self, akey, default=None):
+    def get(self, akey: str, default: Any = None) -> Any:
         """ Get a specific element out of the internal data representation, behaves like the well know 'get' """
         if akey in self.__dict__:
             return self.__dict__[akey]
@@ -95,7 +96,7 @@ class Ability:
     ability_id: str
     privilege: Optional[str] = None
 
-    def get(self, akey, default=None):
+    def get(self, akey: str, default: Any = None) -> Any:
         """ Get a specific element out of the internal data representation, behaves like the well know 'get' """
         if akey in self.__dict__:
             return self.__dict__[akey]
@@ -108,7 +109,7 @@ class AbilityList:
     """ A list of exploits """
     abilities: Annotated[list, conlist(Ability, min_items=1)]
 
-    def get_data(self):
+    def get_data(self) -> list[Ability]:
         """ Get a specific element out of the internal data representation, behaves like the well know 'get' """
         return self.abilities
 
@@ -126,7 +127,7 @@ class ObfuscatorList:
     """ A list of obfuscators """
     obfuscators: Annotated[list, conlist(Obfuscator, min_items=1)]
 
-    def get_data(self):
+    def get_data(self) -> list[Obfuscator]:
         """ Get a specific element out of the internal data representation, behaves like the well know 'get' """
         return self.obfuscators
 
@@ -143,7 +144,7 @@ class Adversary:
     tags: list[str]
     plugin: Optional[str] = None
 
-    def get(self, akey, default=None):
+    def get(self, akey: str, default: Any = None) -> Any:
         """ Get a specific element out of the internal data representation, behaves like the well know 'get' """
         if akey in self.__dict__:
             return self.__dict__[akey]
@@ -156,7 +157,7 @@ class AdversaryList:
     """ A list of adversary """
     adversaries: Annotated[list, conlist(Adversary, min_items=1)]
 
-    def get_data(self):
+    def get_data(self) -> list[Adversary]:
         """ Get a specific element out of the internal data representation, behaves like the well know 'get' """
         return self.adversaries
 
@@ -177,7 +178,7 @@ class Fact:  # pylint: disable=missing-class-docstring
     technique_id: Optional[str] = None
     collected_by: Optional[str] = None
 
-    def get(self, akey, default=None):
+    def get(self, akey: str, default: Any = None) -> Any:
         """ Get a specific element out of the internal data representation, behaves like the well know 'get' """
         if akey in self.__dict__:
             return self.__dict__[akey]
@@ -218,7 +219,6 @@ class Link:  # pylint: disable=missing-class-docstring
     score: int
     used: list[Fact]
     facts: list[Fact]
-    agent_reported_time: str
     id: str  # pylint: disable=invalid-name
     collect: str
     command: str
@@ -226,6 +226,7 @@ class Link:  # pylint: disable=missing-class-docstring
     relationships: list[Relationship]
     jitter: int
     deadman: bool
+    agent_reported_time: Optional[str] = ""
 
 
 @dataclass
@@ -262,7 +263,7 @@ class Agent:
     pending_contact: str
     privilege: Optional[str] = None  # Error, not documented
 
-    def get(self, akey, default=None):
+    def get(self, akey: str, default: Any = None) -> Any:
         """ Get a specific element out of the internal data representation, behaves like the well know 'get' """
         if akey in self.__dict__:
             return self.__dict__[akey]
@@ -275,7 +276,7 @@ class AgentList:
     """ A list of agents """
     agents: list[Agent]
 
-    def get_data(self):
+    def get_data(self) -> list[Agent]:
         """ Get a specific element out of the internal data representation, behaves like the well know 'get' """
         return self.agents
 
@@ -305,7 +306,7 @@ class Source:  # pylint: disable=missing-class-docstring
     id: str  # pylint: disable=invalid-name
     adjustments: Optional[list[Adjustment]] = None
 
-    def get(self, akey, default=None):
+    def get(self, akey: str, default: Any = None) -> Any:
         """ Get a specific element out of the internal data representation, behaves like the well know 'get' """
         if akey in self.__dict__:
             return self.__dict__[akey]
@@ -317,7 +318,7 @@ class Source:  # pylint: disable=missing-class-docstring
 class SourceList:  # pylint: disable=missing-class-docstring
     sources: list[Source]
 
-    def get_data(self):
+    def get_data(self) -> list[Source]:
         """ Get a specific element out of the internal data representation, behaves like the well know 'get' """
         return self.sources
 
@@ -342,7 +343,7 @@ class PlannerList:
     """ A list of planners"""
     planners: list[Planner]
 
-    def get_data(self):
+    def get_data(self) -> list[Planner]:
         """ Get a specific element out of the internal data representation, behaves like the well know 'get' """
         return self.planners
 
@@ -364,7 +365,7 @@ class Objective:  # pylint: disable=missing-class-docstring
     description: str
     id: str  # pylint: disable=invalid-name
 
-    def get(self, akey, default=None):
+    def get(self, akey: str, default: Any = None) -> Any:
         """ Get a specific element out of the internal data representation, behaves like the well know 'get' """
         if akey in self.__dict__:
             return self.__dict__[akey]
@@ -393,7 +394,7 @@ class Operation:
     auto_close: bool
     chain: Optional[list] = None
 
-    def get(self, akey, default=None):
+    def get(self, akey: str, default: Any = None) -> Any:
         """ Get a specific element out of the internal data representation, behaves like the well know 'get' """
         if akey in self.__dict__:
             return self.__dict__[akey]
@@ -406,7 +407,7 @@ class OperationList:
     """ A list of operations """
     operations: Annotated[list, conlist(Operation)]
 
-    def get_data(self):
+    def get_data(self) -> list[Operation]:
         """ Get a specific element out of the internal data representation, behaves like the well know 'get' """
         return self.operations
 
@@ -415,7 +416,7 @@ class OperationList:
 class ObjectiveList:  # pylint: disable=missing-class-docstring
     objectives: Annotated[list, conlist(Objective)]
 
-    def get_data(self):
+    def get_data(self) -> list[Objective]:
         """ Get a specific element out of the internal data representation, behaves like the well know 'get' """
         return self.objectives
 
@@ -423,7 +424,7 @@ class ObjectiveList:  # pylint: disable=missing-class-docstring
 class CalderaAPI():
     """ Remote control Caldera through REST api """
 
-    def __init__(self, server: str, attack_logger, config=None, apikey=None):
+    def __init__(self, server: str, attack_logger: AttackLog, config: ExperimentConfig = None, apikey: str = "ADMIN123") -> None:
         """
 
         @param server: Caldera server url/ip
@@ -440,7 +441,7 @@ class CalderaAPI():
         else:
             self.apikey = apikey
 
-    def __contact_server__(self, payload, rest_path: str = "api/v2/abilities", method: str = "get"):
+    def __contact_server__(self, payload: Optional[dict], rest_path: str = "api/v2/abilities", method: str = "get") -> dict:
         """
 
         @param payload: payload as dict to send to the server
@@ -486,7 +487,7 @@ class CalderaAPI():
 
         return res
 
-    def list_abilities(self):
+    def list_abilities(self) -> list[Ability]:
         """ Return all ablilities """
 
         payload = None
@@ -494,7 +495,7 @@ class CalderaAPI():
         abilities = AbilityList(**data)
         return abilities.get_data()
 
-    def list_obfuscators(self):
+    def list_obfuscators(self) -> list[Obfuscator]:
         """ Return all obfuscators """
 
         payload = None
@@ -502,7 +503,7 @@ class CalderaAPI():
         obfuscators = ObfuscatorList(**data)
         return obfuscators.get_data()
 
-    def list_adversaries(self):
+    def list_adversaries(self) -> list[Adversary]:
         """ Return all adversaries """
 
         payload = None
@@ -510,7 +511,7 @@ class CalderaAPI():
         adversaries = AdversaryList(**data)
         return adversaries.get_data()
 
-    def list_sources(self):
+    def list_sources(self) -> list[Source]:
         """ Return all sources """
 
         payload = None
@@ -518,7 +519,7 @@ class CalderaAPI():
         sources = SourceList(**data)
         return sources.get_data()
 
-    def list_planners(self):
+    def list_planners(self) -> list[Planner]:
         """ Return all planners """
 
         payload = None
@@ -526,7 +527,7 @@ class CalderaAPI():
         planners = PlannerList(**data)
         return planners.get_data()
 
-    def list_operations(self):
+    def list_operations(self) -> list[Operation]:
         """ Return all operations """
 
         payload = None
@@ -534,7 +535,7 @@ class CalderaAPI():
         operations = OperationList(**data)
         return operations.get_data()
 
-    def set_operation_state(self, operation_id: str, state: str = "running"):
+    def set_operation_state(self, operation_id: str, state: str = "running") -> dict:
         """ Executes an operation on a server
 
         @param operation_id: The operation to modify
@@ -550,7 +551,7 @@ class CalderaAPI():
         payload = {"state": state}
         return self.__contact_server__(payload, method="patch", rest_path=f"api/v2/operations/{operation_id}")
 
-    def list_agents(self):
+    def list_agents(self) -> list[Agent]:
         """ Return all agents """
 
         payload = None
@@ -558,7 +559,7 @@ class CalderaAPI():
         agents = AgentList(**data)
         return agents.get_data()
 
-    def list_objectives(self):
+    def list_objectives(self) -> list[Objective]:
         """ Return all objectivs """
 
         payload = None
@@ -566,7 +567,7 @@ class CalderaAPI():
         objectives = ObjectiveList(**data)
         return objectives.get_data()
 
-    def add_adversary(self, name: str, ability: str, description: str = "created automatically"):
+    def add_adversary(self, name: str, ability: str, description: str = "created automatically") -> dict:
         """ Adds a new adversary
 
         :param name: Name of the adversary
@@ -587,31 +588,31 @@ class CalderaAPI():
             #  ],
             "description": description
         }
-        data = {"agents": self.__contact_server__(payload, method="post", rest_path="api/v2/adversaries")}
+        data = self.__contact_server__(payload, method="post", rest_path="api/v2/adversaries")
         # agents = AgentList(**data)
         return data
 
-    def delete_adversary(self, adversary_id: str):
+    def delete_adversary(self, adversary_id: str) -> dict:
         """ Deletes an adversary
 
         :param adversary_id: The id of this adversary
         :return:
         """
         payload = None
-        data = {"agents": self.__contact_server__(payload, method="delete", rest_path=f"api/v2/adversaries/{adversary_id}")}
+        data = self.__contact_server__(payload, method="delete", rest_path=f"api/v2/adversaries/{adversary_id}")
         return data
 
-    def delete_agent(self, agent_paw: str):
+    def delete_agent(self, agent_paw: str) -> dict:
         """ Deletes an agent
 
         :param agent_paw: the paw to delete
         :return:
         """
         payload = None
-        data = {"agents": self.__contact_server__(payload, method="delete", rest_path=f"api/v2/agents/{agent_paw}")}
+        data = self.__contact_server__(payload, method="delete", rest_path=f"api/v2/agents/{agent_paw}")
         return data
 
-    def kill_agent(self, agent_paw: str):
+    def kill_agent(self, agent_paw: str) -> dict:
         """ Kills an agent on the target
 
         :param agent_paw: The paw identifying this agent
@@ -623,7 +624,7 @@ class CalderaAPI():
         data = self.__contact_server__(payload, method="patch", rest_path=f"api/v2/agents/{agent_paw}")
         return data
 
-    def add_operation(self, **kwargs):
+    def add_operation(self, **kwargs: Any) -> OperationList:
         """ Adds a new operation
 
         :param kwargs:
@@ -632,14 +633,18 @@ class CalderaAPI():
 
         # name, adversary_id, source_id = "basic", planner_id = "atomic", group = "", state: str = "running", obfuscator: str = "plain-text", jitter: str = '4/8'
 
-        name: str = kwargs.get("name")
-        adversary_id: str = kwargs.get("adversary_id")
-        source_id: str = kwargs.get("source_id", "basic")
-        planner_id: str = kwargs.get("planner_id", "atomic")
-        group: str = kwargs.get("group", "")
-        state: str = kwargs.get("state", "running")
-        obfuscator: str = kwargs.get("obfuscator", "plain-text")
-        jitter: str = kwargs.get("jitter", "4/8")
+        if kwargs.get("adversary_id") is None:
+            adversary_id = None
+        else:
+            adversary_id = str(kwargs.get("adversary_id"))
+
+        name: str = str(kwargs.get("name"))
+        source_id: str = str(kwargs.get("source_id", "basic"))
+        planner_id: str = str(kwargs.get("planner_id", "atomic"))
+        group: str = str(kwargs.get("group", ""))
+        state: str = str(kwargs.get("state", "running"))
+        obfuscator: str = str(kwargs.get("obfuscator", "plain-text"))
+        jitter: str = str(kwargs.get("jitter", "4/8"))
 
         payload = {"name": name,
                    "group": group,
@@ -657,20 +662,20 @@ class CalderaAPI():
         operations = OperationList(**data)
         return operations
 
-    def delete_operation(self, operation_id):
+    def delete_operation(self, operation_id: str) -> dict:
         """ Deletes an operation
 
         :param operation_id: The Id of the operation to delete
         :return:
         """
 
-        payload = {}
+        payload: dict = {}
 
         data = self.__contact_server__(payload, method="delete", rest_path=f"api/v2/operations/{operation_id}")
 
         return data
 
-    def view_operation_report(self, operation_id):
+    def view_operation_report(self, operation_id: str) -> dict:
         """ Views the report of a finished operation
 
         :param operation_id: The id of this operation
@@ -685,7 +690,7 @@ class CalderaAPI():
 
         return data
 
-    def get_ability(self, abid: str):
+    def get_ability(self, abid: str) -> list[Ability]:
         """" Return an ability by id
 
         @param abid: Ability id
@@ -698,12 +703,12 @@ class CalderaAPI():
         with open("debug_removeme.txt", "wt") as fh:
             fh.write(pformat(self.list_abilities()))
 
-        for ability in self.list_abilities()["abilities"]:
+        for ability in self.list_abilities():
             if ability.get("ability_id", None) == abid or ability.get("auto_generated_guid", None) == abid:
                 res.append(ability)
         return res
 
-    def pretty_print_ability(self, abi):
+    def pretty_print_ability(self, abi: dict) -> None:
         """ Pretty pritns an ability
 
         @param abi: A ability dict

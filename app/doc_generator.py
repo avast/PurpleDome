@@ -4,16 +4,18 @@
 
 import json
 import os
+from typing import Optional
+
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 
 class DocGenerator():
     """ Generates human readable docs from attack logs """
 
-    def __init__(self):
-        self.outfile = None
+    def __init__(self) -> None:
+        self.outfile: Optional[str] = None
 
-    def generate(self, jfile, outfile="tools/human_readable_documentation/source/contents.rst"):
+    def generate(self, jfile: str, outfile: str = "tools/human_readable_documentation/source/contents.rst") -> None:
         """ Generates human readable documentation out of a template.
 
         @param jfile: json attack log created by PurpleDome as data source
@@ -39,12 +41,12 @@ class DocGenerator():
         with open(outfile, "wt") as fh:
             fh.write(rendered)
 
-    def compile_documentation(self):
+    def compile_documentation(self) -> None:
         """ Compiles the documentation using make """
 
         os.system("cd tools/human_readable_documentation ; make html; make latexpdf ")
 
-    def get_outfile_paths(self):
+    def get_outfile_paths(self) -> list[str]:
         """ Returns the path of the output file written """
 
         return ["tools/human_readable_documentation/build/latex/purpledomesimulation.pdf"]

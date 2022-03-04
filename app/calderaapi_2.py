@@ -2,14 +2,20 @@
 """ Direct API to the caldera server. Not abstract simplification methods. Compatible with Caldera 2.8.1 """
 
 import json
+from typing import Optional, Any
+
 import requests
 import simplejson
+
+from app.attack_log import AttackLog
+from app.config import ExperimentConfig
+from app.exceptions import ConfigurationError
 
 
 class CalderaAPI:
     """ API to Caldera 2.8.1 """
 
-    def __init__(self, server: str, attack_logger, config=None, apikey=None):
+    def __init__(self, server: str, attack_logger: AttackLog, config: Optional[ExperimentConfig] = None, apikey: str = None) -> None:
         """
 
         @param server: Caldera server url/ip
@@ -22,12 +28,16 @@ class CalderaAPI:
 
         self.config = config
 
-        if self.config:
+        self.apikey: str = ""
+
+        if self.config is not None:
             self.apikey = self.config.caldera_apikey()
         else:
+            if apikey is None:
+                raise ConfigurationError("No APIKEY configured")
             self.apikey = apikey
 
-    def __contact_server__(self, payload, rest_path: str = "api/rest", method: str = "post"):
+    def __contact_server__(self, payload, rest_path: str = "api/rest", method: str = "post") -> Any:
         """
 
         @param payload: payload as dict to send to the server
@@ -58,7 +68,7 @@ class CalderaAPI:
 
         return res
 
-    def list_operations(self):
+    def list_operations(self) -> Any:
         """ Return operations """
 
         payload = {"index": "operations"}

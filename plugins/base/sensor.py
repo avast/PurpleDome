@@ -17,7 +17,7 @@ class SensorPlugin(BasePlugin):
 
     # required_files: list[str] = []
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()  # pylint:disable=useless-super-delegation
         self.debugit = False
 
@@ -59,7 +59,7 @@ class SensorPlugin(BasePlugin):
 
         return True
 
-    def __call_collect__(self, machine_path: str):
+    def __call_collect__(self, machine_path: str) -> list[str]:
         """ Generate the data collect command
 
         :meta private:

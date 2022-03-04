@@ -3,10 +3,11 @@
 
 from inspect import currentframe, getframeinfo
 import os
-from typing import Optional
+from typing import Optional, Any
 import yaml
 from app.exceptions import PluginError  # type: ignore
 import app.exceptions                   # type: ignore
+from app.attack_log import AttackLog
 
 
 class BasePlugin():
@@ -20,14 +21,14 @@ class BasePlugin():
     def __init__(self) -> None:
         # self.machine = None
         self.plugin_path: Optional[str] = None
-        self.machine_plugin = None
+        self.machine_plugin: Any = None
         # self.sysconf = {}
         self.conf: dict = {}
-        self.attack_logger = None
+        self.attack_logger: Optional[AttackLog] = None
 
         self.default_config_name = "default_config.yaml"
 
-    def run_cmd(self, command: str, disown: bool = False):
+    def run_cmd(self, command: str, disown: bool = False) -> str:
         """ Execute a command on the vm using the connection
 
          :param command: Command to execute
@@ -42,7 +43,7 @@ class BasePlugin():
         res = self.machine_plugin.__call_remote_run__(command, disown=disown)
         return res
 
-    def copy_to_machine(self, filename: str):
+    def copy_to_machine(self, filename: str) -> None:
         """ Copies a file shipped with the plugin to the machine share folder
 
         :param filename: File from the plugin folder to copy to the machine share.
@@ -53,7 +54,7 @@ class BasePlugin():
         else:
             raise PluginError("Missing machine")
 
-    def get_from_machine(self, src: str, dst: str):
+    def get_from_machine(self, src: str, dst: str) -> None:
         """ Get a file from the machine
 
         :param src: source file name on the machine
@@ -91,7 +92,7 @@ class BasePlugin():
             raise PluginError("can not get current frame")
         return cf.f_back.f_lineno
 
-    def get_playground(self) -> str:
+    def get_playground(self) -> Optional[str]:
         """ Returns the machine specific playground path name
 
          This is the folder on the machine where we run our tasks in
@@ -104,7 +105,7 @@ class BasePlugin():
 
         return self.machine_plugin.get_playground()
 
-    def set_logger(self, attack_logger):
+    def set_logger(self, attack_logger: AttackLog) -> None:
         """ Set the attack logger for this machine
 
         :meta private:
@@ -113,7 +114,7 @@ class BasePlugin():
         """
         self.attack_logger = attack_logger
 
-    def process_templates(self):  # pylint: disable=no-self-use
+    def process_templates(self) -> None:  # pylint: disable=no-self-use
         """ A method you can optionally implement to transfer your jinja2 templates into the files yo want to send to the target. See 'required_files'
 
         :meta private:
@@ -122,7 +123,7 @@ class BasePlugin():
 
         return
 
-    def copy_to_attacker_and_defender(self):  # pylint: disable=no-self-use
+    def copy_to_attacker_and_defender(self) -> None:  # pylint: disable=no-self-use
         """ Copy attacker/defender specific files to the machines
 
         :meta private:
@@ -131,7 +132,7 @@ class BasePlugin():
 
         return
 
-    def setup(self):
+    def setup(self) -> None:
         """ Prepare everything for the plugin
 
         :meta private:
@@ -141,13 +142,15 @@ class BasePlugin():
         self.process_templates()
 
         for a_file in self.required_files:
+            if self.plugin_path is None:
+                raise PluginError("Plugin has no path...strange....")
             src = os.path.join(os.path.dirname(self.plugin_path), a_file)
             self.vprint(src, 3)
             self.copy_to_machine(src)
 
         self.copy_to_attacker_and_defender()
 
-    def set_machine_plugin(self, machine_plugin):
+    def set_machine_plugin(self, machine_plugin: Any) -> None:
         """ Set the machine plugin class to communicate with
 
         :meta private:
@@ -157,19 +160,19 @@ class BasePlugin():
 
         self.machine_plugin = machine_plugin
 
-    def set_sysconf(self, config):   # pylint:disable=unused-argument
+    def set_sysconf(self, config: dict) -> None:   # pylint:disable=unused-argument
         """ Set system config
 
         :meta private:
 
-        :param config: A dict with system configuration relevant for all plugins
+        :param config: A dict with system configuration relevant for all plugins. Currently ignored
         """
 
         # self.sysconf["abs_machinepath_internal"] = config["abs_machinepath_internal"]
         # self.sysconf["abs_machinepath_external"] = config["abs_machinepath_external"]
         self.load_default_config()
 
-    def process_config(self, config: dict):
+    def process_config(self, config: dict) -> None:
         """ process config and use defaults if stuff is missing
 
         :meta private:
@@ -260,7 +263,7 @@ class BasePlugin():
         else:
             return f"# The plugin {self.get_name()} does not support configuration"
 
-    def load_default_config(self):
+    def load_default_config(self) -> None:
         """ Reads and returns the default config as dict
 
         :meta private:
@@ -302,7 +305,7 @@ class BasePlugin():
 
         return os.path.split(app_dir)[0]
 
-    def vprint(self, text: str, verbosity: int):
+    def vprint(self, text: str, verbosity: int) -> None:
         """ verbosity based stdout printing
 
         0: Errors only

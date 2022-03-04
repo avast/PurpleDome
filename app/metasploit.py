@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
 """ Module to control Metasploit and related tools (MSFVenom) on the attack server """
 
-import time
-import socket
 import os
 import random
-import requests
+import socket
+import time
+from typing import Optional, Any
 
+import requests
 from pymetasploit3.msfrpc import MsfRpcClient  # type: ignore
+
 # from app.machinecontrol import Machine
 from app.attack_log import AttackLog
-from app.interface_sfx import CommandlineColors
+# from app.config_verifier import Attacker
 from app.exceptions import MetasploitError, ServerError
+from app.interface_sfx import CommandlineColors
 
 
 # https://github.com/DanMcInerney/pymetasploit3
@@ -20,7 +23,7 @@ from app.exceptions import MetasploitError, ServerError
 class Metasploit():
     """ Metasploit class for basic Metasploit wrapping """
 
-    def __init__(self, password, attack_logger, **kwargs):
+    def __init__(self, password: str, attack_logger: AttackLog, **kwargs: Any) -> None:
         """
 
         :param password: password for the msfrpcd
@@ -30,7 +33,9 @@ class Metasploit():
 
         self.password: str = password
         self.attack_logger: AttackLog = attack_logger
-        self.username: str = kwargs.get("username", None)
+        self.username: Optional[str] = None
+        if kwargs.get("username", None) is not None:
+            self.username = str(kwargs.get("username", None))
         self.kwargs = kwargs
         self.client = None
 
@@ -43,7 +48,7 @@ class Metasploit():
             kwargs["server"] = self.attacker.get_ip()
             time.sleep(3)   # Waiting for server to start. Or we would get https connection errors when getting the client.
 
-    def start_exploit_stub_for_external_payload(self, payload='linux/x64/meterpreter_reverse_tcp', exploit='exploit/multi/handler', lhost=None):
+    def start_exploit_stub_for_external_payload(self, payload: str = 'linux/x64/meterpreter_reverse_tcp', exploit: str = 'exploit/multi/handler', lhost: Optional[str] = None) -> Any:
         """ Start a metasploit handler and wait for external payload to connect
 
         :param payload: The payload being used in the implant
@@ -165,6 +170,11 @@ class Metasploit():
         :return: the string results
         """
 
+        if self.client is None:
+            raise MetasploitError("No client")
+        if self.client.sessions is None:
+            raise MetasploitError("No sessions")
+
         shell = self.client.sessions.session(self.get_sid(session_number))
         res = []
         for cmd in cmds:
@@ -181,6 +191,11 @@ class Metasploit():
         :param delay: optional delay between calling the command and expecting a result
         :return: the string results
         """
+
+        if self.client is None:
+            raise MetasploitError("No client")
+        if self.client.sessions is None:
+            raise MetasploitError("No sessions")
 
         session_id = self.get_sid_to(target)
         # print(f"Session ID: {session_id}")
