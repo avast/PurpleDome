@@ -23,7 +23,7 @@ from app.interface_sfx import CommandlineColors
 class Metasploit():
     """ Metasploit class for basic Metasploit wrapping """
 
-    def __init__(self, password: str, attack_logger: AttackLog, **kwargs: dict) -> None:
+    def __init__(self, password: str, attack_logger: AttackLog, **kwargs: Any) -> None:
         """
 
         :param password: password for the msfrpcd
@@ -170,6 +170,11 @@ class Metasploit():
         :return: the string results
         """
 
+        if self.client is None:
+            raise MetasploitError("No client")
+        if self.client.sessions is None:
+            raise MetasploitError("No sessions")
+
         shell = self.client.sessions.session(self.get_sid(session_number))
         res = []
         for cmd in cmds:
@@ -186,6 +191,11 @@ class Metasploit():
         :param delay: optional delay between calling the command and expecting a result
         :return: the string results
         """
+
+        if self.client is None:
+            raise MetasploitError("No client")
+        if self.client.sessions is None:
+            raise MetasploitError("No sessions")
 
         session_id = self.get_sid_to(target)
         # print(f"Session ID: {session_id}")

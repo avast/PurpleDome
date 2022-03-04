@@ -9,11 +9,11 @@ from pprint import pprint, pformat
 from typing import Optional
 import requests
 
-from app.exceptions import CalderaError
+from app.exceptions import CalderaError, ConfigurationError
 from app.interface_sfx import CommandlineColors
 
 # from app.calderaapi_2 import CalderaAPI
-from app.calderaapi_4 import CalderaAPI
+from app.calderaapi_4 import CalderaAPI, Operation, Source, Adversary, Objective, Ability
 
 
 # TODO: Ability deserves an own class.
@@ -41,7 +41,7 @@ class CalderaControl(CalderaAPI):
         # print(r.headers)
         return filename
 
-    def list_sources_for_name(self, name: str) -> Optional[dict]:
+    def list_sources_for_name(self, name: str) -> Optional[Source]:
         """ List facts in a source pool with a specific name
 
         :param name: The name of the source pool
@@ -85,7 +85,7 @@ class CalderaControl(CalderaAPI):
         # return [i.paw for i in self.list_agents()]  # 4* version
 
     #  ######### Get one specific item
-    def get_operation(self, name: str) -> Optional[dict]:
+    def get_operation(self, name: str) -> Optional[Operation]:
         """ Gets an operation by name
 
         :param name: Name of the operation to look for
@@ -97,7 +97,7 @@ class CalderaControl(CalderaAPI):
                 return operation
         return None
 
-    def get_adversary(self, name: str) -> Optional[dict]:
+    def get_adversary(self, name: str) -> Optional[Adversary]:
         """ Gets a specific adversary by name
 
         :param name: Name to look for
@@ -108,7 +108,7 @@ class CalderaControl(CalderaAPI):
                 return adversary
         return None
 
-    def get_objective(self, name: str) -> Optional[dict]:
+    def get_objective(self, name: str) -> Optional[Objective]:
         """ Returns an objective with a given name
 
         :param name: Name to filter for
@@ -119,7 +119,7 @@ class CalderaControl(CalderaAPI):
                 return objective
         return None
 
-    def get_ability(self, abid: str) -> list[dict]:
+    def get_ability(self, abid: str) -> list[Ability]:
         """ Return an ability by id
 
         :param abid: Ability id
@@ -165,7 +165,7 @@ class CalderaControl(CalderaAPI):
         print(self.get_ability(abid))
         return False
 
-    def get_operation_by_id(self, op_id: str) -> list[dict]:
+    def get_operation_by_id(self, op_id: str) -> list[Operation]:
         """ Get operation by id
 
         :param op_id: Operation id
@@ -190,11 +190,15 @@ class CalderaControl(CalderaAPI):
         operation = self.get_operation_by_id(op_id)
 
         # print("Check for: {} {}".format(paw, ability_id))
-        for alink in operation[0]["chain"]:
+        if len(operation) == 0:
+            return None
+        if operation[0].chain is None:
+            return None
+        for alink in operation[0].chain:
             # print("Lookup: PAW: {} Ability: {}".format(alink["paw"], alink["ability"]["ability_id"]))
             # print("In: " + str(alink))
-            if alink["paw"] == paw and alink["ability"]["ability_id"] == ability_id:
-                return alink["id"]
+            if alink.paw == paw and alink.ability.ability_id == ability_id:
+                return alink.id
 
         return None
 
@@ -217,7 +221,7 @@ class CalderaControl(CalderaAPI):
             print(f"Could not find {paw} in {orep['steps']}")
             raise CalderaError
         # print("oprep: " + str(orep))
-        for a_step in orep.get("steps").get(paw).get("steps"):
+        for a_step in orep.get("steps").get(paw).get("steps"):  # type: ignore
             if a_step.get("ability_id") == ability_id:
                 try:
                     return a_step.get("output")
@@ -299,12 +303,12 @@ class CalderaControl(CalderaAPI):
         # Plus: 0 as "finished"
         #
 
-        operation = self.get_operation_by_id(opid)
+        operation: list[Operation] = self.get_operation_by_id(opid)
         # print(f"Operation data {operation}")
         try:
-            for host_group in operation[0]["host_group"]:
-                for alink in host_group["links"]:
-                    if alink["status"] != 0:
+            for host_group in operation[0].host_group:
+                for alink in host_group.links:
+                    if alink.status != 0:
                         return False
         except Exception as exception:
             raise CalderaError from exception
@@ -313,7 +317,7 @@ class CalderaControl(CalderaAPI):
     #  ######## All inclusive methods
 
     def attack(self, paw: str = "kickme", ability_id: str = "bd527b63-9f9e-46e0-9816-b8434d2b8989",
-               group: str = "red", target_platform: Optional[str] = None, parameters: Optional[str] = None, **kwargs) -> bool:
+               group: str = "red", target_platform: Optional[str] = None, parameters: Optional[dict] = None, **kwargs) -> bool:
         """ Attacks a system and returns results
 
         :param paw: Paw to attack
@@ -332,8 +336,10 @@ class CalderaControl(CalderaAPI):
         # caesar: failed
         # base64noPadding: worked
         # steganopgraphy: ?
-        obfuscator = self.config.get_caldera_obfuscator()
-        jitter = self.config.get_caldera_jitter()
+        if self.config is None:
+            raise ConfigurationError("No Config")
+        obfuscator: str = self.config.get_caldera_obfuscator()
+        jitter: str = self.config.get_caldera_jitter()
 
         adversary_name = "generated_adv__" + str(time.time())
         operation_name = "testoperation__" + str(time.time())
@@ -426,7 +432,7 @@ class CalderaControl(CalderaAPI):
             self.attack_logger.vprint(f"{CommandlineColors.BACKGROUND_GREEN} Output: {outp} {CommandlineColors.ENDC}", 2)
             pprint(output)
 
-        self.attack_logger.vprint(self.list_facts_for_name("source_" + operation_name), 2)
+        self.attack_logger.vprint(str(self.list_facts_for_name("source_" + operation_name)), 2)
 
         #  ######## Cleanup
         self.set_operation_state(opid, "cleanup")

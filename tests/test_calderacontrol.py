@@ -1,10 +1,11 @@
 import unittest
 from unittest.mock import patch, call
 from app.calderacontrol import CalderaControl
-from simplejson.errors import JSONDecodeError
+from simplejson.errors import JSONDecodeError  # type: ignore
 from app.exceptions import CalderaError
 from app.attack_log import AttackLog
 import pydantic
+from dotmap import DotMap  # type: ignore
 
 # https://docs.python.org/3/library/unittest.html
 
@@ -168,7 +169,7 @@ class TestExample(unittest.TestCase):
                  "ability": {"ability_id": ability_id},
                  "id": "Getme"}
 
-        op = [{"chain": [alink]}]
+        op = [DotMap({"chain": [alink]})]
 
         with patch.object(self.cc, "get_operation_by_id", return_value=op):
             res = self.cc.get_linkid("Foo", paw, ability_id)
@@ -183,7 +184,7 @@ class TestExample(unittest.TestCase):
                  "ability": {"ability_id": ability_id},
                  "id": "Getme"}
 
-        op = [{"chain": [alink]}]
+        op = [DotMap({"chain": [alink]})]
 
         with patch.object(self.cc, "get_operation_by_id", return_value=op):
             res = self.cc.get_linkid("Foo", "Bar", ability_id)

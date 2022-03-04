@@ -6,7 +6,7 @@ from inspect import currentframe, getsourcefile
 import json
 import datetime
 from random import randint
-from typing import Optional
+from typing import Optional, Any
 
 
 def __mitre_fix_ttp__(ttp: Optional[str]) -> str:
@@ -171,7 +171,7 @@ class AttackLog():
 
         return data[ability_id]
 
-    def start_caldera_attack(self, source: str, paw: str, group: str, ability_id: str, ttp: Optional[str] = None, **kwargs: dict) -> str:
+    def start_caldera_attack(self, source: str, paw: str, group: str, ability_id: str, ttp: Optional[str] = None, **kwargs: Any) -> str:
         """ Mark the start of a caldera attack
 
         :param source: source of the attack. Attack IP
@@ -215,7 +215,7 @@ class AttackLog():
     # TODO: Add config
     # TODO: Add results
 
-    def stop_caldera_attack(self, source: str, paw: str, group: str, ability_id: str, ttp: str = None, **kwargs: dict) -> None:
+    def stop_caldera_attack(self, source: str, paw: str, group: str, ability_id: str, ttp: str = None, **kwargs: Any) -> None:
         """ Mark the end of a caldera attack
 
         :param source: source of the attack. Attack IP
@@ -609,7 +609,7 @@ class AttackLog():
     # TODO: Add config
     # TODO: Add results
 
-    def stop_attack_plugin(self, source: str, target: str, plugin_name: str, **kwargs: dict) -> None:
+    def stop_attack_plugin(self, source: str, target: str, plugin_name: str, **kwargs: Any) -> None:
         """ Mark the end of an attack plugin
 
         :param source: source of the attack. Attack IP

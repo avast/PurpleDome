@@ -357,7 +357,9 @@ class Experiment():
                 plugin.process_config(self.experiment_config.attack_conf(plugin.get_config_section_name()))
                 if self.attacker_1 is None:
                     raise PluginError("Attacker not properly configured")
-                plugin.set_attacker_machine(self.attacker_1)
+                if self.attacker_1.vm_manager is None:
+                    raise PluginError("Attacker not properly configured")
+                plugin.set_attacker_machine(self.attacker_1.vm_manager)
                 plugin.set_sysconf({})
                 plugin.set_logger(self.attack_logger)
                 if self.caldera_control is None:

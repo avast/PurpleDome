@@ -624,7 +624,7 @@ class CalderaAPI():
         data = self.__contact_server__(payload, method="patch", rest_path=f"api/v2/agents/{agent_paw}")
         return data
 
-    def add_operation(self, **kwargs: dict) -> OperationList:
+    def add_operation(self, **kwargs: Any) -> OperationList:
         """ Adds a new operation
 
         :param kwargs:
