@@ -682,7 +682,7 @@ START {playground}{filename} -server {url} -group {self.config.caldera_group()} 
             filename = os.path.join(self.abs_machinepath_external, "caldera_agent.sh")
         elif self.get_os() == "windows":
             filename = os.path.join(self.abs_machinepath_external, "caldera_agent.bat")
-        with open(filename, "wt") as fh:
+        with open(filename, "wt", encoding="utf8") as fh:
             fh.write(content)
         if self.attack_logger is not None:
             self.attack_logger.vprint(f"{CommandlineColors.OKGREEN}Installed Caldera service {CommandlineColors.ENDC}", 1)

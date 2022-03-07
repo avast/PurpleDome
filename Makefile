@@ -31,3 +31,11 @@ mypy:
 # Fixing mypy file by file
 stepbystep:
 	mypy --strict-optional --disallow-untyped-defs --check-untyped-defs plugins/base/ app/
+
+# Checking dependencies
+check_dependencies:
+	pipdeptree
+
+# Updating dependencies
+update_dependencies:
+	pip-upgrade requirements.txt

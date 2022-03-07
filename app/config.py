@@ -169,7 +169,7 @@ class ExperimentConfig():
         :param configfile: The configuration file to process
         """
 
-        with open(configfile) as fh:
+        with open(configfile, encoding="utf8") as fh:
             data = yaml.safe_load(fh)
 
         if data is None:

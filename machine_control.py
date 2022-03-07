@@ -18,7 +18,7 @@ def create_machines(arguments):
     @param arguments: The arguments from argparse
     """
 
-    with open(arguments.configfile) as fh:
+    with open(arguments.configfile, encoding="utf8") as fh:
         config = yaml.safe_load(fh)
 
     attack_logger = AttackLog(arguments.verbose)
@@ -47,7 +47,7 @@ def create_machines(arguments):
     target_.start_caldera_client()
     print("Target done")
 
-    print("Caldera server running at: http://{}:8888/".format(attacker_1.get_ip()))
+    print(f"Caldera server running at: http://{attacker_1.get_ip()}:8888/")
     # target_.install_caldera_client(attacker_1.getip(), "target1elf")
 
 

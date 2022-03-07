@@ -1,32 +1,36 @@
 python-vagrant==0.5.15
 fabric==2.6.0
-requests==2.25.1
-simplejson==3.17.2
-tox==3.22.0
-coverage==5.4
-PyYAML==5.4.1
+requests==2.27.1
+simplejson==3.17.6
+tox==3.24.5
+coverage==6.3.2
+PyYAML==6.0
 straight.plugin==1.5.0
-paramiko==2.7.2
+paramiko==2.9.2
 pymetasploit3==1.0.3
-pylint==2.9.3
-flask==2.0.2
-pydantic==1.8.2
-dotmap==1.3.25
+pylint==2.12.2
+flask==2.0.3
+pydantic==1.9.0
+dotmap==1.3.26
 
 # Sphinx stuff
-sphinx-argparse==0.2.5
+sphinx-argparse==0.3.1
 sphinxcontrib-autoyaml==0.6.1
-sphinx-pyreverse==0.0.13
-sphinxcontrib.asciinema==0.3.2
+sphinx-pyreverse==0.0.17
+sphinxcontrib.asciinema==0.3.3
 sphinx-revealjs
 # sphinx-pydantic    # This one has issues that must be fixed upstream first
 
 # Mypy stuff
 mypy==0.931
-types-PyYAML==5.4.6
-types-requests==2.25.6
-types-simplejson==3.17.0
-types-paramiko==2.7.0
+types-PyYAML==6.0.4
+types-requests==2.27.11
+types-simplejson==3.17.3
+types-paramiko==2.8.13
+
+# pipdeptree
+pipdeptree
+pip-upgrade
 
 # Argcomplete. See README.md
 argcomplete==2.0.0

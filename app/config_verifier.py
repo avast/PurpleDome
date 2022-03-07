@@ -32,7 +32,7 @@ class CalderaConfig:
         """ Checks if a key exists
         Required for compatibility with DotMap which is used in Unit tests
         """
-        if keyname in self.__dict__.keys():
+        if keyname in self.__dict__:
             return True
         return False
 
@@ -48,7 +48,7 @@ class VMController:
         """ Checks if a key exists
             Required for compatibility with DotMap which is used in Unit tests
         """
-        if keyname in self.__dict__.keys():
+        if keyname in self.__dict__:
             return True
         return False
 
@@ -74,7 +74,7 @@ class Attacker:
         """ Checks if a key exists
             Required for compatibility with DotMap which is used in Unit tests
         """
-        if keyname in self.__dict__.keys():
+        if keyname in self.__dict__:
             return True
         return False
 
@@ -112,7 +112,7 @@ class Target:
         """ Checks if a key exists
             Required for compatibility with DotMap which is used in Unit tests
         """
-        if keyname in self.__dict__.keys():
+        if keyname in self.__dict__:
             return True
         return False
 
@@ -136,7 +136,7 @@ class AttackConfig:
         """ Checks if a key exists
             Required for compatibility with DotMap which is used in Unit tests
         """
-        if keyname in self.__dict__.keys():
+        if keyname in self.__dict__:
             return True
         return False
 
@@ -151,7 +151,7 @@ class AttackList:
         """ Checks if a key exists
             Required for compatibility with DotMap which is used in Unit tests
         """
-        if keyname in self.__dict__.keys():
+        if keyname in self.__dict__:
             return True
         return False
 
@@ -173,7 +173,7 @@ class Results:
         """ Checks if a key exists
             Required for compatibility with DotMap which is used in Unit tests
         """
-        if keyname in self.__dict__.keys():
+        if keyname in self.__dict__:
             return True
         return False
 
@@ -197,7 +197,7 @@ class MainConfig:
         """ Checks if a key exists
             Required for compatibility with DotMap which is used in Unit tests
         """
-        if keyname in self.__dict__.keys():
+        if keyname in self.__dict__:
             return True
         return False
 

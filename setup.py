@@ -7,7 +7,7 @@ import setuptools
 # https://packaging.python.org/tutorials/packaging-projects/
 # https://setuptools.readthedocs.io/en/latest/
 
-with open("README.md", "r") as fh:
+with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(

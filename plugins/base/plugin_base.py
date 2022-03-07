@@ -258,7 +258,7 @@ class BasePlugin():
         """
 
         if os.path.isfile(self.get_default_config_filename()):
-            with open(self.get_default_config_filename(), "rt") as fh:
+            with open(self.get_default_config_filename(), "rt", encoding="utf8") as fh:
                 return fh.read()
         else:
             return f"# The plugin {self.get_name()} does not support configuration"
@@ -276,7 +276,7 @@ class BasePlugin():
             self.vprint(f"Did not find default config {filename}", 3)
             self.conf = {}
         else:
-            with open(filename) as fh:
+            with open(filename, encoding="utf8") as fh:
                 self.vprint(f"Loading default config {filename}", 3)
                 self.conf = yaml.safe_load(fh)
             if self.conf is None:
