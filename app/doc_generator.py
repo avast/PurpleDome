@@ -32,13 +32,13 @@ class DocGenerator():
         )
         template = env.get_template("attack_description.rst")
 
-        with open(jfile) as fh:
+        with open(jfile, encoding="utf8") as fh:
             attack = json.load(fh)
 
         rendered = template.render(events=attack["attack_log"], systems=attack["system_overview"], boilerplate=attack["boilerplate"])
         print(rendered)
 
-        with open(outfile, "wt") as fh:
+        with open(outfile, "wt", encoding="utf8") as fh:
             fh.write(rendered)
 
     def compile_documentation(self) -> None:

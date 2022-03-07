@@ -13,7 +13,7 @@ from app.config_verifier import MainConfig
 
 def load(filename):
     """ Loads the config file and feeds it into the built in verifier """
-    with open(filename) as fh:
+    with open(filename, encoding="utf-8") as fh:
         data = yaml.safe_load(fh)
         return MainConfig(**data)
 

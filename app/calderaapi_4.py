@@ -700,7 +700,7 @@ class CalderaAPI():
 
         print(f"Number of abilities: {len(self.list_abilities())}")
 
-        with open("debug_removeme.txt", "wt") as fh:
+        with open("debug_removeme.txt", "wt", encoding="utf8") as fh:
             fh.write(pformat(self.list_abilities()))
 
         for ability in self.list_abilities():
@@ -714,12 +714,12 @@ class CalderaAPI():
         @param abi: A ability dict
         """
 
-        print("""
-        TTP: {technique_id}
-        Technique name: {technique_name}
-        Tactic: {tactic}
-        Name: {name}
-        ID: {ability_id}
-        Description: {description}
+        print(f"""
+        TTP: {abi["technique_id"]}
+        Technique name: {abi["technique_name"]}
+        Tactic: {abi["tactic"]}
+        Name: {abi["name"]}
+        ID: {abi["ability_id"]}
+        Description: {abi["description"]}
 
-        """.format(**abi))
+        """)

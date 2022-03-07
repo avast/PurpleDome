@@ -23,7 +23,7 @@ def run(args):
     """
 
     if args.caldera_attack_file:
-        with open(args.caldera_attack_file, "rt") as fh:
+        with open(args.caldera_attack_file, "rt", encoding="utf8") as fh:
             for line in fh:
                 line = line.strip()
                 print(f"Running calder attack {line}")

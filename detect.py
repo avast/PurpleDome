@@ -27,7 +27,7 @@ class Detector():
         as_text = "["
 
         # Filebeat jsons are not valid jsons and have to be fixed
-        with open(args.sensor_log, "rt") as fh:
+        with open(args.sensor_log, "rt", encoding="utf-8") as fh:
             new = fh.read()
             new = new.replace("}{", "},{")
             as_text += new

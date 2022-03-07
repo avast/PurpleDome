@@ -640,7 +640,7 @@ class AttackLog():
 
         :param filename: Name of the json file
         """
-        with open(filename, "wt") as fh:
+        with open(filename, "wt", encoding="utf8") as fh:
             json.dump(self.get_dict(), fh)
 
     def post_process(self) -> None:
