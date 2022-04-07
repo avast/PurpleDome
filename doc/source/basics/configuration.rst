@@ -6,7 +6,7 @@ Configuration is contained in yaml files. The example shipped with the code is *
 
 For your first experiments use *hello_world.yaml* which will run a simple attack on a simulated system.
 
-To define the VMs there are also *Vagrantfiles* and associated scripts. The example shipped with the code is in the *systems* folder. Using Vagrant is optional.
+To define the VMs there are also *Vagrantfiles* and associated scripts. The example shipped with the code can be found in the *systems* folder. Using Vagrant is optional.
 
 Machines
 ========
@@ -27,7 +27,7 @@ You can install vulnerabilities and weaknesses in the targets to allow your atta
 Sensors
 =======
 
-Sensors are all kinds of technology monitoring system events and collecting data required to detect an attack. Either while it happens or as a forensic experiment.
+All kinds of technology monitoring system events and collecting data required to detect an attack is referred as a "sensor" here. Data collection is done either while the attack happens or as a forensic experiment afterwards.
 
 Each machine can have a list of sensors to run on it. In addition there is the global *sensor_conf* setting to configure the sensors.
 
@@ -39,7 +39,7 @@ Attacks
 caldera_attacks
 ---------------
 
-Caldera attacks (called abilities) are identified by a unique ID. Some abilities are built to target several OS-es.
+Caldera attacks (called abilities) are identified by a unique ID. Some abilities are built to target multiple OS-es.
 
 All Caldera abilities are available. As some will need parameters and PurpleDome does not offer the option to configure those in the YAML, some caldera attacks might not work without implementing a plugin.
 
@@ -55,7 +55,7 @@ In the YAML file you will find two sub-categories under plugin_based_attacks: li
 attack_conf
 -----------
 
-All plugin based attacks can use configuration. This is in plugin-name sub categories in here.
+All plugin based attacks can use configuration. Find more in the plugin-name sub categories in here.
 
 Example config file
 ===================

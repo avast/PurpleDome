@@ -4,7 +4,7 @@ Contributing to the documentation
 
 The documentation is Sphinx based.
 
-Tools being used for documentation are:
+Tools used for documentation are:
 
 
 * Argparse for my command line tools
