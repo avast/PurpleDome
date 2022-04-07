@@ -5,16 +5,16 @@ Extending
 I recommend to start contributing code by using the plugin system. But beyond that there is much more you can do.
 
 
-Code code
-=========
+Code
+====
 
-Several core module create the system. They are in the *app* folder
+Core modules create the system. Find them in the *app* folder
 
 * experimentcontrol: Control experiments. This is the central control for everything
 * calderaapi_2: Direct REST Api to caldera 2.*  (deprecated)
 * calderaapi_4: Direct REST Api to caldera 4.*  (Caldera 4 is alpha)
 * calderacontrol: Remote control for Caldera with convenience methods
-* metasploit: Metasploit control. Simplifies the basic attack step so they can be used from plugins
+* metasploit: Metasploit control. Simplifies the basic attack step to make them usable from plugins
 * machinecontrol: Create/start and stop VMs. Will call the machinery plugin
 * pluginmanager: Plugin manager tasks. Has methods to verify plugin quality as well
 * config: Reading and processing configuration files
@@ -93,7 +93,7 @@ Class controlling the experiment
 Config
 ------
 
-Internal configuration handling. Currently there are two classes. One for the whole experiment configuration. The second one for machine specific configuration.
+Internal configuration handling. There are two classes. One for the whole experiment configuration. The second one for machine specific configuration.
 
 .. autoclass:: app.config.ExperimentConfig
     :members:

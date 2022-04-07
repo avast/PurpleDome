@@ -2,12 +2,12 @@
 Windows targets
 ===============
 
-Windows Vagrant boxes need a special setup. They have to be created from a running windows machine.
+Windows Vagrant boxes need a special setup. Create them from a running windows machine.
 
 Windows Box
 -----------
 
-If you use Vagrant you need a vagrant box first. On this image the vm will be based on.
+If you use Vagrant you need a vagrant box first. Base the vm on this image.
 
 The base vm must be running in VirtualBox when taking the snapshot. To do so, use::
 
@@ -43,9 +43,9 @@ To create a user key in a private user folder call (as user) Powershell::
 
     ssh-keygen
 
-This can be used for remote login
+Use this for remote login
 
-To be able to log into the Windows box, *c:\users\PurpleDome\.ssh\authorized_keys* needs to be created. Add the public key there.
+To be able to log into the Windows box, create *c:\users\PurpleDome\.ssh\authorized_keys*. Add the public key there.
 
 For admin users, the file is *C:\ProgramData\ssh\administrators_authorized_keys*
 

@@ -6,7 +6,7 @@ tox==3.24.5
 coverage==6.3.2
 PyYAML==6.0
 straight.plugin==1.5.0
-paramiko==2.9.2
+paramiko==2.10.1
 pymetasploit3==1.0.3
 pylint==2.12.2
 flask==2.0.3

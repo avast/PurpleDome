@@ -2,7 +2,7 @@
 CLI
 ===
 
-There are three command line tools that offer a simple interface to PurpleDome.
+Three command line tools exists offering a simple interface to PurpleDome.
 
 The central one is Experiment control where you start your experiments:
 
@@ -16,7 +16,7 @@ The central one is Experiment control where you start your experiments:
 Experiment control
 ==================
 
-Experiment control is the core tool to run an experiment. It accepts a yaml config file and runs the experiments in there. The configuration file defines the system to be used (together with a Vagrant file being referenced there) and the attacks to run.
+Experiment control is the core tool to run an experiment. It accepts a yaml config file and runs the experiments in there. The configuration file defines the system to be used (together with a Vagrant file referenced there) and the attacks to run.
 
 .. argparse::
     :filename: ../experiment_control.py

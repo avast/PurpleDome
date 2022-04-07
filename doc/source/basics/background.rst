@@ -46,22 +46,22 @@ Features
 Components
 ==========
 
-The command line tools are the way you will interact with Purple Dome. Those are described in the *CLI* chapter.
+The command line tools are the way you will interact with Purple Dome. Find more in the *CLI* chapter.
 
-The experiments are configured in YAML files, the format is described in the *configuration* chapter. You will also want to create some target VMs. You can do this manually or use Vagrant. Vagrant makes it simple to create Linux targets. Windows targets (with some start configuration) are harder and have an own chapter.
+You can configure the experiments in YAML files, the *configuration* chapter describes the format. Next you will also want to create some target VMs. This can be done manually or by using Vagrant. Vagrant makes it simple to create Linux targets. Windows targets (with some start configuration) are harder and have an own chapter.
 
-If you want to modify Purple Dome and contribute to it I can point you to the *Extending* chapter. Thanks to a plugin interface this is quite simple.
+If you want to modify Purple Dome and contribute to it I can point you to the *Extending* chapter. Thanks to a plugin interface this is simple.
 
 Data aggregator
 ---------------
 
-We currently can use logstash
+We use logstash
 
 
 Caldera
 -------
 
-Caldera is an attack framework. Especially useful for pen testing and blue team training.
+You can use the attack framework Caldera for pen testing and blue team training.
 
 Starting it: *python3 server.py --insecure*
 
@@ -69,7 +69,7 @@ Web UI on *http://localhost:8888/*
 
 Credentials: *red/admin*
 
-Documentation: Documentation: https://caldera.readthedocs.io/en/latest/
+Documentation: https://caldera.readthedocs.io/en/latest/
 
 Installing client on victim (Linux):
 
@@ -90,7 +90,7 @@ You can view a list of modules using: *filebeat modules list*
 Logstash
 --------
 
-Logstash is used to aggregate the data from filebeat into a json file.
+Filebeat uses Logstash to aggregate data into a json file.
 
 Logstash uses all .conf files in /etc/logstash/conf.d
 
@@ -99,4 +99,4 @@ https://www.elastic.co/guide/en/logstash/current/config-setting-files.html
 Repos
 -----
 
-PurpleDome can be found on github: https://git.int.avast.com/ai-research/purpledome
+You can find PurpleDome on github: https://git.int.avast.com/ai-research/purpledome
