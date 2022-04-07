@@ -11,6 +11,7 @@ PurpleDome is a platform for IT security research. This page is to collect all P
 A list of Universities and their projects related to Purple Dome
 
 * [Kings College London (KCL)](https://www.kcl.ac.uk/)
+* [Albstadt-Sigmaringen University](https://www.hs-albsig.de/)
 
 #### CTF teams and hackers
 
