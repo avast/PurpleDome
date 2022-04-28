@@ -8,79 +8,288 @@ Purple Dome - Kein Schwein greift mich an
    :glob:
    :hidden:
 
+Spoiler
+=======
 
+Es geht um ein neues Tool, das Angriffe simuliert, damit man seine Verteidigungs-Technologie mal in Aktion sehen kann.
 
-Kein Schwein greif mich an
+Da hat man mal richtig in security investiert ...
+=================================================
+
+Die Firma hat jetzt:
+
+* SIEM (Security Information and Event Management)
+* ein SOC (Security Operation Center) Team
+* eine CISO (Chief Information Security Officer)
+
+aber....
+
+Was ist jetzt das Problem ?
+===========================
+
+Niemand weiss ob alles funktioniert oder wie die Logs eines Angriffs aussehen....
+
+Mehr Probleme
+-------------
+
+...Oder ob die Sensoren mit dem OS Update noch tun wie erwartet...
+
+Noch mehr Probleme
+---------------l---
+
+...Oder ob die Logs dann minimal anders aussehen und die Regexe nicht greifen...
+
+Sehr viel mehr Probleme
+-----------------------
+
+...Oder ob die selbstgeschriebenen Erkennungsregeln überhaupt was erkennen...
+
+Denn: Kein Schwein greift mich an !
+===================================
+
+Früher war mehr EICAR (test-virus Datei). Damit stupst man seine File-Erkennung und schaut ob die noch lebt.
+
+Heute ist mehr file-less
+========================
+
+* In-memory Exploits
+* Admin tools (LOLBINs)
+* harmlose Programme, die aber vulnerabel sind.
+
+Das kann man mit dem EICAR test file nicht mehr so komfortabel nachbilden
+
+Leroy Jenkins: Metasploit vs. Production environment
+====================================================
+
+Jetzt kann man selbst mit Metasploit und Mimikatz seine eigene Produktionsumgebung angreifen und schauen, was passiert. Ist dann halt kacke.
+
+Lösung
+======
+
+Das Open Source Projekt Purple Dome kann eine in VM simulierte Umgebung von Target Maschinen hochziehen und diese dann gescripted angreifen.
+
+Kann nix passieren
+------------------
+
+Da alles in der simulierten Umgebung läuft, kann nix passieren
+
+Lieber trotzdem vom Firmen Netz trennen.
+
+Alles wird aufgezeichnet !
 ==========================
 
-Habe mir gerade einen neuen Event Logger auf meinem Server installiert. Die Log Details hochgedreht... und jetzt greift mich keiner an.
+Sensoren auf den Targets oder im Netz zeichnen den Angriff dann auf
 
-Keine Ahnung ob die Sensoren tun ?
-----------------------------------
 
-Wir überhaupt mitgelogged was wichtig ist ?
+PurpleDome macht File-less Angriff handhabbarer
+===============================================
 
-Daten habe ich jetzt ....aber Erkennungslogik ?
------------------------------------------------
+Wir brauchen das...
 
-Nach was greppe ich denn nun in den Logs ?
+* Zum Entwickeln der Sensoren
+* Zum Entwickeln der Logik
+* Zum Testen der Sensoren (unter leicht modifizierten Umständen)
 
-Viel gemacht aber alles ungetestet
-==================================
+Was kann das ?
+==============
 
-Die einzige Lösung: Ein Angreifer muss her. Vielleicht nicht auf mein Produktivsystem.
+Aktuell als Beispiele vorhanden sind:
 
-Simulierte Angriffe
+Angriffe
+========
+
+* Metasploit
+* Kali command line
+* Caldera
+
+Sensoren
+========
+
+* Logstash/filebeat
+
+Virtuelle Maschinen
 ===================
 
-Purple Dome erlaubt es, Angriffe zu simulieren. Scriptbar und als Python Pluins
+* Vagrant
+* standalone VirtualBox
 
-Metasploit
-----------
+Vulnerabilities
+===============
 
-Caldera
+* RDP
+* Schwache User Passwörter
+
+Anwendung
+=========
+
+Alles automatisierbar !
+
+Commandline
+-----------
+
+.. revealjs-code-block:: console
+
+   ./experiment_control.py run --configfile hello_world.yaml
+
+
+Config
+------
+
+.. revealjs-code-block:: yaml
+   :linenos:
+   :data-line-numbers: 1|3|6|8
+
+    caldera_attacks:
+        linux:
+            - "bd527b63-9f9e-46e0-9816-b8434d2b8989"
+        windows:
+
+    plugin_based_attacks:
+        linux:
+            - hydra
+
+Targets
 -------
 
-Kali Linux commandline
-----------------------
+Erzeugt mittels Vagrant oder als bestehende VM
 
-Simulierte Ziele
-================
+Der Lauf
+--------
 
-Die Angriffe gehen nicht auf das Produktivsystem, sondern auf VM targets
+.. todo
 
-Sensoren nach Wunsch
-====================
+Ergebnisse eines Purple Dome Laufs
+==================================
 
-Welche Sensoren auf den Targets laufen kann man per config und Plugin definieren
+Ergebnis sind sehr viele Sensor Logs und ein PDF Dokument für die Manager.
+
+Manager lesbares PDF - Übersicht
+--------------------------------
+
+Ein PDF zum entspannt lesen
+
+-
+
+.. revealjs-section::
+    :data-background-image: _static/pdf_contents.png
+    :data-background-size: contain
+
+
+Manager PDF - Angriffsdetails
+-----------------------------
+
+Mit Details
+
+
+_
+
+.. revealjs-section::
+    :data-background-image: _static/pdf_details.png
+    :data-background-size: contain
+
+Angriffs Log
+------------
+
+Ein Auszug
+
+.. revealjs-code-block:: json
+   :linenos:
+   :data-line-numbers: 1,2|3,4|5|6,7|8,9,10,11,12,13|14
+
+    "timestamp": "12:10:09.006964",
+    "timestamp_end": "12:15:23.064067",
+    "type": "attack",
+    "sub_type": "caldera",
+    "source": "http://192.168.178.126:8888/",
+    "target_paw": "target3",
+    "target_group": "red_linux",
+    "ability_id": "bd527b63-9f9e-46e0-9816-b8434d2b8989",
+    "hunting_tag": "MITRE_T1033",
+    "name": "Current User",
+    "description": "Obtain user from current session",
+    "tactics": "System Owner/User Discovery",
+    "tactics_id": "T1033",
+    "result": [ "vagrant" ]
+
+
+Sensor Log (Filebeat)
+---------------------
+
+Hydra Angriff
+
+.. revealjs-code-block:: json
+   :linenos:
+   :data-line-numbers: 1|2,3|4|5,6,7,8
+
+     {"@timestamp":"2022-04-07T10:18:37.907Z",
+     "message":"Apr  7 10:18:37 target3 sshd[3113]:
+     Failed password for invalid user nonexistend_user_1 from 192.168.178.126 port 44924 ssh2",
+     "host":{"hostname":"target3"},},
+     {"@timestamp":"2022-04-07T10:18:38.907Z",
+     "message":"Apr  7 10:18:38 target3 sshd[3113]:
+     Failed password for invalid user nonexistend_user_1 from 192.168.178.126 port 44924 ssh2",
+     "host":{"hostname":"target3"},}
+
+
+Purple Dome: Wie funktioniert es ?
+==================================
+
+.. todo
+
+Purple Dome ist eine vollautomatisierte Simulations Umgebung, in der man die File-less Angriffe nachvollziehen kann.
+
+Aufsetzen der Ziele
+-------------------
+
+Virtuelle Maschinen mit dem Ziel OS werden aufgesetzt. So können wir unsere Sensoren mit verschiedenen OS Versionen testen.
 
 Vulnerabilities nach Wunsch
 ===========================
 
 Damit die Angriffe auch etwas Schaden hinterlassen, kann man per Plugins auch erst mal Vulnerabilities auf den Targets installieren.
 
-Targets nach Wunsch
-===================
+Aufsetzen der Sensoren
+======================
 
-Erzeugt mittels Vagrant oder als bestehende VM
+Sensoren werden automatisch auf den Zielen installiert. Ab jetzt wird aufgezeichnet
 
-Wie das Ganze dann aussieht
-===========================
+Welche Sensoren auf den Targets laufen kann man per config und Plugin definieren
 
-Resultat: PDF
--------------
 
-Resultat: Sensordaten
----------------------
+Durchführen der Angriffe
+========================
 
-Resultat: Angriffsdaten
------------------------
+Welche Angriffe durchgeführt werden bestimmt das Skript
 
-Input: Commandline
-------------------
+* Caldera
+* Metasploit
+* Kali tools
 
-Input: Config
--------------
+Sammeln der Sensor Daten
+========================
+
+Daten aller Sensoren werden gesammelt. Zusammen mit einem Log der Angriffe.
+
+Wem bringt PurpleDome sonst noch was ?
+======================================
+
+Erste Ideen kam schon an:
+
+Schulungen
+----------
+
+Security Schulungen basierend auf Purple Dome. Besonders im Bereich Forensik
+
+Trainings
+---------
+
+Blue vs Red Team Trainings und Erzeugen von Übungsdaten
+
+CTF
+---
+
+Capture the Flag Herausforderungen können auf Purple Dome basieren.
+Dafür muß aber das Threat Modell angepasst werden.
 
 Wo kann ich PurpleDome kaufen ?
 ===============================
@@ -89,15 +298,83 @@ Gar nicht. Ist kostenlos und Open Source
 
 https://github.com/avast/PurpleDome
 
-Bitte forken. Jetzt.
+(beim Verwenden in akademischen Arbeiten, bitte den BibTeX snippet nutzen !)
 
-Fragen ?
+Erweiterbarkeit dank Plugins
+============================
+
+Viel Funktionalität ist als Plugin implementiert
+
+* Angriffe
+* Vulnerabilities
+* Integration von Sensoren in die Targets
+
+Beispiel Sensor: Linux Filebeat
+===============================
+
+Boilerplate
+-----------
+
+.. revealjs-code-block:: python
+   :linenos:
+   :data-line-numbers: 1|2|3|4,5,6
+
+    class LinuxFilebeatPlugin(SensorPlugin):
+        name = "linux_filebeat"
+        description = "Linux filebeat plugin"
+        required_files = ["filebeat.conf",
+                          "filebeat.yml",
+                          ]
+
+Install
+-------
+
+.. revealjs-code-block:: python
+   :linenos:
+   :data-line-numbers: 1|3,4
+
+    def prime(self):
+        fb_file = "filebeat-7.15.2-amd64.deb"
+        self.run_cmd(f"curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/{fb_file}")
+        self.run_cmd(f"sudo dpkg -i {fb_file}")
+
+
+Start
+-----
+
+.. revealjs-code-block:: python
+   :linenos:
+   :data-line-numbers: 1|2,3
+
+    def start(self):
+        self.run_cmd("sudo filebeat modules enable system iptables")
+        self.run_cmd("sudo filebeat setup --pipelines --modules iptables,system,")
+
+Collect
+-------
+
+.. revealjs-code-block:: python
+   :linenos:
+   :data-line-numbers: 1|2,3|4
+
+    def collect(self, path):
+        dst = os.path.join(path, "filebeat.json")
+        self.get_from_machine("/tmp/filebeat_collection.json", dst)
+        return [dst]
 
 Origin story
-------------
+============
 
-* Sensoren eines Behaviour Blockers müssen mit jedem OS update neu getestet werden
-* Jeder neue Angriff muss verifiziert werden...
+Purple Dome ist für unsere Security Firma ein weiteres Tool, um unsere eigenen Produkte zu stress testen. Es ging ca. 1 Jahr Entwicklungszeit da rein.
 
-Also wurde automatisiert.
+Fragen ?
+========
+
+Mastodon: @thorsi@chaos.social
+
+https://github.com/avast/PurpleDome
+
+
+Bitte forken. Jetzt.
+
 
