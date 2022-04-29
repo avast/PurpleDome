@@ -122,7 +122,7 @@ Vulnerabilities
 Anwendung
 =========
 
-Alles automatisierbar !
+...was geht rein ?
 
 Commandline
 -----------
@@ -131,6 +131,7 @@ Commandline
 
    ./experiment_control.py run --configfile hello_world.yaml
 
+Dann ein paar Minuten warten
 
 Config
 ------
@@ -153,15 +154,14 @@ Targets
 
 Erzeugt mittels Vagrant oder als bestehende VM
 
-Der Lauf
---------
-
-.. todo
-
 Ergebnisse eines Purple Dome Laufs
 ==================================
 
-Ergebnis sind sehr viele Sensor Logs und ein PDF Dokument für die Manager.
+Was raus kommt:
+
+* sehr viele Sensor Logs
+* Angriffs log
+* und ein PDF Dokument für die Manager
 
 Manager lesbares PDF - Übersicht
 --------------------------------
@@ -231,17 +231,21 @@ Hydra Angriff
      "host":{"hostname":"target3"},}
 
 
-Purple Dome: Wie funktioniert es ?
-==================================
+Purple Dome: Was im Hintergrund geschieht
+=========================================
 
-.. todo
+Nach dem Start von der Kommandozeile startet die vollautomatisierte Simulations Umgebung
 
-Purple Dome ist eine vollautomatisierte Simulations Umgebung, in der man die File-less Angriffe nachvollziehen kann.
 
 Aufsetzen der Ziele
--------------------
+===================
 
 Virtuelle Maschinen mit dem Ziel OS werden aufgesetzt. So können wir unsere Sensoren mit verschiedenen OS Versionen testen.
+
+Starten der Maschinen
+=====================
+
+Targets und Attacker werden gestartet
 
 Vulnerabilities nach Wunsch
 ===========================
@@ -254,7 +258,6 @@ Aufsetzen der Sensoren
 Sensoren werden automatisch auf den Zielen installiert. Ab jetzt wird aufgezeichnet
 
 Welche Sensoren auf den Targets laufen kann man per config und Plugin definieren
-
 
 Durchführen der Angriffe
 ========================
@@ -291,14 +294,10 @@ CTF
 Capture the Flag Herausforderungen können auf Purple Dome basieren.
 Dafür muß aber das Threat Modell angepasst werden.
 
-Wo kann ich PurpleDome kaufen ?
-===============================
+Mehr Ideen bitte !
+------------------
 
-Gar nicht. Ist kostenlos und Open Source
-
-https://github.com/avast/PurpleDome
-
-(beim Verwenden in akademischen Arbeiten, bitte den BibTeX snippet nutzen !)
+Das war sicher noch nicht alles
 
 Erweiterbarkeit dank Plugins
 ============================
@@ -308,6 +307,7 @@ Viel Funktionalität ist als Plugin implementiert
 * Angriffe
 * Vulnerabilities
 * Integration von Sensoren in die Targets
+* Unterstützte VMs
 
 Beispiel Sensor: Linux Filebeat
 ===============================
@@ -337,7 +337,6 @@ Install
         fb_file = "filebeat-7.15.2-amd64.deb"
         self.run_cmd(f"curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/{fb_file}")
         self.run_cmd(f"sudo dpkg -i {fb_file}")
-
 
 Start
 -----
