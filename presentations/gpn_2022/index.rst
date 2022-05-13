@@ -13,6 +13,13 @@ Spoiler
 
 Es geht um ein neues Tool, das Angriffe simuliert, damit man seine Verteidigungs-Technologie mal in Aktion sehen kann.
 
+Ich
+===
+
+* Thorsten Sick
+* Erfahrener Entwickler einiger Angriffs Analyse Tools und MW Erkennungs Technologien
+* u.a. viele Beiträge zur Cuckoo Sandbox
+
 Da hat man mal richtig in security investiert ...
 =================================================
 
@@ -122,7 +129,7 @@ Vulnerabilities
 Anwendung
 =========
 
-...was geht rein ?
+Ein gut automatisierbares Tool mit commandline und config files
 
 Commandline
 -----------

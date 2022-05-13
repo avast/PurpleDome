@@ -10,14 +10,15 @@ paramiko==2.10.1
 pymetasploit3==1.0.3
 pylint==2.12.2
 flask==2.0.3
-pydantic==1.9.0
+pydantic
 dotmap==1.3.26
 
 # Sphinx stuff
-sphinx-argparse==0.3.1
-sphinxcontrib-autoyaml==0.6.1
-sphinx-pyreverse==0.0.17
-sphinxcontrib.asciinema==0.3.3
+sphinx>=4.2.0
+sphinx-argparse
+sphinxcontrib-autoyaml
+sphinx-pyreverse>=0.0.17
+sphinxcontrib.asciinema>=0.3.3
 sphinx-revealjs
 # sphinx-pydantic    # This one has issues that must be fixed upstream first
 
