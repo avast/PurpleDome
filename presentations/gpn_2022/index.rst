@@ -65,6 +65,27 @@ Heute ist mehr file-less
 
 Das kann man mit dem EICAR test file nicht mehr so komfortabel nachbilden
 
+In-memory Exploits
+------------------
+
+Wenn man als Angreifer ein System hacked, das nur einen Datei scanner hat, kommt man unbemerkt durch, solange man keine Datei anlegt
+
+LOLBins
+-------
+
+Living-off-the-land binaries. Also zum Angriff nehmen was eh schon als Tools rumliegt. Fällt weniger auf.
+
+Vulnerable programme
+--------------------
+
+Signierte aber veraltete und verwundbare Treiber sind da ein Klassiker. Die schaffen dem Angreifer Systemrechte.
+
+EICAR test file für Behaviour
+-----------------------------
+
+Es gibt einige Scripte, die um Dinge auf dem Rechner anrichten, um Behaviour Detection zu testen.
+Sie haben aber eher schwankende Qualität und nicht unbedingt Aussagekraft
+
 Leroy Jenkins: Metasploit vs. Production environment
 ====================================================
 
@@ -108,6 +129,42 @@ Angriffe
 * Metasploit
 * Kali command line
 * Caldera
+
+Metasploit
+----------
+
+* Metasploit kann per implant oder exploit auf das Target kommen
+* Es baut danach eine Verbindung zum Attacker auf
+* und kann das System auf verschiedene Arten (meist Windows API) beeinflussen
+
+Caldera
+-------
+
+* Caldera benötigt implants
+* Es baut eine Verbindung zum Attacker auf
+* Es beeinflusst das System vor allem über Kommandozeilen Befehle (powershell, shell)
+
+Kali
+----
+
+Die aktuell verwendeten Kali tools sind Netzwerk zentriert und dienen vor allem dazu, im Purple Dome Kontext Netzwerkprotokolle zu füllen
+
+(hydra, nmap)
+
+Mimikatz
+--------
+
+* Wird im Rahmen von Metasploit eingesetzt
+* Extrahiert Credentials aus dem Speicher des Targets
+* Bei realen Angriffen oft ein Standard-Bestandteil
+
+Cobalt
+------
+
+* Ähnlich wie Metasploit
+* Wird stark von Malware Angriffen genutzt
+* Benötigt eine Lizenz
+* Ist (noch) nicht implementiert in Purple Dome
 
 Sensoren
 ========
@@ -368,6 +425,17 @@ Collect
         self.get_from_machine("/tmp/filebeat_collection.json", dst)
         return [dst]
 
+Weitere potentielle Sensoren
+============================
+
+Nicht alle sind bereits Bestandteil des Open Source projekts, mit ihnen habe ich aber "gespielt" oder werde es noch:
+
+* EBPF (system API monitor)
+* Frida (process API monitor)
+* OSQuery (system stats)
+* Sysmon (von MS, auch für Linux)
+* Volatility (memory forensics)
+
 Origin story
 ============
 
@@ -383,4 +451,7 @@ https://github.com/avast/PurpleDome
 
 Bitte forken. Jetzt.
 
+Danke
+=====
 
+Vielen Dank fürs zuhören. Und jetzt: abschalten
