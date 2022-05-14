@@ -20,6 +20,12 @@ Ich
 * Erfahrener Entwickler einiger Angriffs Analyse Tools und MW Erkennungs Technologien
 * u.a. viele Beiträge zur Cuckoo Sandbox
 
+Origin story
+============
+
+Purple Dome ist für unsere Security Firma ein weiteres Tool, um unsere eigenen Produkte zu stress testen. Es ging ca. 1 Jahr Entwicklungszeit da rein.
+
+
 Da hat man mal richtig in security investiert ...
 =================================================
 
@@ -85,6 +91,11 @@ EICAR test file für Behaviour
 
 Es gibt einige Scripte, die um Dinge auf dem Rechner anrichten, um Behaviour Detection zu testen.
 Sie haben aber eher schwankende Qualität und nicht unbedingt Aussagekraft
+
+Behaviour und AV
+----------------
+
+Schon seit vielen Jahren hat jede ernst zu nehmende AV Software eine Behaviour Komponente
 
 Leroy Jenkins: Metasploit vs. Production environment
 ====================================================
@@ -435,11 +446,6 @@ Nicht alle sind bereits Bestandteil des Open Source projekts, mit ihnen habe ich
 * OSQuery (system stats)
 * Sysmon (von MS, auch für Linux)
 * Volatility (memory forensics)
-
-Origin story
-============
-
-Purple Dome ist für unsere Security Firma ein weiteres Tool, um unsere eigenen Produkte zu stress testen. Es ging ca. 1 Jahr Entwicklungszeit da rein.
 
 Fragen ?
 ========
