@@ -46,6 +46,7 @@ revealjs_script_conf = {
     "history": True,
     "center": True,
     "transition": "slide",
+    "slideNumber": False
 }
 revealjs_script_plugins = [
     {
@@ -63,7 +64,7 @@ revealjs_script_plugins = [
 ]
 revealjs_css_files = [
     "revealjs4/plugin/highlight/zenburn.css",
-    "custom.css",
+    "mod.css",
 ]
 
 # Graphviz

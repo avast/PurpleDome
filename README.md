@@ -1,6 +1,8 @@
 ![main branch test](https://github.com/avast/PurpleDome/actions/workflows/main_by_makefile.yml/badge.svg?branch=main)
 ![develop branch test](https://github.com/avast/PurpleDome/actions/workflows/develop_by_makefile.yml/badge.svg?branch=develop)
 
+**Important: During the next months the main developer is mostly AFK. There are fallback maintainers, but you can expect reduced response time. Please plan accordingly, fork and cooperate. Thanks** 
+
 # PurpleDome creates simulated systems which hack each other 
 
 It creates several virtual machines to simulate a target network. A Kali attacker will be spawned and use configured attacks to blast at the targets. Those attacks can be Kali command line tools, Caldera abilities or Metasploit tools.
